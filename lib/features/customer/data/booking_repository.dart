@@ -1,5 +1,5 @@
-import '../models/booking.dart';
-import '../models/service_category.dart';
+import '../domain/booking.dart';
+import '../domain/service_category.dart';
 import 'package:uuid/uuid.dart';
 
 class BookingRepository {

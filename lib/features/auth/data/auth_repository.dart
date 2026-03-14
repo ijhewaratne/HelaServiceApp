@@ -1,4 +1,4 @@
-import '../models/app_user.dart';
+import '../domain/app_user.dart';
 
 class AuthRepository {
   // In a real app, inject FirebaseAuth and FirebaseFirestore instances here.

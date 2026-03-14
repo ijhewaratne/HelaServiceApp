@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../../../../data/models/booking.dart';
-import '../../../../data/repositories/booking_repository.dart';
+import '../../domain/booking.dart';
+import '../../data/booking_repository.dart';
 
 class CustomerViewModel extends ChangeNotifier {
   final BookingRepository _bookingRepository;

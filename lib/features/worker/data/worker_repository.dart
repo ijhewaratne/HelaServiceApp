@@ -1,5 +1,5 @@
-import '../models/worker_profile.dart';
-import '../models/worker_document.dart';
+import '../domain/worker_profile.dart';
+import '../domain/worker_document.dart';
 
 class WorkerRepository {
   Future<WorkerProfile> getWorkerProfile(String workerId) async {

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import '../../../../data/models/worker_profile.dart';
-import '../../../../data/models/booking.dart';
-import '../../../../data/models/incident.dart';
-import '../../../../data/repositories/admin_repository.dart';
+import '../../../../features/worker/domain/worker_profile.dart';
+import '../../../../features/customer/domain/booking.dart';
+import '../../domain/incident.dart';
+import '../../data/admin_repository.dart';
 
 class AdminViewModel extends ChangeNotifier {
   final AdminRepository _adminRepository;

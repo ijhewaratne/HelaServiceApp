@@ -1,6 +1,6 @@
-import '../../../data/models/worker_profile.dart';
-import '../../../data/models/booking.dart';
-import '../../../data/models/incident.dart';
+import '../../worker/domain/worker_profile.dart';
+import '../../customer/domain/booking.dart';
+import '../domain/incident.dart';
 
 class AdminRepository {
   Future<List<WorkerProfile>> getPendingWorkers() async {
