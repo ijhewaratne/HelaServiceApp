@@ -20,6 +20,9 @@ import '../../features/admin/presentation/screens/admin_workers_screen.dart';
 import '../../features/admin/presentation/screens/admin_bookings_screen.dart';
 import '../../features/admin/presentation/screens/admin_incidents_screen.dart';
 
+// New BLoC-based onboarding pages
+import '../../features/worker/presentation/pages/nic_input_page.dart';
+
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/role_select_screen.dart';
