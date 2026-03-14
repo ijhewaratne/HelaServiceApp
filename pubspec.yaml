@@ -50,6 +50,13 @@ dependencies:
   flutter_animate: ^4.5.2
   crypto: ^3.0.7
   url_launcher: ^6.3.2
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
+  dartz: ^0.10.1
+  encrypt: ^5.0.3
+  local_auth: ^3.0.1
+  cloud_functions: ^6.0.7
+  geofence_service: ^6.0.0+1
 
 dev_dependencies:
   flutter_test:

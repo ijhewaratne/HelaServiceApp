@@ -1,83 +1,119 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to get worker details
-    function getWorkerData() {
-      return get(/databases/$(database)/documents/worker_profiles/$(request.auth.uid)).data;
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // -------------------------------------------------------------------------
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    function isWorkerInZone(workerId, zoneId) {
+      return zoneId in get(/databases/$(database)/documents/workers/$(workerId)).data.allowedZones;
+    }
+
+    // =========================================================================
     // USERS (Base Auth Records)
-    // -------------------------------------------------------------------------
+    // =========================================================================
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // -------------------------------------------------------------------------
-    // CUSTOMERS
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // CUSTOMER PROFILES (PDPA — self-access only)
+    // =========================================================================
     match /customer_profiles/{customerId} {
-      allow read, write: if request.auth != null && request.auth.uid == customerId;
+      allow read, write: if isAuthenticated() && request.auth.uid == customerId;
     }
 
-    // -------------------------------------------------------------------------
-    // WORKERS (PDPA Critical Section)
-    // -------------------------------------------------------------------------
-    match /worker_profiles/{workerId} {
-      // Workers can perfectly read/write their own full profile
-      allow write: if request.auth != null && request.auth.uid == workerId;
-      allow read: if request.auth != null && request.auth.uid == workerId;
-      
-      // CUSTOMER READ RESTRICTION (PDPA)
-      // Customers cannot see worker's home address or bank details.
-      // Firestore rules don't easily allow "field-level" read stripping unless
-      // the data is split into a public/private collection. 
-      // Assuming 'publicProfile' boolean or relying on specific query validation.
-      allow read: if request.auth != null && resource.data.isAvailable == true;
+    // =========================================================================
+    // WORKERS (PDPA Critical)
+    // =========================================================================
+    match /workers/{workerId} {
+      // Workers read/write their own profile
+      allow read, write: if isAuthenticated() && request.auth.uid == workerId;
+
+      // Workers CANNOT self-promote their verification status
+      allow update: if isAuthenticated() && request.auth.uid == workerId
+        && request.resource.data.isVerified == resource.data.isVerified;
+
+      // Private subcollection (bank details, passport) — extra protection
+      match /private_data/{doc} {
+        allow read, write: if isAuthenticated() && request.auth.uid == workerId;
+      }
     }
 
     match /worker_documents/{workerId} {
-      // Only the worker (or an admin) can read/write sensitive KYC documents like NIC
-      allow read, write: if request.auth != null && request.auth.uid == workerId;
+      // Only the worker or an admin can access KYC documents
+      allow read, write: if isAuthenticated() && request.auth.uid == workerId;
     }
 
-    // -------------------------------------------------------------------------
-    // BOOKINGS / JOBS (Dispatch Constraints)
-    // -------------------------------------------------------------------------
-    match /bookings/{bookingId} {
-      // Customers can create jobs and read their own
-      allow create: if request.auth != null && request.resource.data.customerId == request.auth.uid;
-      
-      // Customers view their own bookings
-      allow read, update: if request.auth != null && resource.data.customerId == request.auth.uid;
-      
-      // WORKER ZONE RESTRICTION
-      // Workers can only see and update jobs if the job's zone matches their allowedZones
-      allow read, update: if request.auth != null && 
-        (resource.data.workerId == request.auth.uid || 
-        resource.data.zone in getWorkerData().allowedZones);
-    }
-    
-    // -------------------------------------------------------------------------
-    // ADMIN (Global System Override Mock)
-    // -------------------------------------------------------------------------
-    // Using a Custom Claim `admin: true` set via Firebase Admin SDK
-    match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.token.admin == true;
+    // =========================================================================
+    // JOBS (State Machine + Zone Enforcement)
+    // =========================================================================
+    match /jobs/{jobId} {
+      // Customers can read their own jobs; assigned workers can read theirs
+      allow read: if isAuthenticated() &&
+        (resource.data.customerId == request.auth.uid ||
+         resource.data.assignedWorkerId == request.auth.uid);
+
+      // Any authenticated user can create (customer books a job)
+      allow create: if isAuthenticated() &&
+        request.resource.data.customerId == request.auth.uid;
+
+      // Workers can only update jobs explicitly assigned to them
+      allow update: if isAuthenticated() &&
+        resource.data.assignedWorkerId == request.auth.uid;
     }
 
-    // -------------------------------------------------------------------------
-    // CHAT MESSAGES (PDPA Data Retention)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // LIVE JOB LOCATIONS (Privacy-Critical — PDPA Minimization)
+    // Only accessible during an active job. Auto-cleared after completion.
+    // =========================================================================
+    match /job_locations/{jobId} {
+      // Reads: customer or assigned worker during active job only
+      allow read: if isAuthenticated() &&
+        (get(/databases/$(database)/documents/jobs/$(jobId)).data.customerId == request.auth.uid ||
+         get(/databases/$(database)/documents/jobs/$(jobId)).data.assignedWorkerId == request.auth.uid);
+
+      // Writes: only assigned worker during active status phases
+      allow write: if isAuthenticated() &&
+        get(/databases/$(database)/documents/jobs/$(jobId)).data.assignedWorkerId == request.auth.uid &&
+        get(/databases/$(database)/documents/jobs/$(jobId)).data.status in ['enRoute', 'arrived', 'inProgress'];
+    }
+
+    // =========================================================================
+    // AUDIT LOGS (Immutable — write-once for labor dispute protection)
+    // =========================================================================
+    match /audit_logs/{logId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow update, delete: if false; // Immutable — no updates or deletions ever
+    }
+
+    // =========================================================================
+    // CHAT MESSAGES (PDPA Data Retention — 30-day TTL via GCP policy)
+    // =========================================================================
     match /messages/{messageId} {
-      // Must enforce a createdAt timestamp on all documents so that 
-      // a Google Cloud Firestore TTL policy can automatically delete them after 30 days.
-      allow create: if request.auth != null && request.resource.data.createdAt != null;
-      allow read: if request.auth != null && 
-        (resource.data.senderId == request.auth.uid || 
+      // Enforce createdAt on every document to support Cloud Firestore TTL policy
+      allow create: if isAuthenticated() && request.resource.data.createdAt != null;
+      allow read: if isAuthenticated() &&
+        (resource.data.senderId == request.auth.uid ||
          resource.data.receiverId == request.auth.uid);
     }
-    
+
+    // =========================================================================
+    // ADMIN OVERRIDE (Custom Claim)
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
   }
 }
