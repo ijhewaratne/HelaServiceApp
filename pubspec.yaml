@@ -57,6 +57,7 @@ dependencies:
   local_auth: ^3.0.1
   cloud_functions: ^6.0.7
   geofence_service: ^6.0.0+1
+  get_it: ^9.2.1
 
 dev_dependencies:
   flutter_test:
