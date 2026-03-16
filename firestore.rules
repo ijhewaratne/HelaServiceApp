@@ -115,5 +115,42 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Job matching specific rules
+match /job_requests/{jobId} {
+  // Customers can create jobs
+  allow create: if request.auth != null 
+    && request.resource.data.customerId == request.auth.uid
+    && request.resource.data.status == 'searching';
+    
+  // Workers can update status when assigned to them
+  allow update: if request.auth != null 
+    && resource.data.assignedWorkerId == request.auth.uid
+    && request.resource.data.keys().hasOnly(['status', 'arrivedAt', 'startedAt', 'completedAt', 'actualArrivalLocation']);
+    
+  // Both can read if involved
+  allow read: if request.auth != null 
+    && (resource.data.customerId == request.auth.uid 
+        || resource.data.assignedWorkerId == request.auth.uid);
+}
+
+match /job_offers/{offerId} {
+  // Workers can only read their own offers
+  allow read: if request.auth != null 
+    && resource.data.workerId == request.auth.uid;
+    
+  // Cloud Function updates status
+  allow update: if request.auth != null 
+    && resource.data.workerId == request.auth.uid
+    && request.resource.data.status in ['accepted', 'rejected'];
+}
+
+match /worker_locations/{workerId} {
+  // Workers write their own location
+  allow write: if request.auth != null && request.auth.uid == workerId;
+  
+  // Only Cloud Functions can read all (for matching)
+  allow read: if false; // Deny direct reads, use Cloud Functions
+}
+
   }
 }
