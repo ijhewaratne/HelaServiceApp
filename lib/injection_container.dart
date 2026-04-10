@@ -8,6 +8,8 @@ import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/analytics_service.dart';
+import 'core/monitoring/crash_reporting.dart';
+import 'core/monitoring/performance_monitoring.dart';
 
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -48,6 +50,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => NotificationService(sl(), sl()));
   sl.registerLazySingleton(() => ConnectivityService(sl()));
   sl.registerLazySingleton(() => AnalyticsService());
+  sl.registerLazySingleton(() => CrashReportingService());
+  sl.registerLazySingleton(() => PerformanceMonitoring());
   
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl(), sl()));
@@ -60,12 +64,29 @@ Future<void> init() async {
   // Use Cases
   sl.registerLazySingleton(() => FindNearestWorker(sl()));
   
-  // BLoCs
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
-  sl.registerFactory(() => WorkerBloc(workerRepository: sl(), locationService: sl()));
-  sl.registerFactory(() => CustomerBloc(customerRepository: sl()));
-  sl.registerFactory(() => BookingBloc(bookingRepository: sl(), findNearestWorker: sl()));
-  sl.registerFactory(() => PaymentBloc(paymentRepository: sl()));
+  // BLoCs - with analytics and monitoring
+  sl.registerFactory(() => AuthBloc(
+    authRepository: sl(),
+    analytics: sl(),
+    crashReporting: sl(),
+  ));
+  sl.registerFactory(() => WorkerBloc(
+    workerRepository: sl(),
+    locationService: sl(),
+  ));
+  sl.registerFactory(() => CustomerBloc(
+    customerRepository: sl(),
+  ));
+  sl.registerFactory(() => BookingBloc(
+    bookingRepository: sl(),
+    findNearestWorker: sl(),
+    analytics: sl(),
+    performance: sl(),
+  ));
+  sl.registerFactory(() => PaymentBloc(
+    paymentRepository: sl(),
+    analytics: sl(),
+  ));
 }
 
 /// Initialize services that need async setup
@@ -75,4 +96,7 @@ Future<void> initServices() async {
   
   // Initialize analytics
   await sl<AnalyticsService>().initialize();
+  
+  // Initialize crash reporting
+  await sl<CrashReportingService>().initialize();
 }

@@ -3,15 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../domain/entities/payment_result.dart';
 import '../../domain/repositories/payment_repository.dart';
 
 /// BLoC for managing payment operations
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final PaymentRepository _paymentRepository;
+  final AnalyticsService _analytics;
 
-  PaymentBloc({required PaymentRepository paymentRepository})
-      : _paymentRepository = paymentRepository,
+  PaymentBloc({
+    required PaymentRepository paymentRepository,
+    AnalyticsService? analytics,
+  })  : _paymentRepository = paymentRepository,
+        _analytics = analytics ?? AnalyticsService(),
         super(PaymentInitial()) {
     on<ProcessPayment>(_onProcessPayment);
     on<CheckPaymentStatus>(_onCheckPaymentStatus);
@@ -48,11 +53,33 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     );
 
     result.fold(
-      (failure) => emit(PaymentError(message: failure.message)),
-      (paymentResult) {
+      (failure) {
+        // Track payment failure
+        _analytics.logPaymentFailed(
+          bookingId: event.bookingId,
+          amount: event.amount / 100, // Convert cents to rupees
+          reason: failure.message,
+        );
+        emit(PaymentError(message: failure.message));
+      },
+      (paymentResult) async {
         if (paymentResult.success) {
+          // Track successful payment
+          await _analytics.logPaymentSuccess(
+            paymentId: paymentResult.paymentId ?? 'unknown',
+            bookingId: event.bookingId,
+            amount: event.amount / 100, // Convert cents to rupees
+            method: paymentResult.paymentMethod ?? 'unknown',
+          );
           emit(PaymentSuccess(payment: paymentResult));
         } else {
+          // Track payment failure
+          await _analytics.logPaymentFailed(
+            bookingId: event.bookingId,
+            amount: event.amount / 100,
+            reason: paymentResult.message ?? 'Payment failed',
+            errorCode: paymentResult.status.toString(),
+          );
           emit(PaymentFailed(
             message: paymentResult.message ?? 'Payment failed',
             status: paymentResult.status,
@@ -105,8 +132,16 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     );
 
     result.fold(
-      (failure) => emit(PaymentError(message: failure.message)),
-      (refundResult) => emit(RefundProcessed(refund: refundResult)),
+      (failure) {
+        _analytics.logError(
+          error: 'Refund failed: ${failure.message}',
+          context: 'payment_bloc',
+        );
+        emit(PaymentError(message: failure.message));
+      },
+      (refundResult) {
+        emit(RefundProcessed(refund: refundResult));
+      },
     );
   }
 }

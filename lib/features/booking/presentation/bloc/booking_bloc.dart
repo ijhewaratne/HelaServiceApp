@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/services/analytics_service.dart';
+import '../../../../core/monitoring/performance_monitoring.dart';
 import '../../../matching/domain/usecases/find_nearest_worker.dart';
 import '../../domain/repositories/booking_repository.dart';
 
@@ -8,12 +10,18 @@ import '../../domain/repositories/booking_repository.dart';
 class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final BookingRepository _bookingRepository;
   final FindNearestWorker _findNearestWorker;
+  final AnalyticsService _analytics;
+  final PerformanceMonitoring _performance;
 
   BookingBloc({
     required BookingRepository bookingRepository,
     required FindNearestWorker findNearestWorker,
+    AnalyticsService? analytics,
+    PerformanceMonitoring? performance,
   })  : _bookingRepository = bookingRepository,
         _findNearestWorker = findNearestWorker,
+        _analytics = analytics ?? AnalyticsService(),
+        _performance = performance ?? PerformanceMonitoring(),
         super(BookingInitial()) {
     on<CreateBooking>(_onCreateBooking);
     on<LoadBooking>(_onLoadBooking);
@@ -32,10 +40,40 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     Emitter<BookingState> emit,
   ) async {
     emit(BookingLoading());
-    final result = await _bookingRepository.createBooking(event.bookingData);
+
+    final result = await _performance.measure(
+      'create_booking',
+      () => _bookingRepository.createBooking(event.bookingData),
+    );
+
     result.fold(
-      (failure) => emit(BookingError(message: failure.message)),
-      (booking) => emit(BookingCreated(booking: booking)),
+      (failure) {
+        _analytics.logError(
+          error: 'Booking creation failed: ${failure.message}',
+          context: 'booking_bloc',
+        );
+        emit(BookingError(message: failure.message));
+      },
+      (booking) async {
+        // Track booking creation
+        await _analytics.logBookingCreated(
+          bookingId: booking['id'] ?? 'unknown',
+          serviceType: booking['serviceType'] ?? 'unknown',
+          estimatedPrice: (booking['estimatedPrice'] ?? 0).toDouble(),
+          zone: booking['zoneId'],
+          scheduledDate: booking['scheduledDate'] != null
+              ? DateTime.tryParse(booking['scheduledDate'])
+              : null,
+        );
+
+        // Track as add to cart
+        await _analytics.logAddToCart(
+          serviceType: booking['serviceType'] ?? 'unknown',
+          price: (booking['estimatedPrice'] ?? 0).toDouble(),
+        );
+
+        emit(BookingCreated(booking: booking));
+      },
     );
   }
 
@@ -77,7 +115,14 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     );
     result.fold(
       (failure) => emit(BookingError(message: failure.message)),
-      (_) => emit(BookingCancelled(bookingId: event.bookingId)),
+      (_) async {
+        // Track cancellation
+        await _analytics.logBookingCancelled(
+          bookingId: event.bookingId,
+          reason: event.reason,
+        );
+        emit(BookingCancelled(bookingId: event.bookingId));
+      },
     );
   }
 
@@ -111,16 +156,23 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   ) async {
     emit(BookingLoading());
     try {
-      final workers = await _findNearestWorker.execute(
-        customerLat: event.latitude,
-        customerLng: event.longitude,
-        serviceType: event.serviceType,
-        zoneId: event.zoneId,
-        maxRadiusKm: event.maxRadiusKm,
-        topN: event.topN,
+      final workers = await _performance.measure(
+        'find_workers',
+        () => _findNearestWorker.execute(
+          customerLat: event.latitude,
+          customerLng: event.longitude,
+          serviceType: event.serviceType,
+          zoneId: event.zoneId,
+          maxRadiusKm: event.maxRadiusKm,
+          topN: event.topN,
+        ),
       );
       emit(WorkersFound(workers: workers));
     } catch (e) {
+      _analytics.logError(
+        error: 'Find workers failed: $e',
+        context: 'booking_bloc',
+      );
       emit(BookingError(message: 'Failed to find workers: $e'));
     }
   }
@@ -136,7 +188,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     );
     result.fold(
       (failure) => emit(BookingError(message: failure.message)),
-      (booking) => emit(WorkerAssigned(booking: booking, workerId: event.workerId)),
+      (booking) {
+        emit(WorkerAssigned(booking: booking, workerId: event.workerId));
+      },
     );
   }
 
@@ -152,7 +206,38 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     );
     result.fold(
       (failure) => emit(BookingError(message: failure.message)),
-      (booking) => emit(BookingStatusUpdated(booking: booking, status: event.status)),
+      (booking) async {
+        // Track job completion
+        if (event.status == 'completed') {
+          final startTime = booking['startTime'] != null
+              ? DateTime.tryParse(booking['startTime'])
+              : null;
+          final endTime = booking['endTime'] != null
+              ? DateTime.tryParse(booking['endTime'])
+              : DateTime.now();
+          final durationMinutes = startTime != null
+              ? endTime.difference(startTime).inMinutes
+              : 0;
+
+          await _analytics.logJobCompleted(
+            jobId: event.bookingId,
+            workerId: booking['workerId'] ?? 'unknown',
+            serviceType: booking['serviceType'] ?? 'unknown',
+            durationMinutes: durationMinutes,
+            finalPrice: (booking['finalPrice'] ?? booking['estimatedPrice'] ?? 0).toDouble(),
+            workerRating: (event.additionalData?['rating'] ?? 0).toDouble(),
+          );
+
+          // Track as purchase
+          await _analytics.logPurchase(
+            bookingId: event.bookingId,
+            value: (booking['finalPrice'] ?? booking['estimatedPrice'] ?? 0).toDouble(),
+            serviceType: booking['serviceType'] ?? 'unknown',
+          );
+        }
+
+        emit(BookingStatusUpdated(booking: booking, status: event.status));
+      },
     );
   }
 
@@ -167,7 +252,13 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         (failure) => BookingError(message: failure.message),
         (booking) => BookingUpdated(booking: booking),
       ),
-      onError: (error, _) => BookingError(message: 'Stream error: $error'),
+      onError: (error, _) {
+        _analytics.logError(
+          error: 'Booking stream error: $error',
+          context: 'booking_bloc',
+        );
+        return BookingError(message: 'Stream error: $error');
+      },
     );
   }
 }

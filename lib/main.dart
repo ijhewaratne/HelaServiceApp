@@ -9,6 +9,8 @@ import 'firebase_options.dart';
 import 'injection_container.dart' as di;
 import 'app.dart';
 import 'core/services/notification_service.dart';
+import 'core/monitoring/bloc_observer.dart';
+import 'core/monitoring/crash_reporting.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +26,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Crashlytics
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  // Initialize Crashlytics
+  await CrashReportingService().initialize();
   
   // Load environment variables
   await dotenv.load(fileName: ".env");
@@ -33,8 +35,11 @@ void main() async {
   // Dependency Injection
   await di.init();
   
-  // Notifications
-  await di.sl<NotificationService>().initialize();
+  // Initialize services
+  await di.initServices();
+  
+  // Set BLoC observer for analytics
+  Bloc.observer = AnalyticsBlocObserver();
   
   runApp(const HelaServiceApp());
 }

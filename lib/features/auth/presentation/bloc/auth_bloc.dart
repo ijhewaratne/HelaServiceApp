@@ -1,15 +1,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/services/analytics_service.dart';
+import '../../../../core/monitoring/crash_reporting.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 /// BLoC for managing authentication state
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  final AnalyticsService _analytics;
+  final CrashReportingService _crashReporting;
   String? _verificationId;
 
-  AuthBloc({required AuthRepository authRepository})
-      : _authRepository = authRepository,
+  AuthBloc({
+    required AuthRepository authRepository,
+    AnalyticsService? analytics,
+    CrashReportingService? crashReporting,
+  })  : _authRepository = authRepository,
+        _analytics = analytics ?? AnalyticsService(),
+        _crashReporting = crashReporting ?? CrashReportingService(),
         super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
@@ -28,6 +37,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     if (event.user != null) {
+      // Set user properties for analytics
+      await _analytics.setUserProperties(
+        userId: event.user!.id,
+        userType: event.user!.userType,
+      );
+      await _crashReporting.setUserIdentifier(event.user!.id);
+
       if (event.user!.isOnboarded) {
         emit(AuthAuthenticated(user: event.user!));
       } else {
@@ -43,6 +59,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     
     final user = _authRepository.currentUser;
     if (user != null) {
+      // Set user properties for analytics
+      await _analytics.setUserProperties(
+        userId: user.id,
+        userType: user.userType,
+      );
+      await _crashReporting.setUserIdentifier(user.id);
+
       if (user.isOnboarded) {
         emit(AuthAuthenticated(user: user));
       } else {
@@ -73,8 +96,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         
         result.fold(
-          (failure) => emit(AuthError(message: failure.message)),
-          (user) {
+          (failure) {
+            _analytics.logError(
+              error: 'Auto-verification failed: ${failure.message}',
+              context: 'auth_bloc',
+            );
+            emit(AuthError(message: failure.message));
+          },
+          (user) async {
+            // Log successful login
+            await _analytics.logLogin(
+              method: 'phone_auto_verification',
+              userType: user.userType,
+            );
+            
             if (user.isOnboarded) {
               emit(AuthAuthenticated(user: user));
             } else {
@@ -84,12 +119,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
       },
       onVerificationFailed: (error) {
+        _analytics.logError(
+          error: 'Phone verification failed: $error',
+          context: 'auth_bloc',
+        );
         emit(AuthError(message: error));
       },
     );
     
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
+      (failure) {
+        _analytics.logError(
+          error: 'Phone submission failed: ${failure.message}',
+          context: 'auth_bloc',
+        );
+        emit(AuthError(message: failure.message));
+      },
       (_) {}, // Success - wait for codeSent callback
     );
   }
@@ -101,6 +146,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     
     if (_verificationId == null) {
+      _analytics.logError(
+        error: 'OTP submitted without verification ID',
+        context: 'auth_bloc',
+      );
       emit(AuthError(message: 'Verification ID not found'));
       return;
     }
@@ -111,8 +160,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) {
+      (failure) {
+        _analytics.logError(
+          error: 'OTP verification failed: ${failure.message}',
+          context: 'auth_bloc',
+        );
+        emit(AuthError(message: failure.message));
+      },
+      (user) async {
+        // Determine if this is a new signup or existing login
+        final isNewUser = user.createdAt.difference(DateTime.now()).inMinutes.abs() < 5;
+        
+        if (isNewUser) {
+          await _analytics.logSignUp(
+            method: 'phone_otp',
+            userType: user.userType,
+          );
+        } else {
+          await _analytics.logLogin(
+            method: 'phone_otp',
+            userType: user.userType,
+          );
+        }
+        
         if (user.isOnboarded) {
           emit(AuthAuthenticated(user: user));
         } else {
@@ -124,7 +194,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+    
+    await _analytics.logLogout();
     await _authRepository.signOut();
+    
     emit(AuthUnauthenticated());
   }
 }
