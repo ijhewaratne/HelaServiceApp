@@ -5,20 +5,34 @@ This directory contains all tests for the HelaService application.
 ## Test Structure
 
 ```
-test/
+test/                           # Unit & Widget Tests
 ├── core/
 │   └── utils/
 │       ├── nic_validator_test.dart      # Sri Lankan NIC validation tests
 │       └── phone_validator_test.dart    # Phone number validation tests
 ├── features/
 │   ├── auth/
-│   │   └── auth_bloc_test.dart          # Authentication BLoC tests
+│   │   ├── auth_bloc_test.dart          # Authentication BLoC tests
+│   │   └── presentation/
+│   │       └── phone_auth_page_test.dart # Phone auth UI tests
 │   ├── payment/
-│   │   └── payment_repository_test.dart # Payment repository tests
+│   │   ├── payment_repository_test.dart # Payment repository tests
+│   │   └── presentation/
+│   │       └── payment_page_test.dart   # Payment UI tests
 │   └── worker/
-│       └── worker_repository_test.dart  # Worker repository tests
+│       ├── worker_repository_test.dart  # Worker repository tests
+│       └── presentation/
+│           └── online_toggle_page_test.dart # Worker UI tests
 ├── test_helpers.dart                     # Test utilities and constants
 └── widget_test.dart                      # Basic widget tests
+
+integration_test/               # End-to-End Integration Tests
+├── app_test.dart              # Main end-to-end flows
+├── auth_flow_test.dart        # Authentication flows
+├── customer_flow_test.dart    # Customer booking flows
+├── worker_flow_test.dart      # Worker dashboard flows
+├── navigation_test.dart       # Navigation and routing
+└── README.md                  # Integration test guide
 ```
 
 ## Running Tests
