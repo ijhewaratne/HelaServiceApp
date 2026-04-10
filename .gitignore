@@ -43,3 +43,24 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ============================================
+# SECURITY - NEVER COMMIT THESE FILES
+# ============================================
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Firebase configuration files containing API keys
+# These should be generated per developer/environment
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+/lib/firebase_options.dart
+/macos/Runner/GoogleService-Info.plist
+
+# API Keys and secrets
+**/api_keys.json
+**/secrets.json
+**/service-account*.json

@@ -1,47 +1,46 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../entities/payment_result.dart';
 
-/// Abstract repository for payment operations
+/// Abstract repository for payment operations using PayHere
 abstract class PaymentRepository {
-  /// Process payment for a booking
-  Future<Either<Failure, Map<String, dynamic>>> processPayment({
+  /// Process payment via PayHere
+  /// 
+  /// [bookingId] - The booking/job ID to associate with payment
+  /// [amount] - Amount in cents (e.g., 150000 = LKR 1,500.00)
+  /// [customerName] - Full name of customer
+  /// [customerPhone] - Phone number (Sri Lankan format)
+  /// [customerEmail] - Email address
+  /// [customerAddress] - Physical address (optional)
+  /// [customerCity] - City (optional, defaults to Colombo)
+  /// [description] - Payment description shown to user
+  Future<Either<Failure, PaymentResult>> processPayment({
     required String bookingId,
-    required double amount,
-    required String currency,
-    required String paymentMethod,
-    Map<String, dynamic>? additionalData,
+    required int amount,
+    required String customerName,
+    required String customerPhone,
+    required String customerEmail,
+    String? customerAddress,
+    String? customerCity,
+    String? description,
   });
-  
-  /// Get payment status
-  Future<Either<Failure, Map<String, dynamic>>> getPaymentStatus(String paymentId);
-  
-  /// Refund payment
-  Future<Either<Failure, Map<String, dynamic>>> refundPayment({
+
+  /// Check payment status by order ID
+  Future<Either<Failure, PaymentStatus>> checkPaymentStatus(String orderId);
+
+  /// Refund a payment (admin only)
+  Future<Either<Failure, PaymentResult>> refundPayment({
     required String paymentId,
-    double? amount,
+    int? amount,
     String? reason,
   });
-  
+
   /// Get payment history for customer
-  Future<Either<Failure, List<Map<String, dynamic>>>> getCustomerPaymentHistory(
+  Future<Either<Failure, List<PaymentResult>>> getCustomerPaymentHistory(
     String customerId,
   );
-  
-  /// Save payment method for customer
-  Future<Either<Failure, Map<String, dynamic>>> savePaymentMethod({
-    required String customerId,
-    required Map<String, dynamic> paymentMethod,
-  });
-  
-  /// Get saved payment methods
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSavedPaymentMethods(
-    String customerId,
-  );
-  
-  /// Delete saved payment method
-  Future<Either<Failure, void>> deletePaymentMethod({
-    required String customerId,
-    required String paymentMethodId,
-  });
+
+  /// Get payment details by ID
+  Future<Either<Failure, PaymentResult>> getPaymentById(String paymentId);
 }

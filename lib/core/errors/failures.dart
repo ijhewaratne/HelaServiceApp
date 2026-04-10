@@ -48,3 +48,29 @@ class GenericFailure extends Failure {
   /// Factory constructor for network errors
   factory GenericFailure.network() => const GenericFailure('Network connection error');
 }
+
+/// Payment-specific failures
+class PaymentFailure extends Failure {
+  final String? code;
+  final PaymentFailureType type;
+
+  const PaymentFailure(
+    String message, {
+    this.code,
+    this.type = PaymentFailureType.unknown,
+  }) : super(message);
+
+  @override
+  List<Object?> get props => [message, code, type];
+}
+
+/// Types of payment failures
+enum PaymentFailureType {
+  initialization,
+  network,
+  cancelled,
+  declined,
+  timeout,
+  invalidAmount,
+  unknown,
+}

@@ -29,6 +29,7 @@ import 'features/matching/domain/usecases/find_nearest_worker.dart';
 
 import 'features/payment/data/repositories/payment_repository_impl.dart';
 import 'features/payment/domain/repositories/payment_repository.dart';
+import 'features/payment/presentation/bloc/payment_bloc.dart';
 
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
@@ -53,7 +54,7 @@ Future<void> init() async {
   sl.registerLazySingleton<WorkerRepository>(() => WorkerRepositoryImpl(sl(), sl()));
   sl.registerLazySingleton<CustomerRepository>(() => CustomerRepositoryImpl(sl()));
   sl.registerLazySingleton<BookingRepository>(() => BookingRepositoryImpl(sl(), sl()));
-  sl.registerLazySingleton<PaymentRepository>(() => PaymentRepositoryImpl());
+  sl.registerLazySingleton<PaymentRepository>(() => PaymentRepositoryImpl(sl()));
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
   
   // Use Cases
@@ -64,6 +65,7 @@ Future<void> init() async {
   sl.registerFactory(() => WorkerBloc(workerRepository: sl(), locationService: sl()));
   sl.registerFactory(() => CustomerBloc(customerRepository: sl()));
   sl.registerFactory(() => BookingBloc(bookingRepository: sl(), findNearestWorker: sl()));
+  sl.registerFactory(() => PaymentBloc(paymentRepository: sl()));
 }
 
 /// Initialize services that need async setup

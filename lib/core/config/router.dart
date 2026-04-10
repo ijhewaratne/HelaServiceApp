@@ -26,6 +26,9 @@ import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_workers_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 
+// Payment
+import '../../features/payment/presentation/pages/payment_page.dart';
+
 // Shared
 import '../../features/incident/presentation/pages/incident_report_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
@@ -140,10 +143,15 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: '/customer/payment/:jobId',
+      path: '/customer/payment/:bookingId',
       builder: (context, state) {
-        // final jobId = state.pathParameters['jobId']!;
-        return const BookingSummaryScreen();
+        final bookingId = state.pathParameters['bookingId']!;
+        final params = state.extra as Map<String, dynamic>?;
+        return PaymentPage(
+          bookingId: bookingId,
+          amount: params?['amount'] ?? 0,
+          description: params?['description'],
+        );
       },
     ),
     

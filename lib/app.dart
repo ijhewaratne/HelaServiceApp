@@ -8,6 +8,7 @@ import 'core/services/analytics_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/worker/presentation/bloc/worker_onboarding_bloc.dart';
+import 'features/payment/presentation/bloc/payment_bloc.dart';
 import 'injection_container.dart';
 
 /// Main application widget
@@ -42,6 +43,7 @@ class _HelaServiceAppState extends State<HelaServiceApp> {
       providers: [
         BlocProvider(create: (_) => sl<AuthBloc>()),
         BlocProvider(create: (_) => sl<WorkerOnboardingBloc>()),
+        BlocProvider(create: (_) => sl<PaymentBloc>()),
       ],
       child: MultiProvider(
         providers: [

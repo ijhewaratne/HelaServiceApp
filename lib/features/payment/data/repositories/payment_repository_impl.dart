@@ -1,134 +1,339 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter_payhere/flutter_payhere.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../domain/entities/payment_result.dart';
 import '../../domain/repositories/payment_repository.dart';
 
-/// Implementation of PaymentRepository
-/// 
-/// Note: This is a stub implementation. In production, integrate with
-/// a payment gateway like Stripe, PayHere (Sri Lanka), or Braintree.
+/// Implementation of PaymentRepository using PayHere (Sri Lanka)
 class PaymentRepositoryImpl implements PaymentRepository {
-  
-  PaymentRepositoryImpl();
+  final FirebaseFirestore _firestore;
+  final bool _sandbox;
+  final String _merchantId;
+  final String _merchantSecret;
+  final String _notifyUrl;
+
+  PaymentRepositoryImpl(
+    this._firestore, {
+    bool? sandbox,
+    String? merchantId,
+    String? merchantSecret,
+    String? notifyUrl,
+  })  : _sandbox = sandbox ??
+            _getBoolFromEnv('PAYHERE_SANDBOX', fallback: true),
+        _merchantId = merchantId ?? dotenv.get('PAYHERE_MERCHANT_ID', fallback: ''),
+        _merchantSecret =
+            merchantSecret ?? dotenv.get('PAYHERE_MERCHANT_SECRET', fallback: ''),
+        _notifyUrl = notifyUrl ??
+            dotenv.get(
+              'PAYHERE_NOTIFY_URL',
+              fallback:
+                  'https://us-central1-helaservice-prod.cloudfunctions.net/payhereNotify',
+            );
+
+  static bool _getBoolFromEnv(String key, {bool fallback = false}) {
+    final value = dotenv.get(key, fallback: fallback.toString());
+    return value.toLowerCase() == 'true';
+  }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> processPayment({
+  Future<Either<Failure, PaymentResult>> processPayment({
     required String bookingId,
-    required double amount,
-    required String currency,
-    required String paymentMethod,
-    Map<String, dynamic>? additionalData,
+    required int amount,
+    required String customerName,
+    required String customerPhone,
+    required String customerEmail,
+    String? customerAddress,
+    String? customerCity,
+    String? description,
   }) async {
     try {
-      // Stub implementation - simulate successful payment
-      final paymentId = 'pay_${DateTime.now().millisecondsSinceEpoch}';
-      
-      final result = {
-        'paymentId': paymentId,
-        'bookingId': bookingId,
-        'amount': amount,
-        'currency': currency,
-        'paymentMethod': paymentMethod,
-        'status': 'completed',
-        'createdAt': DateTime.now().toIso8601String(),
-        ...?additionalData,
-      };
-      
-      return Right(result);
+      // Validate configuration
+      if (_merchantId.isEmpty || _merchantSecret.isEmpty) {
+        return const Left(
+          PaymentFailure(
+            'PayHere not configured. Check .env file.',
+            type: PaymentFailureType.initialization,
+          ),
+        );
+      }
+
+      // Validate amount (must be at least LKR 10.00 = 1000 cents)
+      if (amount < 1000) {
+        return const Left(
+          PaymentFailure(
+            'Minimum payment amount is LKR 10.00',
+            type: PaymentFailureType.invalidAmount,
+          ),
+        );
+      }
+
+      // Parse name into first and last
+      final nameParts = _parseName(customerName);
+
+      // Format phone number
+      final formattedPhone = _formatPhoneNumber(customerPhone);
+
+      // Build payment object
+      final paymentObject = PayHerePaymentObject(
+        sandbox: _sandbox,
+        merchantId: _merchantId,
+        merchantSecret: _merchantSecret,
+        notifyUrl: _notifyUrl,
+        orderId: bookingId,
+        items: description ?? 'HelaService Booking',
+        amount: amount / 100.0, // Convert cents to rupees
+        currency: 'LKR',
+        firstName: nameParts.firstName,
+        lastName: nameParts.lastName,
+        email: customerEmail,
+        phone: formattedPhone,
+        address: customerAddress ?? 'Sri Lanka',
+        city: customerCity ?? 'Colombo',
+        country: 'Sri Lanka',
+        deliveryAddress: customerAddress ?? 'Sri Lanka',
+        deliveryCity: customerCity ?? 'Colombo',
+        deliveryCountry: 'Sri Lanka',
+        custom1: bookingId,
+        custom2: FirebaseAuth.instance.currentUser?.uid ?? 'guest',
+      );
+
+      // Start payment and get result
+      final result = await PayHere.startPayment(paymentObject);
+
+      // Map result to our entity
+      final paymentResult = _mapToPaymentResult(result, bookingId, amount);
+
+      // Save to Firestore if successful
+      if (paymentResult.success && paymentResult.paymentId != null) {
+        await _savePaymentToFirestore(paymentResult, bookingId);
+      }
+
+      return Right(paymentResult);
+    } on PayHereException catch (e) {
+      return Left(
+        PaymentFailure(
+          'PayHere initialization failed: ${e.message}',
+          code: e.code,
+          type: PaymentFailureType.initialization,
+        ),
+      );
     } catch (e) {
-      return Left(Failure('Payment processing failed: $e'));
+      return Left(
+        PaymentFailure(
+          'Payment processing error: $e',
+          type: PaymentFailureType.unknown,
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getPaymentStatus(String paymentId) async {
+  Future<Either<Failure, PaymentStatus>> checkPaymentStatus(
+    String orderId,
+  ) async {
     try {
-      // Stub implementation
-      return Right({
-        'paymentId': paymentId,
-        'status': 'completed',
-        'amount': 0.0,
-        'currency': 'LKR',
-      });
+      // Query Firestore for the latest payment with this order ID
+      final query = await _firestore
+          .collection('payments')
+          .where('orderId', isEqualTo: orderId)
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        return const Left(NotFoundFailure('Payment not found'));
+      }
+
+      final data = query.docs.first.data();
+      final status = PaymentStatus.values.firstWhere(
+        (e) => e.name == data['status'],
+        orElse: () => PaymentStatus.unknown,
+      );
+
+      return Right(status);
     } catch (e) {
-      return Left(Failure('Failed to get payment status: $e'));
+      return Left(
+        PaymentFailure('Failed to check payment status: $e'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> refundPayment({
+  Future<Either<Failure, PaymentResult>> refundPayment({
     required String paymentId,
-    double? amount,
+    int? amount,
     String? reason,
   }) async {
     try {
-      // Stub implementation
-      return Right({
-        'refundId': 'ref_${DateTime.now().millisecondsSinceEpoch}',
-        'paymentId': paymentId,
-        'amount': amount ?? 0.0,
+      // In a real implementation, this would call PayHere API
+      // For now, mark as refunded in Firestore
+      await _firestore.collection('payments').doc(paymentId).update({
         'status': 'refunded',
-        'reason': reason,
-        'createdAt': DateTime.now().toIso8601String(),
+        'refundAmount': amount,
+        'refundReason': reason,
+        'refundedAt': FieldValue.serverTimestamp(),
       });
+
+      // Also update booking
+      final paymentDoc = await _firestore.collection('payments').doc(paymentId).get();
+      if (paymentDoc.exists) {
+        final bookingId = paymentDoc.data()?['orderId'];
+        if (bookingId != null) {
+          await _firestore.collection('bookings').doc(bookingId).update({
+            'paymentStatus': 'refunded',
+            'refundedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      return Right(
+        PaymentResult.success(
+          paymentId: 'ref_${DateTime.now().millisecondsSinceEpoch}',
+          orderId: paymentId,
+        ),
+      );
     } catch (e) {
-      return Left(Failure('Refund failed: $e'));
+      return Left(PaymentFailure('Refund failed: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getCustomerPaymentHistory(
+  Future<Either<Failure, List<PaymentResult>>> getCustomerPaymentHistory(
     String customerId,
   ) async {
     try {
-      // Stub implementation
-      return const Right([]);
+      final query = await _firestore
+          .collection('payments')
+          .where('customerId', isEqualTo: customerId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final payments = query.docs
+          .map((doc) => PaymentResult.fromJson(doc.data()))
+          .toList();
+
+      return Right(payments);
     } catch (e) {
-      return Left(Failure('Failed to get payment history: $e'));
+      return Left(PaymentFailure('Failed to get payment history: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> savePaymentMethod({
-    required String customerId,
-    required Map<String, dynamic> paymentMethod,
-  }) async {
-    try {
-      final methodId = 'pm_${DateTime.now().millisecondsSinceEpoch}';
-      
-      return Right({
-        'paymentMethodId': methodId,
-        'customerId': customerId,
-        ...paymentMethod,
-        'createdAt': DateTime.now().toIso8601String(),
-      });
-    } catch (e) {
-      return Left(Failure('Failed to save payment method: $e'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSavedPaymentMethods(
-    String customerId,
+  Future<Either<Failure, PaymentResult>> getPaymentById(
+    String paymentId,
   ) async {
     try {
-      // Stub implementation
-      return const Right([]);
+      final doc = await _firestore.collection('payments').doc(paymentId).get();
+
+      if (!doc.exists) {
+        return const Left(NotFoundFailure('Payment not found'));
+      }
+
+      return Right(PaymentResult.fromJson(doc.data()!));
     } catch (e) {
-      return Left(Failure('Failed to get saved payment methods: $e'));
+      return Left(PaymentFailure('Failed to get payment: $e'));
     }
   }
 
-  @override
-  Future<Either<Failure, void>> deletePaymentMethod({
-    required String customerId,
-    required String paymentMethodId,
-  }) async {
-    try {
-      // Stub implementation
-      return const Right(null);
-    } catch (e) {
-      return Left(Failure('Failed to delete payment method: $e'));
+  // ==================== Helper Methods ====================
+
+  /// Parse full name into first and last name parts
+  _NameParts _parseName(String fullName) {
+    final parts = fullName.trim().split(' ');
+    if (parts.length == 1) {
+      return _NameParts(parts[0], '');
     }
+    return _NameParts(parts.first, parts.skip(1).join(' '));
   }
+
+  /// Format Sri Lankan phone number for PayHere
+  String _formatPhoneNumber(String phone) {
+    // Remove all non-digit characters
+    var digits = phone.replaceAll(RegExp(r'\D'), '');
+
+    // Convert international format (94...) to local (0...)
+    if (digits.startsWith('94') && digits.length == 11) {
+      digits = '0${digits.substring(2)}';
+    }
+    // Add leading zero if missing
+    else if (!digits.startsWith('0') && digits.length == 9) {
+      digits = '0$digits';
+    }
+
+    return digits;
+  }
+
+  /// Map PayHere result to our PaymentResult entity
+  PaymentResult _mapToPaymentResult(
+    dynamic result,
+    String orderId,
+    int amount,
+  ) {
+    if (result is PayHerePaymentSuccessResult) {
+      return PaymentResult.success(
+        paymentId: result.paymentId,
+        orderId: result.orderId ?? orderId,
+        amount: amount / 100.0,
+        currency: 'LKR',
+      );
+    } else if (result is PayHerePaymentErrorResult) {
+      return PaymentResult.failure(
+        message: result.message,
+        orderId: orderId,
+        status: PaymentStatus.failed,
+      );
+    } else if (result is PayHerePaymentDismissResult) {
+      return PaymentResult.failure(
+        message: 'Payment cancelled by user',
+        orderId: orderId,
+        status: PaymentStatus.cancelled,
+      );
+    }
+
+    return PaymentResult.failure(
+      message: 'Unknown payment result type',
+      orderId: orderId,
+      status: PaymentStatus.unknown,
+    );
+  }
+
+  /// Save successful payment to Firestore
+  Future<void> _savePaymentToFirestore(
+    PaymentResult result,
+    String bookingId,
+  ) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    await _firestore.collection('payments').doc(result.paymentId).set({
+      'paymentId': result.paymentId,
+      'orderId': result.orderId,
+      'bookingId': bookingId,
+      'customerId': userId,
+      'amount': result.amount,
+      'currency': result.currency ?? 'LKR',
+      'status': result.status.name,
+      'processedAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'method': 'payhere',
+    });
+
+    // Update booking with payment reference
+    await _firestore.collection('bookings').doc(bookingId).update({
+      'paymentId': result.paymentId,
+      'paymentStatus': 'completed',
+      'paidAmount': result.amount,
+      'paidAt': FieldValue.serverTimestamp(),
+    });
+  }
+}
+
+/// Helper class for name parsing
+class _NameParts {
+  final String firstName;
+  final String lastName;
+  _NameParts(this.firstName, this.lastName);
 }
