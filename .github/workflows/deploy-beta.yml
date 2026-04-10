@@ -1,0 +1,111 @@
+name: Deploy Beta
+
+on:
+  push:
+    tags:
+      - 'v*-beta'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Beta version (e.g., 1.0.0-beta.1)'
+        required: true
+        default: '1.0.0-beta.1'
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+
+jobs:
+  deploy-android-beta:
+    name: Deploy Android to Firebase App Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Firebase Config
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: beta-testers
+          file: build/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: |
+            Beta Release ${{ github.ref_name || github.event.inputs.version }}
+            
+            Changes in this release:
+            - Latest features from main branch
+            - Bug fixes and improvements
+            
+            Build: ${{ github.run_number }}
+            Commit: ${{ github.sha }}
+
+  deploy-ios-beta:
+    name: Deploy iOS to TestFlight
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Firebase Config
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          echo "$GOOGLE_SERVICE_INFO_PLIST" > ios/Runner/GoogleService-Info.plist
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+
+      # Note: TestFlight upload requires additional setup with fastlane match
+      # This is a placeholder for the deployment step
+      - name: Prepare for TestFlight
+        run: |
+          echo "iOS build prepared for TestFlight upload"
+          echo "Use fastlane to upload to TestFlight"
+          ls -la build/ios/iphoneos/
+
+      - name: Upload iOS Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-beta-build
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 7
