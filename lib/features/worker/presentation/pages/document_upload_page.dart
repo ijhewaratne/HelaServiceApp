@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../bloc/worker_onboarding_bloc.dart';
+import '../bloc/worker_onboarding_bloc.dart';
 import 'verification_pending_page.dart';
 
 class DocumentUploadPage extends StatefulWidget {

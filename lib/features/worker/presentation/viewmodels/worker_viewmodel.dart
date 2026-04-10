@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/worker_profile.dart';
-import '../../domain/worker_document.dart';
-import '../../data/worker_repository.dart';
+import '../../domain/entities/worker_profile.dart';
+import '../../domain/entities/worker_document.dart';
+import '../../data/repositories/worker_repository.dart';
 
 class WorkerViewModel extends ChangeNotifier {
   final WorkerRepository _workerRepository;

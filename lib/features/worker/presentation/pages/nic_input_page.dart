@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/nic_validator.dart';
 import '../../../../core/utils/phone_validator.dart';
-import '../../bloc/worker_onboarding_bloc.dart';
+import '../bloc/worker_onboarding_bloc.dart';
+import 'service_selection_page.dart';
 
 class NICInputPage extends StatefulWidget {
   @override

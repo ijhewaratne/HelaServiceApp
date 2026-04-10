@@ -1,38 +1,37 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import '../entities/worker_application.dart';
+
+import '../../../../core/errors/failures.dart';
+import '../entities/worker.dart';
 
 abstract class WorkerRepository {
-  /// Submit initial application
-  Future<Either<Failure, WorkerApplication>> submitApplication(WorkerApplication application);
-  
+  /// Create a new worker
+  Future<Either<Failure, Worker>> createWorker(Worker worker);
+
+  /// Get worker by ID
+  Future<Either<Failure, Worker>> getWorker(String workerId);
+
   /// Upload NIC document (front or back)
-  Future<Either<Failure, String>> uploadNICDocument(String workerId, File file, bool isFront);
-  
+  Future<Either<Failure, String>> uploadNICDocument({
+    required String workerId,
+    required File file,
+    required bool isFront,
+  });
+
   /// Upload profile photo
-  Future<Either<Failure, String>> uploadProfilePhoto(String workerId, File file);
-  
-  /// Get current application status
-  Future<Either<Failure, WorkerApplication>> getApplicationStatus(String workerId);
-  
-  /// Mark training as complete
-  Future<Either<Failure, void>> completeTraining(String workerId);
-  
-  /// Check if NIC already exists (prevent duplicates)
-  Future<Either<Failure, bool>> checkNICExists(String nic);
+  Future<Either<Failure, String>> uploadProfilePhoto({
+    required String workerId,
+    required File file,
+  });
+
+  /// Update online status and location
+  Future<Either<Failure, void>> updateOnlineStatus({
+    required String workerId,
+    required bool isOnline,
+    double? lat,
+    double? lng,
+  });
+
+  /// Accept independent contractor agreement
+  Future<Either<Failure, void>> acceptContract(String workerId);
 }
-
-class Failure {
-  final String message;
-  final FailureType type;
-
-  Failure(this.message, {this.type = FailureType.unknown});
-
-  factory Failure.network() => Failure('No internet connection', type: FailureType.network);
-  factory Failure.server() => Failure('Server error', type: FailureType.server);
-  factory Failure.invalidNIC() => Failure('Invalid NIC format', type: FailureType.validation);
-  factory Failure.duplicateNIC() => Failure('This NIC is already registered', type: FailureType.duplicate);
-  factory Failure.fileTooLarge() => Failure('Image must be less than 5MB', type: FailureType.validation);
-}
-
-enum FailureType { network, server, validation, duplicate, unknown }

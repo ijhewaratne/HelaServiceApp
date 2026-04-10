@@ -1,154 +1,200 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../domain/entities/user_entity.dart';
+import '../bloc/auth_bloc.dart';
 
 class PhoneAuthPage extends StatefulWidget {
-  const PhoneAuthPage({Key? key}) : super(key: key);
+  const PhoneAuthPage({super.key});
 
   @override
-  _PhoneAuthPageState createState() => _PhoneAuthPageState();
+  State<PhoneAuthPage> createState() => _PhoneAuthPageState();
 }
 
 class _PhoneAuthPageState extends State<PhoneAuthPage> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  
   bool _isLoading = false;
   bool _otpSent = false;
-  String? _verificationId;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _otpController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Worker Login')),
-      body: Padding(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enter your mobile number',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'We will send a verification code to your phone',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            SizedBox(height: 32),
-            
-            // Phone Input
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              enabled: !_otpSent && !_isLoading,
-              decoration: InputDecoration(
-                prefixText: '+94 ',
-                hintText: 77XXXXXXX',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.phone),
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(9),
-              ],
-            ),
-            SizedBox(height: 16),
-            
-            // OTP Input (shown after sending)
-            if (_otpSent) ...[
-              TextField(
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: 'Enter 6-digit code',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_clock),
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoading) {
+            setState(() => _isLoading = true);
+          } else {
+            setState(() => _isLoading = false);
+          }
+          
+          if (state is AuthOtpSent) {
+            setState(() {
+              _otpSent = true;
+            });
+          }
+          
+          if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+          
+          if (state is AuthAuthenticated) {
+            // Navigate based on user type
+            _navigateBasedOnUserType(state.user);
+          }
+          
+          if (state is AuthNeedsOnboarding) {
+            context.go('/select-user-type');
+          }
+        },
+        builder: (context, state) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    Text(
+                      _otpSent ? 'Enter OTP' : 'Welcome to HelaService',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _otpSent 
+                        ? 'Enter the 6-digit code sent to +94 ${_phoneController.text}'
+                        : 'Enter your mobile number to get started',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 40),
+                    
+                    if (!_otpSent) ...[
+                      // Phone Input
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        enabled: !_isLoading,
+                        decoration: InputDecoration(
+                          prefixText: '+94 ',
+                          hintText: '77XXXXXXX',
+                          labelText: 'Mobile Number',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.phone),
+                          helperText: 'Enter 9-digit number without leading 0',
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(9),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your mobile number';
+                          }
+                          if (value.length != 9) {
+                            return 'Please enter 9 digits';
+                          }
+                          if (!value.startsWith('7')) {
+                            return 'Please enter valid Sri Lankan mobile number';
+                          }
+                          return null;
+                        },
+                      ),
+                    ] else ...[
+                      // OTP Input
+                      TextFormField(
+                        controller: _otpController,
+                        keyboardType: TextInputType.number,
+                        enabled: !_isLoading,
+                        decoration: const InputDecoration(
+                          hintText: '000000',
+                          labelText: '6-digit Code',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.lock_clock),
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.length != 6) {
+                            return 'Please enter 6-digit OTP';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: _isLoading ? null : _sendOTP,
+                          child: const Text('Resend Code'),
+                        ),
+                      ),
+                    ],
+                    
+                    const Spacer(),
+                    
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : (_otpSent ? _verifyOTP : _sendOTP),
+                        child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(_otpSent ? 'VERIFY' : 'SEND CODE'),
+                      ),
+                    ),
+                  ],
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
-                ],
-              ),
-              SizedBox(height: 16),
-            ],
-            
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : (_otpSent ? _verifyOTP : _sendOTP),
-                child: _isLoading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text(_otpSent ? 'VERIFY' : 'SEND CODE'),
               ),
             ),
-            
-            if (_otpSent)
-              TextButton(
-                onPressed: _isLoading ? null : _sendOTP,
-                child: Text('Resend Code'),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Future<void> _sendOTP() async {
-    final phone = '+94${_phoneController.text.trim()}';
+  void _sendOTP() {
+    if (!_formKey.currentState!.validate()) return;
     
-    if (phone.length != 12) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter valid 9-digit number')),
-      );
-      return;
-    }
+    final phone = '+94${_phoneController.text.trim()}';
+    context.read<AuthBloc>().add(PhoneNumberSubmitted(phoneNumber: phone));
+  }
 
-    setState(() => _isLoading = true);
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phone,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        if (mounted) context.go('/'); // Will redirect by router
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.message}')),
-        );
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        setState(() {
-          _verificationId = verificationId;
-          _otpSent = true;
-          _isLoading = false;
-        });
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
-      timeout: Duration(seconds: 60),
+  void _verifyOTP() {
+    if (!_formKey.currentState!.validate()) return;
+    
+    context.read<AuthBloc>().add(
+      OtpSubmitted(otpCode: _otpController.text.trim()),
     );
   }
 
-  Future<void> _verifyOTP() async {
-    if (_verificationId == null || _otpController.text.length != 6) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: _otpController.text.trim(),
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      if (mounted) context.go('/'); // Router will handle redirect
-    } on FirebaseAuthException catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid code: ${e.message}')),
-      );
+  void _navigateBasedOnUserType(UserEntity user) {
+    if (user.userType == 'worker') {
+      context.go('/worker/dashboard');
+    } else if (user.userType == 'customer') {
+      context.go('/customer/home');
+    } else if (user.userType == 'admin') {
+      context.go('/admin/dashboard');
+    } else {
+      // Unknown user type - go to selection
+      context.go('/select-user-type');
     }
   }
 }

@@ -80,4 +80,9 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    // Dark theme placeholder - for future implementation
+    return lightTheme;
+  }
 }

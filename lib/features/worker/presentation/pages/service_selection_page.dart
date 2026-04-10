@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/worker_application.dart';
-import '../../bloc/worker_onboarding_bloc.dart';
+import '../bloc/worker_onboarding_bloc.dart';
 import 'document_upload_page.dart';
 
 class ServiceSelectionPage extends StatefulWidget {

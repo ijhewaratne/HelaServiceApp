@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/worker_onboarding_bloc.dart';
+import '../bloc/worker_onboarding_bloc.dart';
 import 'online_toggle_page.dart';
+import 'training_page.dart';
 
 class VerificationPendingPage extends StatefulWidget {
   final String workerId;

@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../domain/entities/worker_application.dart';
-import '../../../domain/repositories/worker_repository.dart';
+import '../../domain/entities/worker_application.dart';
+import '../../domain/repositories/worker_repository.dart';
 
 part 'worker_onboarding_event.dart';
 part 'worker_onboarding_state.dart';
