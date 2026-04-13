@@ -19,7 +19,7 @@ import '../../features/worker/presentation/pages/active_job_page.dart';
 import '../../features/customer/presentation/screens/customer_home_screen.dart';
 import '../../features/customer/presentation/screens/booking_form_screen.dart';
 import '../../features/customer/presentation/screens/live_tracking_page.dart';
-import '../../features/customer/presentation/screens/booking_summary_screen.dart';
+// import '../../features/customer/presentation/screens/booking_summary_screen.dart';
 
 // Admin imports
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
@@ -149,8 +149,8 @@ final appRouter = GoRouter(
         final params = state.extra as Map<String, dynamic>?;
         return PaymentPage(
           bookingId: bookingId,
-          amount: params?['amount'] ?? 0,
-          description: params?['description'],
+          amount: (params?['amount'] as num?)?.toInt() ?? 0,
+          description: params?['description'] as String?,
         );
       },
     ),
@@ -184,9 +184,9 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final params = state.extra as Map<String, dynamic>?;
         return IncidentReportPage(
-          reporterId: params?['reporterId'] ?? '',
-          reporterType: params?['reporterType'] ?? 'worker',
-          jobId: params?['jobId'],
+          reporterId: (params?['reporterId'] as String?) ?? '',
+          reporterType: (params?['reporterType'] as String?) ?? 'worker',
+          jobId: params?['jobId'] as String?,
         );
       },
     ),

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../../../../features/worker/domain/worker_profile.dart';
+import '../../../worker/domain/entities/worker_profile.dart';
 import '../../../../features/customer/domain/booking.dart';
 import '../../domain/incident.dart';
 import '../../data/admin_repository.dart';

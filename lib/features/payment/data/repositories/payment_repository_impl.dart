@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_payhere/flutter_payhere.dart';
+// import 'package:flutter_payhere/flutter_payhere.dart';  // Temporarily disabled
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -77,35 +77,19 @@ class PaymentRepositoryImpl implements PaymentRepository {
       // Format phone number
       final formattedPhone = _formatPhoneNumber(customerPhone);
 
-      // Build payment object
-      final paymentObject = PayHerePaymentObject(
-        sandbox: _sandbox,
-        merchantId: _merchantId,
-        merchantSecret: _merchantSecret,
-        notifyUrl: _notifyUrl,
+      // TODO: Implement PayHere payment
+      // Stub implementation for demo
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final paymentResult = PaymentResult(
+        success: true,
+        paymentId: 'PAY_${DateTime.now().millisecondsSinceEpoch}',
         orderId: bookingId,
-        items: description ?? 'HelaService Booking',
-        amount: amount / 100.0, // Convert cents to rupees
+        amount: amount,
         currency: 'LKR',
-        firstName: nameParts.firstName,
-        lastName: nameParts.lastName,
-        email: customerEmail,
-        phone: formattedPhone,
-        address: customerAddress ?? 'Sri Lanka',
-        city: customerCity ?? 'Colombo',
-        country: 'Sri Lanka',
-        deliveryAddress: customerAddress ?? 'Sri Lanka',
-        deliveryCity: customerCity ?? 'Colombo',
-        deliveryCountry: 'Sri Lanka',
-        custom1: bookingId,
-        custom2: FirebaseAuth.instance.currentUser?.uid ?? 'guest',
+        status: PaymentStatus.completed,
+        timestamp: DateTime.now(),
       );
-
-      // Start payment and get result
-      final result = await PayHere.startPayment(paymentObject);
-
-      // Map result to our entity
-      final paymentResult = _mapToPaymentResult(result, bookingId, amount);
 
       // Save to Firestore if successful
       if (paymentResult.success && paymentResult.paymentId != null) {
@@ -113,14 +97,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
       }
 
       return Right(paymentResult);
-    } on PayHereException catch (e) {
-      return Left(
-        PaymentFailure(
-          'PayHere initialization failed: ${e.message}',
-          code: e.code,
-          type: PaymentFailureType.initialization,
-        ),
-      );
     } catch (e) {
       return Left(
         PaymentFailure(

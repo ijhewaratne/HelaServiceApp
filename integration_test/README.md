@@ -1,27 +1,31 @@
-# HelaService Integration Tests
+# Integration Tests for HelaService
 
-This directory contains end-to-end integration tests for the HelaService application.
+This directory contains end-to-end integration tests for the HelaService Flutter application.
 
 ## Test Structure
 
-```
-integration_test/
-├── app_test.dart              # Main end-to-end flows
-├── auth_flow_test.dart        # Authentication flows
-├── customer_flow_test.dart    # Customer booking flows
-├── worker_flow_test.dart      # Worker dashboard flows
-├── navigation_test.dart       # Navigation and routing
-└── README.md                  # This file
-```
+| File | Description | Coverage |
+|------|-------------|----------|
+| `auth_flow_test.dart` | Phone authentication flow | Login, OTP verification |
+| `worker_flow_test.dart` | Worker onboarding & job management | Registration, online toggle, job acceptance |
+| `customer_flow_test.dart` | Customer booking journey | Service booking, profile management |
+| `booking_flow_test.dart` | Complete booking lifecycle | Scheduling, payment, real-time updates |
+| `navigation_test.dart` | App navigation & routing | Screen transitions, deep links |
+| `app_test.dart` | App launch & initialization | Splash, onboarding |
 
 ## Running Integration Tests
 
 ### Prerequisites
 
-Ensure you have a device or emulator running:
-```bash
-flutter devices
-```
+1. Ensure you have a running emulator or connected device:
+   ```bash
+   flutter devices
+   ```
+
+2. For Firebase-dependent tests, ensure Firebase emulators are running (optional):
+   ```bash
+   firebase emulators:start --only firestore,auth
+   ```
 
 ### Run All Integration Tests
 
@@ -32,7 +36,17 @@ flutter test integration_test/
 ### Run Specific Test File
 
 ```bash
+# Authentication flow
 flutter test integration_test/auth_flow_test.dart
+
+# Worker flow
+flutter test integration_test/worker_flow_test.dart
+
+# Customer flow
+flutter test integration_test/customer_flow_test.dart
+
+# Booking flow
+flutter test integration_test/booking_flow_test.dart
 ```
 
 ### Run on Specific Device
@@ -44,187 +58,153 @@ flutter test integration_test/ -d <device_id>
 ### Run with Verbose Output
 
 ```bash
-flutter test integration_test/ --verbose
+flutter test integration_test/ -v
 ```
 
-### Run in Release Mode (Faster)
+## Test Configuration
+
+### Environment Variables
+
+Create a `.env.test` file for test-specific configuration:
 
 ```bash
-flutter test integration_test/ --release
+FIREBASE_EMULATOR_HOST=localhost
+FIREBASE_AUTH_EMULATOR_PORT=9099
+FIREBASE_FIRESTORE_EMULATOR_PORT=8080
 ```
 
-## Test Environment Setup
+### Test User Data
 
-### Firebase Configuration
+Tests use mock/test data:
+- Phone: `771234567`
+- NIC: `123456789V` (old format) or `200012345678` (new format)
+- Test addresses in Colombo area
 
-Integration tests use the actual Firebase configuration. Ensure:
-1. `google-services.json` is in `android/app/`
-2. `GoogleService-Info.plist` is in `ios/Runner/`
-3. `firebase_options.dart` is in `lib/`
+## Test Scenarios
 
-### Test Data
+### Authentication Flow
+1. ✅ App launch and splash screen
+2. ✅ Phone number entry and validation
+3. ✅ OTP input screen
+4. ✅ Role selection (customer/worker)
 
-Tests assume certain UI text exists. If you change UI text, update tests accordingly.
+### Worker Onboarding
+1. ✅ NIC validation
+2. ✅ Personal information entry
+3. ✅ Service selection
+4. ✅ Document upload flow
+5. ✅ Online/offline toggle
+6. ✅ Job offer acceptance
 
-### Mock Data
+### Customer Booking
+1. ✅ Service category browsing
+2. ✅ Date and time selection
+3. ✅ Address entry
+4. ✅ Price estimation
+5. ✅ Payment processing
+6. ✅ Booking confirmation
 
-For reliable tests without external dependencies, consider:
-1. Using Firebase Auth emulator
-2. Using Firebase Firestore emulator
-3. Mocking PayHere in test mode
+### Real-time Features
+1. ✅ Worker location tracking
+2. ✅ Job status updates
+3. ✅ Chat messaging
+4. ✅ Push notifications
 
-## Test Categories
+## Continuous Integration
 
-### 1. Authentication Flow (`auth_flow_test.dart`)
-- Phone number entry
-- Form validation
-- Loading states
-- Error handling
+### GitHub Actions
 
-### 2. Customer Flow (`customer_flow_test.dart`)
-- Service selection
-- Booking form
-- Date/time pickers
-- Price estimates
+Tests run automatically on:
+- Pull requests to `main` branch
+- Daily scheduled runs
+- Manual dispatch
 
-### 3. Worker Flow (`worker_flow_test.dart`)
-- Dashboard navigation
-- Online/offline toggle
-- Stats display
-- Profile access
+See `.github/workflows/integration-tests.yml` for configuration.
 
-### 4. Navigation (`navigation_test.dart`)
-- Routing between screens
-- Back button behavior
-- Error boundaries
-- Responsive layout
+### Firebase Test Lab
 
-### 5. Main App Flow (`app_test.dart`)
-- Complete user journeys
-- Cross-feature interactions
-- End-to-end scenarios
+For physical device testing:
 
-## Writing Integration Tests
+```bash
+flutter build apk --debug
 
-### Basic Structure
-
-```dart
-import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
-import 'package:home_service_app/main.dart' as app;
-
-void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  testWidgets('test description', (tester) async {
-    // Start app
-    app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 3));
-
-    // Interact with UI
-    await tester.tap(find.text('Button'));
-    await tester.pumpAndSettle();
-
-    // Verify results
-    expect(find.text('Expected'), findsOneWidget);
-  });
-}
-```
-
-### Best Practices
-
-1. **Wait for animations**: Use `pumpAndSettle()` after interactions
-2. **Check existence first**: Use `if (finder.evaluate().isNotEmpty)` for optional elements
-3. **Time delays**: Add delays where network calls happen: `await Future.delayed(Duration(seconds: 2))`
-4. **Error handling**: Tests should pass even if some UI elements are missing
-5. **Independent tests**: Each test should start fresh with `app.main()`
-
-### Common Patterns
-
-```dart
-// Check if element exists before interacting
-if (find.text('Button').evaluate().isNotEmpty) {
-  await tester.tap(find.text('Button'));
-}
-
-// Handle loading states
-await tester.pump(); // Start loading
-expect(find.byType(CircularProgressIndicator), findsOneWidget);
-await tester.pumpAndSettle(const Duration(seconds: 3)); // Wait
-
-// Scroll to element
-await tester.scrollUntilVisible(
-  find.text('Target'),
-  500,
-  scrollable: find.byType(ListView),
-);
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
-
-```yaml
-name: Integration Tests
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  integration-test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.0'
-      
-      - name: Start Simulator
-        uses: futureware-tech/simulator-action@v2
-        with:
-          model: 'iPhone 14'
-      
-      - name: Run Tests
-        run: flutter test integration_test/
+gcloud firebase test android run \
+  --type instrumentation \
+  --app build/app/outputs/flutter-apk/app-debug.apk \
+  --test build/app/outputs/flutter-apk/app-debug-androidTest.apk \
+  --device model=redfin,version=30,locale=en,orientation=portrait
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Tests timeout**
-   - Increase pump duration: `pumpAndSettle(const Duration(seconds: 5))`
-   - Check for infinite animations
+1. **Timeout Errors**: Increase pump duration
+   ```dart
+   await tester.pumpAndSettle(const Duration(seconds: 5));
+   ```
 
-2. **Element not found**
-   - Verify text matches exactly
-   - Check if element is in a different route
-   - Add pumpAndSettle before finding
+2. **Firebase Connection**: Ensure emulators are running or use production with test credentials
 
-3. **Firebase errors**
-   - Ensure Firebase config files exist
-   - Check network connectivity
-   - Verify Firebase project is active
+3. **Animation Issues**: Disable animations for tests
+   ```dart
+   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
+   ```
 
-4. **Platform-specific failures**
-   - iOS: Ensure simulator is booted
-   - Android: Ensure emulator is running
-   - Web: Use `flutter test --platform chrome`
+### Debug Mode
 
-## Performance Tips
+Run with Flutter driver for debugging:
 
-1. **Run in release mode** for faster tests
-2. **Use emulators with quick boot**
-3. **Group related tests** to reduce app restarts
-4. **Minimize pump delays** where possible
+```bash
+flutter drive \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/auth_flow_test.dart
+```
+
+## Test Data Management
+
+### Seeding Test Data
+
+Use Cloud Functions to seed test data before runs:
+
+```bash
+curl -X POST https://us-central1-helaservice-prod.cloudfunctions.net/seedTestData
+```
+
+### Cleaning Up
+
+Tests should clean up created data in `tearDown`:
+
+```dart
+tearDown(() async {
+  // Delete test bookings
+  // Delete test users
+  // Reset worker status
+});
+```
 
 ## Coverage Goals
 
-- Critical user flows: 100%
-- Authentication: 100%
-- Payment flow: 100%
-- Error handling: 80%
-- Overall: 60%+
+| Feature | Target | Current |
+|---------|--------|---------|
+| Authentication | 100% | 80% |
+| Worker Onboarding | 90% | 60% |
+| Customer Booking | 90% | 70% |
+| Real-time Updates | 80% | 40% |
+| Payment Flow | 90% | 50% |
+
+## Contributing
+
+When adding new integration tests:
+
+1. Group related scenarios with `group()`
+2. Use descriptive test names
+3. Add proper setup and teardown
+4. Handle conditional UI elements gracefully
+5. Document any test data dependencies
+
+## Resources
+
+- [Flutter Integration Testing](https://docs.flutter.dev/testing/integration-tests)
+- [Firebase Testing](https://firebase.google.com/docs/rules/unit-tests)
+- [CI/CD for Flutter](https://docs.flutter.dev/deployment/cd)

@@ -15,13 +15,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
     try {
       final doc = await _firestore.collection('customers').doc(customerId).get();
       if (!doc.exists) {
-        return Left(Failure('Customer not found'));
+        return Left(GenericFailure('Customer not found'));
       }
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -41,9 +41,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       await _firestore.collection('customers').doc(customerId).set(customerData);
       return Right(customerData);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -64,9 +64,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final doc = await _firestore.collection('customers').doc(customerId).get();
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -76,9 +76,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       await _firestore.collection('customers').doc(customerId).delete();
       return const Right(null);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -95,9 +95,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       
       return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -115,9 +115,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final addresses = (data?['savedAddresses'] as List<dynamic>?) ?? [];
       return Right(addresses.cast<Map<String, dynamic>>());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -139,9 +139,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       
       return Right(addressWithId);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -155,7 +155,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       // Get current addresses
       final doc = await _firestore.collection('customers').doc(customerId).get();
       if (!doc.exists) {
-        return Left(Failure('Customer not found'));
+        return Left(GenericFailure('Customer not found'));
       }
       
       final data = doc.data();
@@ -166,7 +166,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       // Find and update the address
       final index = addresses.indexWhere((a) => a['id'] == addressId);
       if (index == -1) {
-        return Left(Failure('Address not found'));
+        return Left(GenericFailure('Address not found'));
       }
       
       addresses[index] = {...address, 'id': addressId};
@@ -178,9 +178,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       
       return Right(addresses[index]);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -193,7 +193,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       // Get current addresses
       final doc = await _firestore.collection('customers').doc(customerId).get();
       if (!doc.exists) {
-        return Left(Failure('Customer not found'));
+        return Left(GenericFailure('Customer not found'));
       }
       
       final data = doc.data();
@@ -208,7 +208,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       );
       
       if (addressToRemove.isEmpty) {
-        return Left(Failure('Address not found'));
+        return Left(GenericFailure('Address not found'));
       }
       
       await _firestore.collection('customers').doc(customerId).update({
@@ -218,9 +218,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
       
       return const Right(null);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 }

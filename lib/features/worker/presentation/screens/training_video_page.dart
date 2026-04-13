@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/ui/branded_widgets.dart';
+import '../../../../core/widgets/branded_widgets.dart';
 // import 'package:youtube_player_flutter/youtube_player_flutter.dart'; // Add to pubspec when ready
 
 class TrainingVideoPage extends StatefulWidget {

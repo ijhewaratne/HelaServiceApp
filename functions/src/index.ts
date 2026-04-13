@@ -352,3 +352,22 @@ async function notifyCustomerWorkerAssigned(customerId: string, workerId: string
 }
 // Export PayHere webhook
 export { payhereNotify, checkPaymentStatus } from "./payhereWebhook";
+
+// Sprint 5: Security Hardening - Rate Limiting
+export { 
+  requestOTP, 
+  createJob,
+  checkRateLimit,
+  withRateLimit,
+  withHttpRateLimit 
+} from "./rateLimit";
+
+// Sprint 5: Security Hardening - Scheduled Functions
+export {
+  cleanupRateLimitsDaily,
+  cleanupExpiredOTPs,
+  cleanupOldJobOffers,
+  cleanupOldMessages,
+  archiveOldJobs,
+  detectSuspiciousActivity,
+} from "./securityScheduled";

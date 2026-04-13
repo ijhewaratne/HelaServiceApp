@@ -158,8 +158,57 @@ flutter run -d android       # Android Emulator
 
 ---
 
+## Completed Sprints
+
+| Sprint | Focus | Status |
+|--------|-------|--------|
+| Sprint 1 | Project Setup | ✅ Complete |
+| Sprint 2 | Core Features | ✅ Complete |
+| Sprint 3 | User Feedback System | ✅ Complete |
+| Sprint 4 | Performance Optimization | ✅ Complete |
+| Sprint 5 | Security Hardening | ✅ Complete |
+| Sprint 6 | Final QA & Deployment | ✅ Complete |
+
+---
+
+## Quick Start
+
+```bash
+# Clone and setup
+git clone https://github.com/ijhewaratne/HelaServiceApp.git
+cd HelaServiceApp
+flutter pub get
+
+# Configure Firebase (see docs)
+firebase login
+firebase use helaservice-prod
+
+# Run app
+flutter run
+```
+
+For detailed setup, see [QUICK_START.md](QUICK_START.md).
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [QUICK_START.md](QUICK_START.md) | 5-minute setup guide |
+| [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) | Complete project overview |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical architecture |
+| [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Deployment instructions |
+| [SECURITY_HARDENING.md](docs/SECURITY_HARDENING.md) | Security documentation |
+| [PERFORMANCE_OPTIMIZATION.md](docs/PERFORMANCE_OPTIMIZATION.md) | Performance guide |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues |
+| [CHECKLIST.md](CHECKLIST.md) | Production checklist |
+
+---
+
 ## Pre-Launch Checklist
 
+### Essential Setup
 - [ ] Run `flutterfire configure` → uncomment `DefaultFirebaseOptions` in `main.dart`
 - [ ] Replace `operatorWhatsApp` in `AppConstants` with real number
 - [ ] Replace `companySolePropName` with registered business name
@@ -167,6 +216,22 @@ flutter run -d android       # Android Emulator
 - [ ] Create `assets/images/` directory
 - [ ] Set Admin custom claims via Firebase Admin SDK (`admin: true`)
 - [ ] Register Google Maps API key in `AndroidManifest.xml` and `AppDelegate.swift`
-- [ ] Set up Notify.lk (or similar) for SMS fallback in Cloud Functions
+
+### Security & Compliance
 - [ ] Configure Firebase App Check for production
-- [ ] Legal review of the Independent Contractor Agreement template
+- [ ] Review Privacy Policy and Terms of Service
+- [ ] Complete PDPA compliance verification
+- [ ] Security audit passed
+
+### Testing & QA
+- [ ] Run `./scripts/qa_check.sh` - all checks pass
+- [ ] Test coverage > 80%
+- [ ] Manual QA on 5+ devices
+- [ ] Beta testing with 20+ users
+
+### Deployment
+- [ ] Run `./scripts/deploy.sh production`
+- [ ] Upload to Play Store / App Store
+- [ ] Monitor Crashlytics post-launch
+
+See full checklist: [CHECKLIST.md](CHECKLIST.md)

@@ -1,4 +1,4 @@
-import '../../worker/domain/worker_profile.dart';
+import '../../worker/domain/entities/worker_profile.dart';
 import '../../customer/domain/booking.dart';
 import '../domain/incident.dart';
 

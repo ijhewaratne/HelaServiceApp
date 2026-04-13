@@ -19,7 +19,7 @@ class BookingRepositoryImpl implements BookingRepository {
     try {
       final currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) {
-        return Left(Failure('User not authenticated'));
+        return Left(GenericFailure('User not authenticated'));
       }
 
       final docRef = _firestore.collection('bookings').doc();
@@ -35,9 +35,9 @@ class BookingRepositoryImpl implements BookingRepository {
       await docRef.set(data);
       return Right(data);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -46,13 +46,13 @@ class BookingRepositoryImpl implements BookingRepository {
     try {
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
       if (!doc.exists) {
-        return Left(Failure('Booking not found'));
+        return Left(GenericFailure('Booking not found'));
       }
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -73,9 +73,9 @@ class BookingRepositoryImpl implements BookingRepository {
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -93,9 +93,9 @@ class BookingRepositoryImpl implements BookingRepository {
       });
       return const Right(null);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -112,9 +112,9 @@ class BookingRepositoryImpl implements BookingRepository {
 
       return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -131,9 +131,9 @@ class BookingRepositoryImpl implements BookingRepository {
 
       return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -155,9 +155,9 @@ class BookingRepositoryImpl implements BookingRepository {
       }
       return Right(querySnapshot.docs.first.data());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -179,9 +179,9 @@ class BookingRepositoryImpl implements BookingRepository {
       }
       return Right(querySnapshot.docs.first.data());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -201,9 +201,9 @@ class BookingRepositoryImpl implements BookingRepository {
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -241,9 +241,9 @@ class BookingRepositoryImpl implements BookingRepository {
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -255,12 +255,12 @@ class BookingRepositoryImpl implements BookingRepository {
         .snapshots()
         .map<Either<Failure, Map<String, dynamic>>>((snapshot) {
       if (!snapshot.exists) {
-        return Left(Failure('Booking not found'));
+        return Left(GenericFailure('Booking not found'));
       }
       return Right(snapshot.data()!);
     }).handleError((Object e) {
       // Convert error to Left value
-      return Left<Failure, Map<String, dynamic>>(Failure('Stream error: $e'));
+      return Left<Failure, Map<String, dynamic>>(GenericFailure('Stream error: $e'));
     });
   }
 }

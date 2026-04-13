@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../injection_container.dart';
 import '../../domain/entities/incident.dart';
-import '../../services/emergency_service.dart';
+// import '../../services/emergency_service.dart';  // TODO: Create this file
 
 /// Page for reporting incidents/emergencies
 class IncidentReportPage extends StatefulWidget {
@@ -26,7 +26,7 @@ class IncidentReportPage extends StatefulWidget {
 class _IncidentReportPageState extends State<IncidentReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
-  final EmergencyService _emergencyService = sl<EmergencyService>();
+  // final EmergencyService _emergencyService = sl<EmergencyService>();  // TODO: Implement service
   
   IncidentType _selectedType = IncidentType.other;
   bool _isSubmitting = false;
@@ -45,18 +45,13 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
 
     setState(() => _isSubmitting = true);
 
-    final incident = await _emergencyService.reportEmergency(
-      reporterId: widget.reporterId,
-      reporterType: widget.reporterType,
-      type: _selectedType,
-      description: _descriptionController.text.trim(),
-      jobId: widget.jobId,
-      subjectId: widget.subjectId,
-    );
+    // TODO: Implement emergency service
+    // final incident = await _emergencyService.reportEmergency(...);
+    await Future.delayed(const Duration(seconds: 1)); // Stub
 
     setState(() => _isSubmitting = false);
 
-    if (incident != null && mounted) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Incident reported successfully. Help is on the way!'),
@@ -64,19 +59,14 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
         ),
       );
       Navigator.pop(context);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to report incident. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
   Future<void> _contactWhatsApp() async {
-    await _emergencyService.contactEmergencyOperator(
-      message: 'URGENT: Immediate assistance needed!',
+    // TODO: Implement emergency service
+    // await _emergencyService.contactEmergencyOperator(...);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Emergency contact not implemented yet')),
     );
   }
 

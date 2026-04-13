@@ -47,7 +47,7 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
       );
       return Right(workers);
     } catch (e) {
-      return Left(Failure('Failed to find workers: $e'));
+      return Left(GenericFailure('Failed to find workers: $e'));
     }
   }
 

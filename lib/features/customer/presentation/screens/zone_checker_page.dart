@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/ui/branded_widgets.dart';
+import '../../../../core/widgets/branded_widgets.dart';
 
 class ZoneCheckerPage extends StatefulWidget {
   const ZoneCheckerPage({super.key});

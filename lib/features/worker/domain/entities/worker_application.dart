@@ -78,6 +78,50 @@ class WorkerApplication extends Equatable {
         selectedServices, profilePhotoUrl, nicFrontUrl, nicBackUrl,
         status, appliedAt, rejectionReason, hasCompletedTraining,
       ];
+
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nic': nic,
+      'fullName': fullName,
+      'mobileNumber': mobileNumber,
+      'address': address,
+      'emergencyContactName': emergencyContactName,
+      'emergencyContactPhone': emergencyContactPhone,
+      'selectedServices': selectedServices.map((s) => s.name).toList(),
+      'profilePhotoUrl': profilePhotoUrl,
+      'nicFrontUrl': nicFrontUrl,
+      'nicBackUrl': nicBackUrl,
+      'status': status.name,
+      'appliedAt': appliedAt.toIso8601String(),
+      'rejectionReason': rejectionReason,
+      'hasCompletedTraining': hasCompletedTraining,
+    };
+  }
+
+  /// Create from JSON
+  factory WorkerApplication.fromJson(Map<String, dynamic> json) {
+    return WorkerApplication(
+      id: json['id'] as String?,
+      nic: json['nic'] as String,
+      fullName: json['fullName'] as String,
+      mobileNumber: json['mobileNumber'] as String,
+      address: json['address'] as String,
+      emergencyContactName: json['emergencyContactName'] as String,
+      emergencyContactPhone: json['emergencyContactPhone'] as String,
+      selectedServices: (json['selectedServices'] as List<dynamic>)
+          .map((s) => ServiceType.values.byName(s as String))
+          .toList(),
+      profilePhotoUrl: json['profilePhotoUrl'] as String?,
+      nicFrontUrl: json['nicFrontUrl'] as String?,
+      nicBackUrl: json['nicBackUrl'] as String?,
+      status: ApplicationStatus.values.byName(json['status'] as String),
+      appliedAt: DateTime.parse(json['appliedAt'] as String),
+      rejectionReason: json['rejectionReason'] as String?,
+      hasCompletedTraining: json['hasCompletedTraining'] as bool? ?? false,
+    );
+  }
 }
 
 enum ServiceType { cleaning, babysitting, elderlyCare, cooking, laundry }

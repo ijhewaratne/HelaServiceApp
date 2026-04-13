@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:image_picker/image_picker.dart';
+
 import '../../domain/entities/worker_application.dart';
 import '../../domain/repositories/worker_repository.dart';
 
@@ -72,22 +72,27 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
     Emitter<WorkerOnboardingState> emit,
   ) async {
     final current = state;
-    if (current is ServicesSelected || current is DocumentsUploading) {
-      emit(DocumentsUploading(
-        (current as dynamic).application,
-        isFront: true,
-      ));
+    WorkerApplication? application;
+    
+    if (current is ServicesSelected) {
+      application = current.application;
+    } else if (current is DocumentsUploading) {
+      application = current.application;
+    }
+    
+    if (application != null) {
+      emit(DocumentsUploading(application, isFront: true));
 
       final result = await repository.uploadNICDocument(
-        (current as dynamic).application.id!,
-        event.file,
-        true,
+        workerId: application.id!,
+        file: event.file,
+        isFront: true,
       );
 
       result.fold(
         (failure) => emit(WorkerOnboardingError(failure.message)),
         (url) => emit(NICFrontUploaded(
-          (current as dynamic).application.copyWith(nicFrontUrl: url),
+          application!.copyWith(nicFrontUrl: url),
         )),
       );
     }
@@ -102,9 +107,9 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
       emit(DocumentsUploading(current.application, isFront: false));
 
       final result = await repository.uploadNICDocument(
-        current.application.id!,
-        event.file,
-        false,
+        workerId: current.application.id!,
+        file: event.file,
+        isFront: false,
       );
 
       result.fold(
@@ -127,11 +132,17 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
     final current = state;
     String? workerId;
     
-    if (current is PersonalInfoSubmitted) workerId = current.application.id;
-    else if (current is ServicesSelected) workerId = current.application.id;
+    if (current is PersonalInfoSubmitted) {
+      workerId = current.application.id;
+    } else if (current is ServicesSelected) {
+      workerId = current.application.id;
+    }
     
     if (workerId != null) {
-      final result = await repository.uploadProfilePhoto(workerId, event.file);
+      final result = await repository.uploadProfilePhoto(
+        workerId: workerId,
+        file: event.file,
+      );
       result.fold(
         (failure) => emit(WorkerOnboardingError(failure.message)),
         (url) => emit(ProfilePhotoUploaded(url)),

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../viewmodels/customer_home_viewmodel.dart';
-import '../../../../shared/ui/branded_widgets.dart';
+import '../../../../core/widgets/branded_widgets.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});

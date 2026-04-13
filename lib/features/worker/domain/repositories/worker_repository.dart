@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../entities/worker.dart';
+import '../entities/worker_application.dart';
 
 abstract class WorkerRepository {
   /// Create a new worker
@@ -34,4 +35,25 @@ abstract class WorkerRepository {
 
   /// Accept independent contractor agreement
   Future<Either<Failure, void>> acceptContract(String workerId);
+
+  // ==================== ONBOARDING METHODS ====================
+
+  /// Check if NIC already exists in system
+  Future<Either<Failure, bool>> checkNICExists(String nic);
+
+  /// Submit worker application
+  Future<Either<Failure, WorkerApplication>> submitApplication(WorkerApplication application);
+
+  /// Get application status by worker ID
+  Future<Either<Failure, WorkerApplication>> getApplicationStatus(String workerId);
+
+  /// Mark training as completed
+  Future<Either<Failure, void>> completeTraining(String workerId);
+
+  /// Update worker location
+  Future<Either<Failure, void>> updateLocation({
+    required String workerId,
+    required double lat,
+    required double lng,
+  });
 }

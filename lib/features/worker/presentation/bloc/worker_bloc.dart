@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../../../core/services/location_service.dart';
 import '../../domain/entities/worker.dart';
@@ -19,13 +19,17 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
         _locationService = locationService,
         super(WorkerInitial()) {
     on<LoadWorker>(_onLoadWorker);
+    on<CheckNICExists>(_onCheckNICExists);
     on<SubmitApplication>(_onSubmitApplication);
+    on<GetApplicationStatus>(_onGetApplicationStatus);
     on<UpdateOnlineStatus>(_onUpdateOnlineStatus);
     on<UpdateLocation>(_onUpdateLocation);
     on<StartLocationTracking>(_onStartLocationTracking);
     on<StopLocationTracking>(_onStopLocationTracking);
     on<CompleteTraining>(_onCompleteTraining);
     on<UploadDocument>(_onUploadDocument);
+    on<UploadProfilePhoto>(_onUploadProfilePhoto);
+    on<AcceptContract>(_onAcceptContract);
   }
 
   Future<void> _onLoadWorker(LoadWorker event, Emitter<WorkerState> emit) async {
@@ -34,6 +38,18 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
       (worker) => emit(WorkerLoaded(worker: worker)),
+    );
+  }
+
+  Future<void> _onCheckNICExists(
+    CheckNICExists event,
+    Emitter<WorkerState> emit,
+  ) async {
+    emit(WorkerLoading());
+    final result = await _workerRepository.checkNICExists(event.nic);
+    result.fold(
+      (failure) => emit(WorkerError(message: failure.message)),
+      (exists) => emit(WorkerNICCheckResult(exists: exists)),
     );
   }
 
@@ -49,14 +65,28 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     );
   }
 
+  Future<void> _onGetApplicationStatus(
+    GetApplicationStatus event,
+    Emitter<WorkerState> emit,
+  ) async {
+    emit(WorkerLoading());
+    final result = await _workerRepository.getApplicationStatus(event.workerId);
+    result.fold(
+      (failure) => emit(WorkerError(message: failure.message)),
+      (application) => emit(WorkerApplicationStatusLoaded(application: application)),
+    );
+  }
+
   Future<void> _onUpdateOnlineStatus(
     UpdateOnlineStatus event,
     Emitter<WorkerState> emit,
   ) async {
     emit(WorkerLoading());
     final result = await _workerRepository.updateOnlineStatus(
-      event.workerId,
-      event.isOnline,
+      workerId: event.workerId,
+      isOnline: event.isOnline,
+      lat: event.lat,
+      lng: event.lng,
     );
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
@@ -76,9 +106,9 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     Emitter<WorkerState> emit,
   ) async {
     final result = await _workerRepository.updateLocation(
-      event.workerId,
-      event.latitude,
-      event.longitude,
+      workerId: event.workerId,
+      lat: event.latitude,
+      lng: event.longitude,
     );
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
@@ -128,13 +158,40 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
   ) async {
     emit(WorkerLoading());
     final result = await _workerRepository.uploadNICDocument(
-      event.workerId,
-      event.file,
-      event.isFront,
+      workerId: event.workerId,
+      file: event.file,
+      isFront: event.isFront,
     );
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
       (url) => emit(WorkerDocumentUploaded(documentUrl: url, isFront: event.isFront)),
+    );
+  }
+
+  Future<void> _onUploadProfilePhoto(
+    UploadProfilePhoto event,
+    Emitter<WorkerState> emit,
+  ) async {
+    emit(WorkerLoading());
+    final result = await _workerRepository.uploadProfilePhoto(
+      workerId: event.workerId,
+      file: event.file,
+    );
+    result.fold(
+      (failure) => emit(WorkerError(message: failure.message)),
+      (url) => emit(WorkerProfilePhotoUploaded(photoUrl: url)),
+    );
+  }
+
+  Future<void> _onAcceptContract(
+    AcceptContract event,
+    Emitter<WorkerState> emit,
+  ) async {
+    emit(WorkerLoading());
+    final result = await _workerRepository.acceptContract(event.workerId);
+    result.fold(
+      (failure) => emit(WorkerError(message: failure.message)),
+      (_) => emit(WorkerContractAccepted()),
     );
   }
 }
@@ -156,6 +213,16 @@ class LoadWorker extends WorkerEvent {
   List<Object?> get props => [workerId];
 }
 
+/// Check if NIC exists
+class CheckNICExists extends WorkerEvent {
+  final String nic;
+
+  CheckNICExists({required this.nic});
+
+  @override
+  List<Object?> get props => [nic];
+}
+
 /// Submit worker application
 class SubmitApplication extends WorkerEvent {
   final WorkerApplication application;
@@ -166,15 +233,32 @@ class SubmitApplication extends WorkerEvent {
   List<Object?> get props => [application];
 }
 
+/// Get application status
+class GetApplicationStatus extends WorkerEvent {
+  final String workerId;
+
+  GetApplicationStatus({required this.workerId});
+
+  @override
+  List<Object?> get props => [workerId];
+}
+
 /// Update online status
 class UpdateOnlineStatus extends WorkerEvent {
   final String workerId;
   final bool isOnline;
+  final double? lat;
+  final double? lng;
 
-  UpdateOnlineStatus({required this.workerId, required this.isOnline});
+  UpdateOnlineStatus({
+    required this.workerId,
+    required this.isOnline,
+    this.lat,
+    this.lng,
+  });
 
   @override
-  List<Object?> get props => [workerId, isOnline];
+  List<Object?> get props => [workerId, isOnline, lat, lng];
 }
 
 /// Update location manually
@@ -216,10 +300,10 @@ class CompleteTraining extends WorkerEvent {
   List<Object?> get props => [workerId];
 }
 
-/// Upload document
+/// Upload NIC document
 class UploadDocument extends WorkerEvent {
   final String workerId;
-  final dynamic file;
+  final File file;
   final bool isFront;
 
   UploadDocument({
@@ -230,6 +314,27 @@ class UploadDocument extends WorkerEvent {
 
   @override
   List<Object?> get props => [workerId, file, isFront];
+}
+
+/// Upload profile photo
+class UploadProfilePhoto extends WorkerEvent {
+  final String workerId;
+  final File file;
+
+  UploadProfilePhoto({required this.workerId, required this.file});
+
+  @override
+  List<Object?> get props => [workerId, file];
+}
+
+/// Accept independent contractor agreement
+class AcceptContract extends WorkerEvent {
+  final String workerId;
+
+  AcceptContract({required this.workerId});
+
+  @override
+  List<Object?> get props => [workerId];
 }
 
 // ==================== STATES ====================
@@ -255,11 +360,31 @@ class WorkerLoaded extends WorkerState {
   List<Object?> get props => [worker];
 }
 
+/// NIC check result
+class WorkerNICCheckResult extends WorkerState {
+  final bool exists;
+
+  WorkerNICCheckResult({required this.exists});
+
+  @override
+  List<Object?> get props => [exists];
+}
+
 /// Application submitted successfully
 class WorkerApplicationSubmitted extends WorkerState {
   final WorkerApplication application;
 
   WorkerApplicationSubmitted({required this.application});
+
+  @override
+  List<Object?> get props => [application];
+}
+
+/// Application status loaded
+class WorkerApplicationStatusLoaded extends WorkerState {
+  final WorkerApplication application;
+
+  WorkerApplicationStatusLoaded({required this.application});
 
   @override
   List<Object?> get props => [application];
@@ -297,6 +422,19 @@ class WorkerDocumentUploaded extends WorkerState {
   @override
   List<Object?> get props => [documentUrl, isFront];
 }
+
+/// Profile photo uploaded
+class WorkerProfilePhotoUploaded extends WorkerState {
+  final String photoUrl;
+
+  WorkerProfilePhotoUploaded({required this.photoUrl});
+
+  @override
+  List<Object?> get props => [photoUrl];
+}
+
+/// Contract accepted
+class WorkerContractAccepted extends WorkerState {}
 
 /// Error state
 class WorkerError extends WorkerState {

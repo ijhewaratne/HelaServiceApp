@@ -44,9 +44,9 @@ class ChatRepositoryImpl implements ChatRepository {
       await docRef.set(chatRoomData);
       return Right(chatRoomData);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -55,13 +55,13 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       final doc = await _firestore.collection('chatRooms').doc(chatRoomId).get();
       if (!doc.exists) {
-        return Left(Failure('Chat room not found'));
+        return Left(GenericFailure('Chat room not found'));
       }
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -81,9 +81,9 @@ class ChatRepositoryImpl implements ChatRepository {
       }
       return Right(querySnapshot.docs.first.data());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -128,9 +128,9 @@ class ChatRepositoryImpl implements ChatRepository {
 
       return Right(messageData);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -165,9 +165,9 @@ class ChatRepositoryImpl implements ChatRepository {
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -188,7 +188,7 @@ class ChatRepositoryImpl implements ChatRepository {
           .toList());
     }).handleError((e) {
       return Left<Failure, List<Map<String, dynamic>>>(
-        Failure('Stream error: $e'),
+        GenericFailure('Stream error: $e'),
       );
     });
   }
@@ -221,9 +221,9 @@ class ChatRepositoryImpl implements ChatRepository {
       await batch.commit();
       return const Right(null);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -256,9 +256,9 @@ class ChatRepositoryImpl implements ChatRepository {
       // Unread = total - read
       return Right(total - read);
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 
@@ -295,9 +295,9 @@ class ChatRepositoryImpl implements ChatRepository {
 
       return Right(allRooms.map((doc) => doc.data()).toList());
     } on FirebaseException catch (e) {
-      return Left(Failure('Firebase error: ${e.message}'));
+      return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
-      return Left(Failure('Unknown error: $e'));
+      return Left(GenericFailure('Unknown error: $e'));
     }
   }
 }

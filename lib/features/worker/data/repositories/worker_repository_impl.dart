@@ -5,6 +5,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/worker.dart';
+import '../../domain/entities/worker_application.dart' as app;
 import '../../domain/repositories/worker_repository.dart';
 
 class WorkerRepositoryImpl implements WorkerRepository {
@@ -155,38 +156,143 @@ class WorkerRepositoryImpl implements WorkerRepository {
     }
   }
 
+  // ==================== ONBOARDING IMPLEMENTATIONS ====================
+
+  @override
+  Future<Either<Failure, bool>> checkNICExists(String nic) async {
+    try {
+      final query = await _firestore
+        .collection('workers')
+        .where('nic', isEqualTo: nic)
+        .limit(1)
+        .get();
+      
+      return Right(query.docs.isNotEmpty);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, app.WorkerApplication>> submitApplication(app.WorkerApplication application) async {
+    try {
+      final docRef = _firestore.collection('worker_applications').doc();
+      final data = application.copyWith(id: docRef.id).toJson();
+      await docRef.set(data);
+      return Right(application.copyWith(id: docRef.id));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, app.WorkerApplication>> getApplicationStatus(String workerId) async {
+    try {
+      final doc = await _firestore
+        .collection('worker_applications')
+        .doc(workerId)
+        .get();
+      
+      if (!doc.exists) {
+        return Left(NotFoundFailure('Application not found'));
+      }
+      
+      return Right(app.WorkerApplication.fromJson(doc.data()!));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> completeTraining(String workerId) async {
+    try {
+      // Update worker document
+      await _firestore.collection('workers').doc(workerId).update({
+        'hasCompletedTraining': true,
+        'trainingCompletedAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Also update the application if it exists
+      final query = await _firestore
+        .collection('worker_applications')
+        .where('mobileNumber', isEqualTo: workerId)
+        .limit(1)
+        .get();
+      
+      if (query.docs.isNotEmpty) {
+        await query.docs.first.reference.update({
+          'hasCompletedTraining': true,
+          'trainingCompletedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateLocation({
+    required String workerId,
+    required double lat,
+    required double lng,
+  }) async {
+    try {
+      await _firestore.collection('workers').doc(workerId).update({
+        'currentLat': lat,
+        'currentLng': lng,
+        'lastLocationUpdate': FieldValue.serverTimestamp(),
+      });
+      
+      // Also update worker_locations for matching
+      await _firestore.collection('worker_locations').doc(workerId).set({
+        'lat': lat,
+        'lng': lng,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  // ==================== HELPER METHODS ====================
+
   Worker _workerFromDoc(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return Worker(
       id: doc.id,
-      nic: data['nic'],
-      fullName: data['fullName'],
-      mobileNumber: data['mobileNumber'],
-      address: data['address'],
-      emergencyContactName: data['emergencyContactName'],
-      emergencyContactPhone: data['emergencyContactPhone'],
-      services: (data['services'] as List)
-        .map((s) => ServiceType.values.byName(s))
-        .toList(),
-      profilePhotoUrl: data['profilePhotoUrl'],
-      nicFrontUrl: data['nicFrontUrl'],
-      nicBackUrl: data['nicBackUrl'],
-      status: WorkerStatus.values.byName(data['status']),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      nic: (data['nic'] as String?) ?? '',
+      fullName: (data['fullName'] as String?) ?? '',
+      mobileNumber: (data['mobileNumber'] as String?) ?? '',
+      address: (data['address'] as String?) ?? '',
+      emergencyContactName: (data['emergencyContactName'] as String?) ?? '',
+      emergencyContactPhone: (data['emergencyContactPhone'] as String?) ?? '',
+      services: (data['services'] as List<dynamic>?)
+        ?.map((s) => ServiceType.values.byName(s as String))
+        .toList() ?? [],
+      profilePhotoUrl: data['profilePhotoUrl'] as String?,
+      nicFrontUrl: data['nicFrontUrl'] as String?,
+      nicBackUrl: data['nicBackUrl'] as String?,
+      status: WorkerStatus.values.byName(data['status'] as String? ?? 'pending'),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       approvedAt: data['approvedAt'] != null 
         ? (data['approvedAt'] as Timestamp).toDate() 
         : null,
-      isOnline: data['isOnline'] ?? false,
-      currentLat: data['currentLat']?.toDouble(),
-      currentLng: data['currentLng']?.toDouble(),
-      homeLat: data['homeLat']?.toDouble(),
-      homeLng: data['homeLng']?.toDouble(),
-      rating: data['rating']?.toDouble() ?? 4.0,
-      totalJobs: data['totalJobs'] ?? 0,
+      isOnline: data['isOnline'] as bool? ?? false,
+      currentLat: (data['currentLat'] as num?)?.toDouble(),
+      currentLng: (data['currentLng'] as num?)?.toDouble(),
+      homeLat: (data['homeLat'] as num?)?.toDouble(),
+      homeLng: (data['homeLng'] as num?)?.toDouble(),
+      rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
+      totalJobs: data['totalJobs'] as int? ?? 0,
       lastJobCompletedAt: data['lastJobCompletedAt'] != null
         ? (data['lastJobCompletedAt'] as Timestamp).toDate()
         : null,
-      hasAcceptedContract: data['hasAcceptedContract'] ?? false,
+      hasAcceptedContract: data['hasAcceptedContract'] as bool? ?? false,
     );
   }
+
 }

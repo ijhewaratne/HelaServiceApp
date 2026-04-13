@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../viewmodels/admin_dashboard_viewmodel.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
-import '../../../../shared/ui/branded_widgets.dart';
+import '../../../../core/widgets/branded_widgets.dart';
 
 class AdminIncidentsScreen extends StatefulWidget {
   const AdminIncidentsScreen({super.key});

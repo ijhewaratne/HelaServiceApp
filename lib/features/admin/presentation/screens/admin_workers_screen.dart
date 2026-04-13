@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../viewmodels/admin_dashboard_viewmodel.dart';
-import '../../../../shared/dialogs/confirm_dialog.dart';
-import '../../../../shared/ui/branded_widgets.dart';
+// import '../../../../shared/dialogs/confirm_dialog.dart';  // TODO: Create this file
+import '../../../../core/widgets/branded_widgets.dart';
 
 class AdminWorkersScreen extends StatefulWidget {
   const AdminWorkersScreen({super.key});
