@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import '../../../../core/services/location_service.dart';
 import '../../domain/entities/worker_application.dart';
+import 'active_job_page.dart';
 
 class JobOfferPage extends StatefulWidget {
   final String workerId;

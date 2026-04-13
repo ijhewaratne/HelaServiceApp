@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../viewmodels/admin_dashboard_viewmodel.dart';
-// import '../../../../shared/dialogs/confirm_dialog.dart';  // TODO: Create this file
+import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
 
 class AdminWorkersScreen extends StatefulWidget {
@@ -55,7 +55,11 @@ class _AdminWorkersScreenState extends State<AdminWorkersScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          final confirm = await showConfirmDialog(context, 'Approve ${worker.name}?');
+                          final confirm = await showConfirmDialog(
+                            context,
+                            title: 'Approve Worker',
+                            message: 'Approve ${worker.name}?',
+                          );
                           if (confirm && context.mounted) {
                             await context.read<AdminViewModel>().approveWorker(worker.uid);
                           }

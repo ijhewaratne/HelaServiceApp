@@ -1,8 +1,11 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../entities/address.dart';
 
 /// Abstract repository for customer operations
+/// 
+/// Phase 2: Architecture Refactoring - Updated to use Address entity
 abstract class CustomerRepository {
   /// Get customer profile by ID
   Future<Either<Failure, Map<String, dynamic>>> getCustomerProfile(String customerId);
@@ -26,19 +29,19 @@ abstract class CustomerRepository {
   Future<Either<Failure, List<Map<String, dynamic>>>> getCustomerBookings(String customerId);
   
   /// Get customer's saved addresses
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSavedAddresses(String customerId);
+  Future<Either<Failure, List<Address>>> getSavedAddresses(String customerId);
   
   /// Add new saved address
-  Future<Either<Failure, Map<String, dynamic>>> addSavedAddress(
+  Future<Either<Failure, Address>> addSavedAddress(
     String customerId,
-    Map<String, dynamic> address,
+    Address address,
   );
   
   /// Update saved address
-  Future<Either<Failure, Map<String, dynamic>>> updateSavedAddress(
+  Future<Either<Failure, Address>> updateSavedAddress(
     String customerId,
     String addressId,
-    Map<String, dynamic> address,
+    Address address,
   );
   
   /// Delete saved address

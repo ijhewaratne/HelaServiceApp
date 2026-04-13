@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/monitoring/crash_reporting.dart';
-import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 /// BLoC for managing authentication state
@@ -237,7 +237,7 @@ class LoggedOut extends AuthEvent {}
 
 /// Internal event for auth state changes
 class _AuthStateChanged extends AuthEvent {
-  final UserEntity? user;
+  final User? user;
 
   _AuthStateChanged({this.user});
   
@@ -260,7 +260,7 @@ class AuthLoading extends AuthState {}
 
 /// User is authenticated with complete profile
 class AuthAuthenticated extends AuthState {
-  final UserEntity user;
+  final User user;
 
   AuthAuthenticated({required this.user});
 
@@ -270,7 +270,7 @@ class AuthAuthenticated extends AuthState {
 
 /// User needs to complete onboarding
 class AuthNeedsOnboarding extends AuthState {
-  final UserEntity user;
+  final User user;
 
   AuthNeedsOnboarding({required this.user});
 

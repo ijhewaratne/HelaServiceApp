@@ -18,6 +18,7 @@ class HelaButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final double height;
+  final Color? backgroundColor;
 
   const HelaButton({
     super.key,
@@ -30,6 +31,7 @@ class HelaButton extends StatelessWidget {
     this.icon,
     this.width,
     this.height = 50,
+    this.backgroundColor,
   });
 
   @override
@@ -60,7 +62,7 @@ class HelaButton extends StatelessWidget {
     
     final buttonStyle = switch (type) {
       ButtonType.primary => ElevatedButton.styleFrom(
-          backgroundColor: theme.primaryColor,
+          backgroundColor: backgroundColor ?? theme.primaryColor,
           foregroundColor: Colors.white,
           minimumSize: Size(width ?? double.infinity, height),
           shape: RoundedRectangleBorder(
@@ -68,7 +70,7 @@ class HelaButton extends StatelessWidget {
           ),
         ),
       ButtonType.secondary => ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[200],
+          backgroundColor: backgroundColor ?? Colors.grey[200],
           foregroundColor: Colors.black87,
           minimumSize: Size(width ?? double.infinity, height),
           shape: RoundedRectangleBorder(
@@ -76,8 +78,8 @@ class HelaButton extends StatelessWidget {
           ),
         ),
       ButtonType.outline => OutlinedButton.styleFrom(
-          foregroundColor: theme.primaryColor,
-          side: BorderSide(color: theme.primaryColor),
+          foregroundColor: backgroundColor ?? theme.primaryColor,
+          side: BorderSide(color: backgroundColor ?? theme.primaryColor),
           minimumSize: Size(width ?? double.infinity, height),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

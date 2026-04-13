@@ -1,3 +1,7 @@
+/// @deprecated Use [User] instead
+/// This class is deprecated and will be removed in a future version.
+/// Use the consolidated [User] entity from 'user.dart'.
+@Deprecated('Use User instead')
 class AppUser {
   final String uid;
   final String role;

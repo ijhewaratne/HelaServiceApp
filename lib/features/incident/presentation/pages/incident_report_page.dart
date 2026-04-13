@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../injection_container.dart';
 import '../../domain/entities/incident.dart';
-// import '../../services/emergency_service.dart';  // TODO: Create this file
+import '../../services/emergency_service.dart';
 
 /// Page for reporting incidents/emergencies
 class IncidentReportPage extends StatefulWidget {
@@ -26,7 +26,7 @@ class IncidentReportPage extends StatefulWidget {
 class _IncidentReportPageState extends State<IncidentReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
-  // final EmergencyService _emergencyService = sl<EmergencyService>();  // TODO: Implement service
+  final EmergencyService _emergencyService = sl<EmergencyService>();
   
   IncidentType _selectedType = IncidentType.other;
   bool _isSubmitting = false;

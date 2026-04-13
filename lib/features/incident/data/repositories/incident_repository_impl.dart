@@ -22,7 +22,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to report incident'));
     } catch (e) {
-      return Left(UnknownGenericFailure(e.toString()));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -40,7 +40,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incidents'));
     } catch (e) {
-      return Left(UnknownGenericFailure(e.toString()));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -65,7 +65,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incidents'));
     } catch (e) {
-      return Left(UnknownGenericFailure(e.toString()));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -96,7 +96,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to update incident'));
     } catch (e) {
-      return Left(UnknownGenericFailure(e.toString()));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -113,7 +113,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incident'));
     } catch (e) {
-      return Left(UnknownGenericFailure(e.toString()));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -137,7 +137,7 @@ class IncidentRepositoryImpl implements IncidentRepository {
         return Right<Failure, List<Incident>>(incidents);
       });
     } catch (e) {
-      return Stream.value(Left(UnknownGenericFailure(e.toString())));
+      return Stream.value(Left(ServerFailure(e.toString())));
     }
   }
 

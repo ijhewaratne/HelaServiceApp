@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/config/theme.dart';
 import 'core/config/router.dart';
 import 'core/services/analytics_service.dart';
+import 'core/localization/app_localizations.dart';
+import 'core/localization/localization_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/worker/presentation/bloc/worker_onboarding_bloc.dart';
@@ -12,6 +15,8 @@ import 'features/payment/presentation/bloc/payment_bloc.dart';
 import 'injection_container.dart';
 
 /// Main application widget
+/// 
+/// Phase 3: Essential Features - Added localization support
 class HelaServiceApp extends StatefulWidget {
   const HelaServiceApp({super.key});
 
@@ -48,40 +53,56 @@ class _HelaServiceAppState extends State<HelaServiceApp> {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthViewModel(sl())),
+          ChangeNotifierProvider(create: (_) => sl<LocalizationService>()),
         ],
-        child: MaterialApp.router(
-          title: 'HelaService',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.light, // Force light mode for v1
-          routerConfig: appRouter,
-          builder: (context, child) {
-            // Add error boundary
-            ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-              return Material(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Something went wrong',
-                        style: Theme.of(context).textTheme.titleLarge,
+        child: Consumer<LocalizationService>(
+          builder: (context, localizationService, child) {
+            return MaterialApp.router(
+              title: 'HelaService',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: ThemeMode.light, // Force light mode for v1
+              
+              // Localization configuration
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: LocalizationService.supportedLocales,
+              locale: localizationService.currentLocale,
+              
+              routerConfig: appRouter,
+              builder: (context, child) {
+                // Add error boundary
+                ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                  return Material(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Something went wrong',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            errorDetails.exception.toString(),
+                            style: Theme.of(context).textTheme.bodySmall,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        errorDetails.exception.toString(),
-                        style: Theme.of(context).textTheme.bodySmall,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            };
-            return child!;
+                    ),
+                  );
+                };
+                return child!;
+              },
+            );
           },
         ),
       ),

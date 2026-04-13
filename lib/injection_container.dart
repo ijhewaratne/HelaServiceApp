@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
@@ -10,6 +11,10 @@ import 'core/services/connectivity_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/monitoring/crash_reporting.dart';
 import 'core/monitoring/performance_monitoring.dart';
+import 'core/security/encryption_service.dart';
+import 'core/localization/localization_service.dart';
+
+import 'features/incident/services/emergency_service.dart';
 
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -52,6 +57,22 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AnalyticsService());
   sl.registerLazySingleton(() => CrashReportingService());
   sl.registerLazySingleton(() => PerformanceMonitoring());
+  sl.registerLazySingleton(() => EmergencyService(firestore: sl()));
+  
+  // Localization Service
+  sl.registerLazySingletonAsync<LocalizationService>(() async {
+    final prefs = await SharedPreferences.getInstance();
+    return LocalizationService(prefs);
+  });
+  
+  // Security Services
+  // EncryptionService is registered with a factory to allow key rotation
+  sl.registerFactory<EncryptionService>(
+    () => EncryptionService(
+      // Get key from environment - ensure this is set!
+      const String.fromEnvironment('ENCRYPTION_KEY', defaultValue: 'dev_key_not_for_production_use_only'),
+    ),
+  );
   
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl(), sl()));

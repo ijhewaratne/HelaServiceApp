@@ -34,6 +34,9 @@ class AppConstants {
   
   // WhatsApp Operator Hotline (for emergency incident reporting)
   static const String operatorWhatsApp = '+94770000000'; // Replace before launch
+  
+  // Emergency Phone Hotline (for direct calls)
+  static const String emergencyPhone = '0112345678'; // Replace before launch
 
   // Booking State Machine Stages
   static const List<String> bookingStatuses = [

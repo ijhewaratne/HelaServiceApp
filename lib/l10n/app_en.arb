@@ -1,0 +1,303 @@
+{
+  "@@locale": "en",
+  "appTitle": "HelaService",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "welcomeMessage": "Welcome to HelaService",
+  "@welcomeMessage": {
+    "description": "Welcome message shown on home screen"
+  },
+  "bookService": "Book a Service",
+  "@bookService": {
+    "description": "Button to book a service"
+  },
+  "myBookings": "My Bookings",
+  "@myBookings": {
+    "description": "My bookings screen title"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile screen title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button"
+  },
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Phone number input label"
+  },
+  "enterPhoneNumber": "Enter your phone number",
+  "@enterPhoneNumber": {
+    "description": "Phone number input hint"
+  },
+  "otpCode": "OTP Code",
+  "@otpCode": {
+    "description": "OTP code input label"
+  },
+  "enterOtp": "Enter OTP code",
+  "@enterOtp": {
+    "description": "OTP input hint"
+  },
+  "verify": "Verify",
+  "@verify": {
+    "description": "Verify button"
+  },
+  "resendOtp": "Resend OTP",
+  "@resendOtp": {
+    "description": "Resend OTP button"
+  },
+  "selectService": "Select Service",
+  "@selectService": {
+    "description": "Service selection title"
+  },
+  "cleaning": "Cleaning",
+  "@cleaning": {
+    "description": "Cleaning service"
+  },
+  "plumbing": "Plumbing",
+  "@plumbing": {
+    "description": "Plumbing service"
+  },
+  "electrical": "Electrical",
+  "@electrical": {
+    "description": "Electrical service"
+  },
+  "acRepair": "AC Repair",
+  "@acRepair": {
+    "description": "AC repair service"
+  },
+  "gardening": "Gardening",
+  "@gardening": {
+    "description": "Gardening service"
+  },
+  "babysitting": "Babysitting",
+  "@babysitting": {
+    "description": "Babysitting service"
+  },
+  "elderlyCare": "Elderly Care",
+  "@elderlyCare": {
+    "description": "Elderly care service"
+  },
+  "cooking": "Cooking",
+  "@cooking": {
+    "description": "Cooking service"
+  },
+  "laundry": "Laundry",
+  "@laundry": {
+    "description": "Laundry service"
+  },
+  "selectDate": "Select Date",
+  "@selectDate": {
+    "description": "Date selection label"
+  },
+  "selectTime": "Select Time",
+  "@selectTime": {
+    "description": "Time selection label"
+  },
+  "address": "Address",
+  "@address": {
+    "description": "Address input label"
+  },
+  "houseNumber": "House Number",
+  "@houseNumber": {
+    "description": "House number input label"
+  },
+  "street": "Street",
+  "@street": {
+    "description": "Street input label"
+  },
+  "city": "City",
+  "@city": {
+    "description": "City input label"
+  },
+  "landmark": "Landmark",
+  "@landmark": {
+    "description": "Landmark input label"
+  },
+  "confirmBooking": "Confirm Booking",
+  "@confirmBooking": {
+    "description": "Confirm booking button"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Submit button"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back button"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Next button"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Done button"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error title"
+  },
+  "success": "Success",
+  "@success": {
+    "description": "Success title"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading message"
+  },
+  "noData": "No data available",
+  "@noData": {
+    "description": "No data message"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button"
+  },
+  "worker": "Worker",
+  "@worker": {
+    "description": "Worker label"
+  },
+  "customer": "Customer",
+  "@customer": {
+    "description": "Customer label"
+  },
+  "admin": "Admin",
+  "@admin": {
+    "description": "Admin label"
+  },
+  "online": "Online",
+  "@online": {
+    "description": "Online status"
+  },
+  "offline": "Offline",
+  "@offline": {
+    "description": "Offline status"
+  },
+  "pending": "Pending",
+  "@pending": {
+    "description": "Pending status"
+  },
+  "confirmed": "Confirmed",
+  "@confirmed": {
+    "description": "Confirmed status"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed status"
+  },
+  "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Cancelled status"
+  },
+  "estimatedPrice": "Estimated Price",
+  "@estimatedPrice": {
+    "description": "Estimated price label"
+  },
+  "totalPrice": "Total Price",
+  "@totalPrice": {
+    "description": "Total price label"
+  },
+  "paymentMethod": "Payment Method",
+  "@paymentMethod": {
+    "description": "Payment method label"
+  },
+  "cash": "Cash",
+  "@cash": {
+    "description": "Cash payment method"
+  },
+  "card": "Card",
+  "@card": {
+    "description": "Card payment method"
+  },
+  "payHere": "PayHere",
+  "@payHere": {
+    "description": "PayHere payment method"
+  },
+  "trackWorker": "Track Worker",
+  "@trackWorker": {
+    "description": "Track worker button"
+  },
+  "workerArriving": "Worker is arriving",
+  "@workerArriving": {
+    "description": "Worker arriving message"
+  },
+  "workerArrived": "Worker has arrived",
+  "@workerArrived": {
+    "description": "Worker arrived message"
+  },
+  "jobStarted": "Job started",
+  "@jobStarted": {
+    "description": "Job started message"
+  },
+  "jobCompleted": "Job completed",
+  "@jobCompleted": {
+    "description": "Job completed message"
+  },
+  "rateWorker": "Rate Worker",
+  "@rateWorker": {
+    "description": "Rate worker button"
+  },
+  "feedback": "Feedback",
+  "@feedback": {
+    "description": "Feedback label"
+  },
+  "writeReview": "Write a review",
+  "@writeReview": {
+    "description": "Write review hint"
+  },
+  "emergency": "Emergency",
+  "@emergency": {
+    "description": "Emergency button"
+  },
+  "callEmergency": "Call Emergency",
+  "@callEmergency": {
+    "description": "Call emergency button"
+  },
+  "reportIncident": "Report Incident",
+  "@reportIncident": {
+    "description": "Report incident button"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language settings"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language"
+  },
+  "sinhala": "Sinhala",
+  "@sinhala": {
+    "description": "Sinhala language"
+  }
+}
