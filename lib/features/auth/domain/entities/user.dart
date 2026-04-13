@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 
 /// User type enumeration
 enum UserType { customer, worker, admin, unknown }
@@ -144,19 +146,41 @@ class User extends Equatable {
   }
 
   /// Create from Firebase User
-  factory User.fromFirebaseUser(firebaseUser, {UserType? userType}) {
+  factory User.fromFirebaseUser(firebase.User firebaseUser, {UserType? userType}) {
     return User(
-      uid: firebaseUser.uid ?? '',
+      uid: firebaseUser.uid,
       phoneNumber: firebaseUser.phoneNumber ?? '',
       email: firebaseUser.email,
       displayName: firebaseUser.displayName,
       photoUrl: firebaseUser.photoURL,
       userType: userType ?? UserType.unknown,
       status: UserStatus.active,
-      isEmailVerified: firebaseUser.emailVerified ?? false,
+      isEmailVerified: firebaseUser.emailVerified,
       isPhoneVerified: firebaseUser.phoneNumber != null,
-      createdAt: firebaseUser.metadata?.creationTime,
-      lastSignInAt: firebaseUser.metadata?.lastSignInTime,
+      createdAt: firebaseUser.metadata.creationTime,
+      lastSignInAt: firebaseUser.metadata.lastSignInTime,
+    );
+  }
+
+  /// Create from Firebase User and Firestore document
+  factory User.fromFirebase(firebase.User firebaseUser, DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>?;
+    
+    return User(
+      uid: firebaseUser.uid,
+      phoneNumber: firebaseUser.phoneNumber ?? '',
+      email: firebaseUser.email ?? data?['email'],
+      displayName: firebaseUser.displayName ?? data?['displayName'],
+      photoUrl: firebaseUser.photoURL ?? data?['photoUrl'],
+      userType: _parseUserType(data?['userType']),
+      status: _parseUserStatus(data?['status']),
+      isEmailVerified: firebaseUser.emailVerified,
+      isPhoneVerified: data?['isPhoneVerified'] ?? firebaseUser.phoneNumber != null,
+      isOnboarded: data?['isOnboarded'] ?? false,
+      createdAt: firebaseUser.metadata.creationTime ?? 
+          (data?['createdAt'] != null ? (data!['createdAt'] as Timestamp).toDate() : null),
+      lastSignInAt: firebaseUser.metadata.lastSignInTime,
+      metadata: data,
     );
   }
 

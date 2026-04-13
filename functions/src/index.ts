@@ -371,3 +371,30 @@ export {
   archiveOldJobs,
   detectSuspiciousActivity,
 } from "./securityScheduled";
+
+// Phase 6: DevOps & Monitoring - Backup Functions
+export {
+  scheduledFirestoreBackup,
+  manualBackup,
+  listBackups,
+  restoreFromBackup,
+} from "./backup";
+
+// Phase 6: DevOps & Monitoring - Health Check Functions
+export {
+  healthCheck,
+  getSystemHealth,
+  ping,
+  ready,
+  live,
+} from "./health";
+
+// Phase 7: Business Features - Referral System
+export {
+  processReferralOnSignup,
+  completeReferralOnBooking,
+  generateReferralCode,
+  cleanupExpiredReferrals,
+  getReferralStats,
+  getLeaderboard,
+} from "./referral";

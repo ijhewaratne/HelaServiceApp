@@ -1,88 +1,197 @@
-# Privacy Policy
+# Privacy Policy - HelaService
 
-HelaService (Pvt) Ltd
-Last Updated: April 9, 2026
+**Effective Date:** [Launch Date]  
+**Last Updated:** April 2026
 
-## Introduction
+## 1. Introduction
 
-HelaService ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.
+HelaService ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services (collectively, the "Service").
 
-## Information We Collect
+This policy complies with the **Personal Data Protection Act (PDPA)** of Sri Lanka and other applicable data protection laws.
 
-### Personal Information
-- Name and contact details (phone number, email)
-- National Identity Card (NIC) number for workers
-- Profile photos
-- Location data (for service delivery)
+## 2. Information We Collect
 
-### Service Information
-- Booking history
-- Payment information (processed securely via PayHere)
-- Service preferences
-- Feedback and ratings
+### 2.1 Personal Information
+We may collect personal information that you voluntarily provide:
+- **Contact Information:** Name, phone number, email address
+- **Profile Information:** Profile photo, address details
+- **Identity Verification:** National Identity Card (NIC) number (for workers)
+- **Payment Information:** Wallet transactions, payment history
+- **Location Data:** Real-time location (during active bookings only)
 
-### Device Information
-- Device type and operating system
-- App usage statistics
-- IP address
-- Push notification tokens
+### 2.2 Automatically Collected Information
+- **Device Information:** Device type, OS version, unique device identifiers
+- **Usage Data:** App usage patterns, feature interactions
+- **Location Data:** With your permission, for service matching
+- **Log Data:** Crash reports, performance data
 
-## How We Use Your Information
+### 2.3 Sensitive Personal Data
+We encrypt and protect:
+- NIC numbers (AES-256 encryption)
+- Precise location data
+- Financial transaction details
+- Chat messages (30-day retention)
 
-1. **Service Provision**: To connect customers with service providers
-2. **Payment Processing**: To process payments securely
-3. **Communication**: To send booking confirmations and updates
-4. **Safety**: To verify worker identities and ensure trust
-5. **Improvement**: To enhance our services and user experience
+## 3. How We Use Your Information
 
-## Data Protection (PDPA Compliance)
+### 3.1 Service Provision
+- Connect customers with service providers
+- Process bookings and payments
+- Facilitate communication between users
+- Verify worker identities
 
-We comply with Sri Lanka's Personal Data Protection Act (PDPA):
+### 3.2 Service Improvement
+- Analyze usage patterns
+- Improve matching algorithms
+- Develop new features
+- Troubleshoot issues
 
-- We collect only necessary data
-- Data is stored securely with encryption
-- Access is restricted to authorized personnel only
-- You have the right to access, correct, or delete your data
+### 3.3 Communications
+- Booking confirmations
+- Service updates
+- Promotional offers (with opt-out)
+- Security alerts
 
-## Data Sharing
+### 3.4 Legal Compliance
+- Comply with legal obligations
+- Respond to lawful requests
+- Protect our rights and safety
 
-We do not sell your personal information. We share data only with:
+## 4. Data Protection Measures
 
-- Service providers (workers) for job fulfillment
+### 4.1 Security
+- **Encryption:** AES-256 for sensitive data at rest
+- **Transmission:** TLS/SSL for all data in transit
+- **Access Control:** Role-based access restrictions
+- **Monitoring:** 24/7 security monitoring
+
+### 4.2 Data Retention
+- **Active Accounts:** Data retained while account is active
+- **Inactive Accounts:** Data deleted after 2 years of inactivity
+- **Messages:** Automatically deleted after 30 days
+- **Backups:** Retained for 30 days only
+
+### 4.3 PDPA Compliance
+- We obtain explicit consent for data collection
+- You can access, correct, or delete your data
+- We notify you of data breaches within 24 hours
+- We conduct regular privacy impact assessments
+
+## 5. Information Sharing
+
+### 5.1 With Other Users
+- **Customers see:** Worker name, photo, rating, location (during service)
+- **Workers see:** Customer name, address, service requirements
+- **Chat messages:** Shared between connected users only
+
+### 5.2 With Service Providers
+We share data with:
 - Payment processors (PayHere)
 - Cloud service providers (Google Firebase)
-- Legal authorities when required by law
+- SMS gateway providers
+- Analytics providers (anonymized)
 
-## Data Retention
+### 5.3 Legal Requirements
+We may disclose information:
+- To comply with legal obligations
+- To protect our rights and safety
+- In response to lawful requests from authorities
+- During emergency situations
 
-- Active accounts: Data retained while account is active
-- Chat messages: 30 days
-- Completed jobs: 90 days (then archived)
-- Deleted accounts: Data removed within 30 days
+### 5.4 Business Transfers
+If HelaService is acquired, user data may be transferred with appropriate protections.
 
-## Security Measures
+## 6. Your Rights (PDPA)
 
-- Firebase App Check for API protection
-- Input validation and sanitization
-- Rate limiting to prevent abuse
-- Regular security audits
+Under Sri Lanka's PDPA, you have the right to:
 
-## Your Rights
+### 6.1 Access
+Request a copy of your personal data we hold.
 
-You have the right to:
-- Access your personal data
-- Correct inaccurate information
-- Request data deletion
-- Opt-out of marketing communications
-- File a complaint with the Data Protection Authority
+### 6.2 Correction
+Update or correct inaccurate information.
 
-## Contact Us
+### 6.3 Deletion
+Request deletion of your personal data (subject to legal requirements).
 
-For privacy-related inquiries:
-- Email: privacy@helaservice.lk
-- Phone: +94 11 234 5678
-- Address: HelaService (Pvt) Ltd, Colombo, Sri Lanka
+### 6.4 Portability
+Receive your data in a machine-readable format.
 
-## Changes to This Policy
+### 6.5 Objection
+Object to certain types of processing.
 
-We may update this policy periodically. Changes will be posted in the app and on our website.
+### 6.6 Withdraw Consent
+Withdraw consent for data processing (may affect service usage).
+
+### 6.7 How to Exercise Your Rights
+Email: privacy@helaservice.lk  
+Response time: Within 30 days
+
+## 7. Location Data
+
+### 7.1 Collection
+- Precise location collected during active bookings
+- Background location (optional) for worker availability
+
+### 7.2 Use
+- Match customers with nearby workers
+- Track worker arrival for services
+- Calculate service distances
+
+### 7.3 Control
+- You can disable location services in device settings
+- Location sharing stops when booking is completed
+
+## 8. Cookies and Tracking
+
+Our mobile app uses:
+- **Firebase Analytics:** Usage analytics (anonymized)
+- **Crashlytics:** Error reporting
+- **Performance Monitoring:** App performance metrics
+
+## 9. Children's Privacy
+
+Our Service is not intended for children under 16. We do not knowingly collect data from children under 16.
+
+## 10. International Data Transfers
+
+Data is stored on Google Cloud Platform (Singapore and Mumbai regions). We ensure appropriate safeguards are in place for any international transfers.
+
+## 11. Data Breach Notification
+
+In case of a data breach:
+- We will notify affected users within 24 hours
+- We will report to authorities within 72 hours (as required by PDPA)
+- We will provide guidance on protective measures
+
+## 12. Changes to This Policy
+
+We may update this Privacy Policy periodically. We will notify you of significant changes via:
+- In-app notification
+- Email to registered address
+- Updated effective date
+
+## 13. Contact Us
+
+For privacy-related questions or concerns:
+
+**Data Protection Officer**  
+Email: privacy@helaservice.lk  
+Phone: +94 11 XXX XXXX  
+Address: [Company Address], Colombo, Sri Lanka
+
+**HelaService Support**  
+Email: support@helaservice.lk  
+Phone: +94 11 XXX XXXX
+
+## 14. Regulatory Authority
+
+If you have unresolved concerns, you may contact:
+
+**Data Protection Authority of Sri Lanka**  
+Website: www.dpa.gov.lk  
+Email: info@dpa.gov.lk
+
+---
+
+*By using HelaService, you consent to this Privacy Policy.*

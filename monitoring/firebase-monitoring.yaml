@@ -1,0 +1,322 @@
+# Phase 6: DevOps & Monitoring - Firebase Monitoring Configuration
+#
+# Firebase Performance Monitoring and Alerts
+# Configure via Firebase Console or Firebase Management API
+
+apiVersion: firebase.google.com/v1
+kind: MonitoringConfig
+metadata:
+  name: helaservice-monitoring
+  project: helaservice-prod
+
+# Performance Monitoring Traces
+performanceMonitoring:
+  enabled: true
+  
+  # Custom traces for critical user flows
+  customTraces:
+    - name: booking_flow
+      description: "Complete booking creation flow"
+      startEvent: "booking_start"
+      endEvent: "booking_complete"
+      
+    - name: worker_dispatch
+      description: "Worker assignment and dispatch"
+      startEvent: "dispatch_start"
+      endEvent: "worker_assigned"
+      
+    - name: payment_processing
+      description: "Payment transaction processing"
+      startEvent: "payment_initiated"
+      endEvent: "payment_complete"
+      
+    - name: search_workers
+      description: "Search for available workers"
+      startEvent: "search_start"
+      endEvent: "search_results"
+      
+    - name: chat_load
+      description: "Chat screen initialization"
+      startEvent: "chat_open"
+      endEvent: "chat_ready"
+
+  # HTTP metrics collection
+  httpMetrics:
+    enabled: true
+    urlPatterns:
+      - pattern: "*.cloudfunctions.net/*"
+        capture: true
+      - pattern: "*.googleapis.com/*"
+        capture: true
+
+  # Screen rendering traces
+  screenRendering:
+    enabled: true
+    slowRenderingThresholdMs: 16  # Frame drops
+    frozenFramesThresholdMs: 700
+
+# Cloud Monitoring Alerts (Stackdriver)
+cloudMonitoring:
+  enabled: true
+  
+  # Alert Policies
+  alertPolicies:
+    # High Error Rate
+    - displayName: "High Error Rate - API"
+      conditions:
+        - displayName: "Error rate > 5%"
+          conditionThreshold:
+            filter: |
+              resource.type="cloud_function"
+              AND metric.type="cloudfunctions.googleapis.com/function/execution_count"
+              AND metric.labels.status!="ok"
+            aggregations:
+              - alignmentPeriod: 300s
+                perSeriesAligner: ALIGN_RATE
+            comparison: COMPARISON_GT
+            thresholdValue: 0.05
+            duration: 300s
+      notificationChannels:
+        - devops-email
+        - slack-deployments
+      severity: ERROR
+      
+    # Function Latency
+    - displayName: "High Function Latency"
+      conditions:
+        - displayName: "Latency P99 > 2s"
+          conditionThreshold:
+            filter: |
+              resource.type="cloud_function"
+              AND metric.type="cloudfunctions.googleapis.com/function/execution_times"
+            aggregations:
+              - alignmentPeriod: 300s
+                perSeriesAligner: ALIGN_PERCENTILE_99
+            comparison: COMPARISON_GT
+            thresholdValue: 2000  # ms
+            duration: 300s
+      notificationChannels:
+        - devops-email
+      severity: WARNING
+      
+    # Firestore Read Latency
+    - displayName: "Firestore High Latency"
+      conditions:
+        - displayName: "Read latency > 500ms"
+          conditionThreshold:
+            filter: |
+              resource.type="firestore.googleapis.com/Database"
+              AND metric.type="firestore.googleapis.com/api/request_latencies"
+            aggregations:
+              - alignmentPeriod: 300s
+                perSeriesAligner: ALIGN_PERCENTILE_95
+            comparison: COMPARISON_GT
+            thresholdValue: 500
+            duration: 300s
+      notificationChannels:
+        - devops-email
+        - slack-deployments
+      severity: WARNING
+      
+    # Firestore Write Errors
+    - displayName: "Firestore Write Errors"
+      conditions:
+        - displayName: "Write errors > 10/min"
+          conditionThreshold:
+            filter: |
+              resource.type="firestore.googleapis.com/Database"
+              AND metric.type="firestore.googleapis.com/api/request_count"
+              AND metric.labels.status!="OK"
+            aggregations:
+              - alignmentPeriod: 60s
+                perSeriesAligner: ALIGN_RATE
+            comparison: COMPARISON_GT
+            thresholdValue: 0.17  # 10 per minute
+            duration: 300s
+      notificationChannels:
+        - devops-email
+        - slack-deployments
+        - pagerduty
+      severity: CRITICAL
+      
+    # Storage Quota
+    - displayName: "Storage Quota Alert"
+      conditions:
+        - displayName: "Storage > 80%"
+          conditionThreshold:
+            filter: |
+              resource.type="gcs_bucket"
+              AND metric.type="storage.googleapis.com/api/request_count"
+            comparison: COMPARISON_GT
+            thresholdValue: 0.8
+            duration: 3600s
+      notificationChannels:
+        - devops-email
+      severity: WARNING
+      
+    # Auth Failed Logins
+    - displayName: "Suspicious Login Activity"
+      conditions:
+        - displayName: "Failed logins > 100/min"
+          conditionThreshold:
+            filter: |
+              resource.type="firebase_auth"
+              AND metric.type="identitytoolkit.googleapis.com/request_count"
+              AND metric.labels.status!="OK"
+            aggregations:
+              - alignmentPeriod: 60s
+                perSeriesAligner: ALIGN_RATE
+            comparison: COMPARISON_GT
+            thresholdValue: 1.67  # 100 per minute
+            duration: 300s
+      notificationChannels:
+        - devops-email
+        - security-team
+      severity: CRITICAL
+      
+    # Billing Alert
+    - displayName: "Daily Spend Alert"
+      conditions:
+        - displayName: "Spend > $100/day"
+          conditionThreshold:
+            filter: |
+              resource.type="global"
+              AND metric.type="billing.googleapis.com/charges"
+            aggregations:
+              - alignmentPeriod: 86400s
+                perSeriesAligner: ALIGN_SUM
+            comparison: COMPARISON_GT
+            thresholdValue: 100
+            duration: 3600s
+      notificationChannels:
+        - finance-team
+        - devops-email
+      severity: WARNING
+
+# Log-based Metrics
+logBasedMetrics:
+  - name: booking_created
+    description: "Count of new bookings created"
+    filter: |
+      protoPayload.serviceName="firestore.googleapis.com"
+      AND protoPayload.methodName="google.firestore.v1.Firestore.Write"
+      AND protoPayload.resource.labels.collection_id="bookings"
+    metricDescriptor:
+      metricKind: DELTA
+      valueType: INT64
+      
+  - name: payment_failed
+    description: "Count of failed payments"
+    filter: |
+      jsonPayload.event_type="payment_failed"
+      OR (jsonPayload.message:="payment" AND jsonPayload.status:="failed")
+    metricDescriptor:
+      metricKind: DELTA
+      valueType: INT64
+      
+  - name: worker_dispatch_timeout
+    description: "Worker dispatch timeouts"
+    filter: |
+      jsonPayload.message:="Job timed out"
+      OR jsonPayload.status:="timeout"
+    metricDescriptor:
+      metricKind: DELTA
+      valueType: INT64
+
+# Uptime Checks (via Cloud Monitoring)
+uptimeChecks:
+  - displayName: "Functions Health Check"
+    monitoredResource:
+      type: cloud_function
+      labels:
+        function_name: healthCheck
+        project_id: helaservice-prod
+    httpCheck:
+      path: /
+      port: 443
+      useSsl: true
+      validateSsl: true
+    period: 60s
+    timeout: 10s
+    
+  - displayName: "Firestore Availability"
+    monitoredResource:
+      type: firestore.googleapis.com/Database
+      labels:
+        database: (default)
+        project_id: helaservice-prod
+    tcpCheck:
+      port: 443
+    period: 300s
+    timeout: 30s
+
+# Notification Channels
+notificationChannels:
+  - displayName: devops-email
+    type: email
+    labels:
+      email_address: devops@helaservice.lk
+      
+  - displayName: slack-deployments
+    type: slack
+    labels:
+      auth_token: ${SLACK_BOT_TOKEN}
+      channel_name: deployments
+      
+  - displayName: pagerduty
+    type: pagerduty
+    labels:
+      service_key: ${PAGERDUTY_KEY}
+      
+  - displayName: security-team
+    type: email
+    labels:
+      email_address: security@helaservice.lk
+      
+  - displayName: finance-team
+    type: email
+    labels:
+      email_address: finance@helaservice.lk
+
+# Dashboards
+dashboards:
+  - displayName: "HelaService - API Overview"
+    gridLayout:
+      columns: 2
+      widgets:
+        - title: "Request Count"
+          xyChart:
+            dataSets:
+              - timeSeriesQuery:
+                  timeSeriesFilter:
+                    filter: |
+                      resource.type="cloud_function"
+                      AND metric.type="cloudfunctions.googleapis.com/function/execution_count"
+                      
+        - title: "Error Rate"
+          xyChart:
+            dataSets:
+              - timeSeriesQuery:
+                  timeSeriesFilter:
+                    filter: |
+                      resource.type="cloud_function"
+                      AND metric.type="cloudfunctions.googleapis.com/function/execution_count"
+                      AND metric.labels.status!="ok"
+                      
+        - title: "Latency P99"
+          xyChart:
+            dataSets:
+              - timeSeriesQuery:
+                  timeSeriesFilter:
+                    filter: |
+                      resource.type="cloud_function"
+                      AND metric.type="cloudfunctions.googleapis.com/function/execution_times"
+                    
+        - title: "Active Connections"
+          xyChart:
+            dataSets:
+              - timeSeriesQuery:
+                  timeSeriesFilter:
+                    filter: |
+                      resource.type="firestore.googleapis.com/Database"
+                      AND metric.type="firestore.googleapis.com/connections"

@@ -8,6 +8,7 @@ import 'core/config/router.dart';
 import 'core/services/analytics_service.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/localization/localization_service.dart';
+import 'core/providers/theme_provider.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/worker/presentation/bloc/worker_onboarding_bloc.dart';
@@ -54,15 +55,16 @@ class _HelaServiceAppState extends State<HelaServiceApp> {
         providers: [
           ChangeNotifierProvider(create: (_) => AuthViewModel(sl())),
           ChangeNotifierProvider(create: (_) => sl<LocalizationService>()),
+          ChangeNotifierProvider(create: (_) => sl<ThemeProvider>())
         ],
-        child: Consumer<LocalizationService>(
-          builder: (context, localizationService, child) {
+        child: Consumer2<LocalizationService, ThemeProvider>(
+          builder: (context, localizationService, themeProvider, child) {
             return MaterialApp.router(
               title: 'HelaService',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
-              themeMode: ThemeMode.light, // Force light mode for v1
+              themeMode: themeProvider.themeMode,
               
               // Localization configuration
               localizationsDelegates: const [

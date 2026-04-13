@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../domain/entities/address.dart';
 import '../../domain/repositories/customer_repository.dart';
 
 /// Implementation of CustomerRepository using Firebase Firestore
@@ -102,7 +103,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSavedAddresses(
+  Future<Either<Failure, List<Address>>> getSavedAddresses(
     String customerId,
   ) async {
     try {
@@ -112,8 +113,11 @@ class CustomerRepositoryImpl implements CustomerRepository {
       }
       
       final data = doc.data();
-      final addresses = (data?['savedAddresses'] as List<dynamic>?) ?? [];
-      return Right(addresses.cast<Map<String, dynamic>>());
+      final addressesList = (data?['savedAddresses'] as List<dynamic>?) ?? [];
+      final addresses = addressesList
+          .map((a) => Address.fromJson(a as Map<String, dynamic>))
+          .toList();
+      return Right(addresses);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -122,13 +126,14 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> addSavedAddress(
+  Future<Either<Failure, Address>> addSavedAddress(
     String customerId,
-    Map<String, dynamic> address,
+    Address address,
   ) async {
     try {
+      final addressJson = address.toJson();
       final addressWithId = {
-        ...address,
+        ...addressJson,
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
       };
       
@@ -137,7 +142,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       
-      return Right(addressWithId);
+      return Right(Address.fromJson(addressWithId));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -146,10 +151,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> updateSavedAddress(
+  Future<Either<Failure, Address>> updateSavedAddress(
     String customerId,
     String addressId,
-    Map<String, dynamic> address,
+    Address address,
   ) async {
     try {
       // Get current addresses
@@ -169,14 +174,15 @@ class CustomerRepositoryImpl implements CustomerRepository {
         return Left(GenericFailure('Address not found'));
       }
       
-      addresses[index] = {...address, 'id': addressId};
+      final updatedJson = address.toJson();
+      addresses[index] = {...updatedJson, 'id': addressId};
       
       await _firestore.collection('customers').doc(customerId).update({
         'savedAddresses': addresses,
         'updatedAt': FieldValue.serverTimestamp(),
       });
       
-      return Right(addresses[index]);
+      return Right(Address.fromJson(addresses[index]));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {

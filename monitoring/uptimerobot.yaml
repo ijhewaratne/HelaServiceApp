@@ -1,0 +1,224 @@
+# Phase 6: DevOps & Monitoring - UptimeRobot Configuration
+# 
+# Import this configuration to UptimeRobot dashboard
+# Or use the API to create monitors programmatically
+
+apiVersion: v1
+kind: UptimeMonitorConfig
+metadata:
+  name: helaservice-monitoring
+  project: helaservice-prod
+
+# API Configuration
+api:
+  baseUrl: https://api.uptimerobot.com/v2
+  apiKey: ${UPTIMEROBOT_API_KEY}  # Set via environment variable
+
+# Alert Contacts
+alertContacts:
+  - id: 1
+    type: email
+    value: devops@helaservice.lk
+    friendlyName: DevOps Team
+    
+  - id: 2
+    type: slack
+    value: ${SLACK_WEBHOOK_URL}
+    friendlyName: Slack #deployments
+    
+  - id: 3
+    type: sms
+    value: "+94771234567"  # On-call engineer
+    friendlyName: On-Call Engineer
+    threshold: 2  # Only alert after 2 failures
+    
+  - id: 4
+    type: pagerduty
+    value: ${PAGERDUTY_INTEGRATION_KEY}
+    friendlyName: PagerDuty Critical
+
+# HTTP Monitors
+httpMonitors:
+  # Main API Health Check
+  - name: "HelaService API - Health"
+    url: "https://asia-south1-helaservice-prod.cloudfunctions.net/healthCheck"
+    type: HTTP
+    interval: 300  # 5 minutes
+    timeout: 30
+    method: GET
+    expectedStatusCode: 200
+    alertContacts:
+      - 1
+      - 2
+    
+  # Simple Ping Endpoint
+  - name: "HelaService - Ping"
+    url: "https://asia-south1-helaservice-prod.cloudfunctions.net/ping"
+    type: HTTP
+    interval: 60  # 1 minute
+    timeout: 10
+    method: GET
+    expectedStatusCode: 200
+    alertContacts:
+      - 1
+      
+  # Readiness Check
+  - name: "HelaService - Readiness"
+    url: "https://asia-south1-helaservice-prod.cloudfunctions.net/ready"
+    type: HTTP
+    interval: 300  # 5 minutes
+    timeout: 30
+    method: GET
+    expectedStatusCode: 200
+    alertContacts:
+      - 1
+      - 2
+      
+  # Firestore API (via REST)
+  - name: "HelaService - Firestore"
+    url: "https://firestore.googleapis.com/v1/projects/helaservice-prod/databases/(default)/documents/health_check/ping"
+    type: HTTP
+    interval: 600  # 10 minutes
+    timeout: 30
+    method: GET
+    expectedStatusCode: 200
+    headers:
+      Authorization: "Bearer ${FIREBASE_TOKEN}"
+    alertContacts:
+      - 1
+      - 2
+      - 3
+      
+  # App Website/Hosting
+  - name: "HelaService - Website"
+    url: "https://helaservice.lk"
+    type: HTTP
+    interval: 300
+    timeout: 30
+    method: GET
+    expectedStatusCode: 200
+    alertContacts:
+      - 1
+      - 2
+      
+  # Admin Dashboard
+  - name: "HelaService - Admin Dashboard"
+    url: "https://admin.helaservice.lk"
+    type: HTTP
+    interval: 600
+    timeout: 30
+    method: GET
+    expectedStatusCode: 200
+    alertContacts:
+      - 1
+      - 2
+
+# Keyword Monitors (check for specific content)
+keywordMonitors:
+  # Check that API returns "healthy" status
+  - name: "HelaService API - Healthy Status"
+    url: "https://asia-south1-helaservice-prod.cloudfunctions.net/healthCheck"
+    type: KEYWORD
+    interval: 300
+    timeout: 30
+    keywordType: exists  # or 'not exists'
+    keywordValue: '"status":"healthy"'
+    alertContacts:
+      - 1
+      - 2
+
+# Port Monitors (for any TCP services)
+portMonitors: []
+  # Add if you have any TCP services to monitor
+
+# Heartbeat Monitors (for cron jobs)
+heartbeatMonitors:
+  # Daily Backup Job
+  - name: "HelaService - Daily Backup"
+    interval: 1440  # Expect heartbeat every 24 hours
+    gracePeriod: 60  # Allow 1 hour grace period
+    alertContacts:
+      - 1
+      - 2
+      - 3
+      
+  # Hourly Data Sync
+  - name: "HelaService - Hourly Sync"
+    interval: 60
+    gracePeriod: 15
+    alertContacts:
+      - 1
+      - 2
+
+# Maintenance Windows
+maintenanceWindows:
+  - name: "Weekly Maintenance"
+    startTime: "2024-01-01 02:00:00"
+    duration: 60  # 1 hour
+    timezone: "Asia/Colombo"
+    recurrence:
+      frequency: weekly
+      dayOfWeek: sunday
+    affectedMonitors:
+      - "HelaService API - Health"
+      - "HelaService - Readiness"
+      - "HelaService - Firestore"
+      
+  - name: "Emergency Maintenance"
+    duration: 30
+    timezone: "Asia/Colombo"
+    # Created on-demand via API
+
+# Status Page Configuration
+statusPage:
+  enabled: true
+  customDomain: "status.helaservice.lk"
+  logoUrl: "https://helaservice.lk/assets/logo.png"
+  companyName: "HelaService"
+  timezone: "Asia/Colombo"
+  
+  components:
+    - name: "Mobile App API"
+      monitors:
+        - "HelaService API - Health"
+        - "HelaService - Ping"
+        
+    - name: "Worker Dispatch System"
+      monitors:
+        - "HelaService - Readiness"
+        - "HelaService API - Healthy Status"
+        
+    - name: "Database"
+      monitors:
+        - "HelaService - Firestore"
+        
+    - name: "Website"
+      monitors:
+        - "HelaService - Website"
+        - "HelaService - Admin Dashboard"
+        
+    - name: "Automated Backups"
+      monitors:
+        - "HelaService - Daily Backup"
+
+# SLA Configuration
+sla:
+  targetUptime: 99.9  # 99.9% uptime target
+  monitoringPeriod: 30  # days
+  
+  # Calculate SLAs per component
+  components:
+    api:
+      target: 99.95
+      monitors:
+        - "HelaService API - Health"
+        
+    database:
+      target: 99.99
+      monitors:
+        - "HelaService - Firestore"
+        
+    website:
+      target: 99.9
+      monitors:
+        - "HelaService - Website"

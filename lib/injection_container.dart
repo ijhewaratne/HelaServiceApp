@@ -13,6 +13,7 @@ import 'core/monitoring/crash_reporting.dart';
 import 'core/monitoring/performance_monitoring.dart';
 import 'core/security/encryption_service.dart';
 import 'core/localization/localization_service.dart';
+import 'core/providers/theme_provider.dart';
 
 import 'features/incident/services/emergency_service.dart';
 
@@ -41,6 +42,15 @@ import 'features/payment/presentation/bloc/payment_bloc.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
 
+import 'features/wallet/data/repositories/wallet_repository_impl.dart';
+import 'features/wallet/domain/repositories/wallet_repository.dart';
+
+import 'features/promo/data/repositories/promo_repository_impl.dart';
+import 'features/promo/domain/repositories/promo_repository.dart';
+
+import 'features/referral/data/repositories/referral_repository_impl.dart';
+import 'features/referral/domain/repositories/referral_repository.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -65,6 +75,12 @@ Future<void> init() async {
     return LocalizationService(prefs);
   });
   
+  // Theme Provider
+  sl.registerLazySingletonAsync<ThemeProvider>(() async {
+    final prefs = await SharedPreferences.getInstance();
+    return ThemeProvider(prefs);
+  });
+  
   // Security Services
   // EncryptionService is registered with a factory to allow key rotation
   sl.registerFactory<EncryptionService>(
@@ -81,6 +97,11 @@ Future<void> init() async {
   sl.registerLazySingleton<BookingRepository>(() => BookingRepositoryImpl(sl(), sl()));
   sl.registerLazySingleton<PaymentRepository>(() => PaymentRepositoryImpl(sl()));
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
+  
+  // Phase 7: Business Features
+  sl.registerLazySingleton<WalletRepository>(() => WalletRepositoryImpl(sl()));
+  sl.registerLazySingleton<PromoRepository>(() => PromoRepositoryImpl(sl()));
+  sl.registerLazySingleton<ReferralRepository>(() => ReferralRepositoryImpl(sl()));
   
   // Use Cases
   sl.registerLazySingleton(() => FindNearestWorker(sl()));

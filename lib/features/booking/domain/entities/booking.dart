@@ -77,14 +77,14 @@ class Booking extends Equatable {
   });
 
   /// Empty booking (for initial states)
-  static const empty = Booking(
+  static final empty = Booking(
     id: '',
     customerId: '',
     serviceType: ServiceType.other,
     address: Address.empty,
-    scheduledDate: null, // ignore: avoid_field_initializing_in_const
+    scheduledDate: DateTime(2000, 1, 1),
     estimatedPrice: 0.0,
-    createdAt: null, // ignore: avoid_field_initializing_in_const
+    createdAt: DateTime(2000, 1, 1),
   );
 
   /// Check if booking is empty

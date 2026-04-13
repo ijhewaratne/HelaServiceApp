@@ -16,14 +16,7 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._auth, this._firestore);
 
   @override
-  Stream<User?> get authStateChanges => _auth.authStateChanges().asyncMap((firebaseUser) async {
-    if (firebaseUser == null) return null;
-    
-    // Fetch additional data from Firestore
-    final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
-    
-    return _mapToUser(firebaseUser, doc);
-  });
+  Stream<firebase.User?> get authStateChanges => _auth.authStateChanges();
 
   @override
   Future<Either<Failure, void>> verifyPhone({
@@ -93,11 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  User? get currentUser {
-    final firebaseUser = _auth.currentUser;
-    if (firebaseUser == null) return null;
-    return User.fromFirebaseUser(firebaseUser);
-  }
+  firebase.User? get currentUser => _auth.currentUser;
 
   @override
   Future<Either<Failure, User>> updateUserType(String userId, UserType userType) async {
@@ -144,18 +133,9 @@ class AuthRepositoryImpl implements AuthRepository {
   User _mapToUser(firebase.User firebaseUser, DocumentSnapshot firestoreDoc) {
     final data = firestoreDoc.data() as Map<String, dynamic>?;
     
-    return User.fromFirebaseUser(
+    return User.fromFirebase(
       firebaseUser,
-      userType: data != null ? _parseUserType(data['userType']) : null,
-    ).copyWith(
-      isOnboarded: data?['isOnboarded'] ?? false,
-      isEmailVerified: data?['isEmailVerified'] ?? false,
-      isPhoneVerified: data?['isPhoneVerified'] ?? true,
-      status: data != null ? _parseUserStatus(data['status']) : UserStatus.pendingVerification,
-      displayName: data?['displayName'],
-      email: data?['email'],
-      photoUrl: data?['photoUrl'],
-      metadata: data,
+      firestoreDoc,
     );
   }
 

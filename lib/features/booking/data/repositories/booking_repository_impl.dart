@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../domain/entities/booking.dart';
 import '../../domain/repositories/booking_repository.dart';
 
 /// Implementation of BookingRepository using Firebase Firestore and Auth
@@ -13,8 +14,8 @@ class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl(this._firestore, this._firebaseAuth);
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> createBooking(
-    Map<String, dynamic> bookingData,
+  Future<Either<Failure, Booking>> createBooking(
+    Booking booking,
   ) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
@@ -23,17 +24,13 @@ class BookingRepositoryImpl implements BookingRepository {
       }
 
       final docRef = _firestore.collection('bookings').doc();
-      final data = {
-        ...bookingData,
-        'id': docRef.id,
-        'customerId': currentUser.uid,
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
+      final bookingData = booking.copyWith(
+        id: docRef.id,
+        customerId: currentUser.uid,
+      );
 
-      await docRef.set(data);
-      return Right(data);
+      await docRef.set(bookingData.toJson());
+      return Right(bookingData);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -42,13 +39,13 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getBooking(String bookingId) async {
+  Future<Either<Failure, Booking>> getBooking(String bookingId) async {
     try {
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
       if (!doc.exists) {
         return Left(GenericFailure('Booking not found'));
       }
-      return Right(doc.data()!);
+      return Right(Booking.fromFirestore(doc));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -57,7 +54,7 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> updateBooking(
+  Future<Either<Failure, Booking>> updateBooking(
     String bookingId,
     Map<String, dynamic> data,
   ) async {
@@ -71,7 +68,7 @@ class BookingRepositoryImpl implements BookingRepository {
 
       // Get updated booking
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
-      return Right(doc.data()!);
+      return Right(Booking.fromFirestore(doc));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -100,7 +97,7 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getCustomerBookings(
+  Future<Either<Failure, List<Booking>>> getCustomerBookings(
     String customerId,
   ) async {
     try {
@@ -110,7 +107,7 @@ class BookingRepositoryImpl implements BookingRepository {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
+      return Right(querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -119,7 +116,7 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getWorkerBookings(
+  Future<Either<Failure, List<Booking>>> getWorkerBookings(
     String workerId,
   ) async {
     try {
@@ -129,7 +126,7 @@ class BookingRepositoryImpl implements BookingRepository {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
+      return Right(querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -138,7 +135,7 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>?>> getActiveBookingForCustomer(
+  Future<Either<Failure, Booking?>> getActiveBookingForCustomer(
     String customerId,
   ) async {
     try {
@@ -153,7 +150,7 @@ class BookingRepositoryImpl implements BookingRepository {
       if (querySnapshot.docs.isEmpty) {
         return const Right(null);
       }
-      return Right(querySnapshot.docs.first.data());
+      return Right(Booking.fromFirestore(querySnapshot.docs.first));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -162,7 +159,7 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>?>> getActiveBookingForWorker(
+  Future<Either<Failure, Booking?>> getActiveBookingForWorker(
     String workerId,
   ) async {
     try {
@@ -177,7 +174,7 @@ class BookingRepositoryImpl implements BookingRepository {
       if (querySnapshot.docs.isEmpty) {
         return const Right(null);
       }
-      return Right(querySnapshot.docs.first.data());
+      return Right(Booking.fromFirestore(querySnapshot.docs.first));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -186,20 +183,20 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> assignWorker(
+  Future<Either<Failure, Booking>> assignWorker(
     String bookingId,
     String workerId,
   ) async {
     try {
       await _firestore.collection('bookings').doc(bookingId).update({
         'workerId': workerId,
-        'status': 'assigned',
+        'status': 'workerAssigned',
         'assignedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
-      return Right(doc.data()!);
+      return Right(Booking.fromFirestore(doc));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -208,27 +205,29 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> updateBookingStatus(
+  Future<Either<Failure, Booking>> updateBookingStatus(
     String bookingId,
-    String status, {
+    BookingStatus status, {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
       final updateData = <String, dynamic>{
-        'status': status,
+        'status': status.name,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
       // Add status-specific timestamps
       switch (status) {
-        case 'inProgress':
+        case BookingStatus.inProgress:
           updateData['startedAt'] = FieldValue.serverTimestamp();
           break;
-        case 'completed':
+        case BookingStatus.completed:
           updateData['completedAt'] = FieldValue.serverTimestamp();
           break;
-        case 'cancelled':
+        case BookingStatus.cancelled:
           updateData['cancelledAt'] = FieldValue.serverTimestamp();
+          break;
+        default:
           break;
       }
 
@@ -239,7 +238,7 @@ class BookingRepositoryImpl implements BookingRepository {
       await _firestore.collection('bookings').doc(bookingId).update(updateData);
 
       final doc = await _firestore.collection('bookings').doc(bookingId).get();
-      return Right(doc.data()!);
+      return Right(Booking.fromFirestore(doc));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -248,19 +247,19 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Stream<Either<Failure, Map<String, dynamic>>> watchBooking(String bookingId) {
+  Stream<Either<Failure, Booking>> watchBooking(String bookingId) {
     return _firestore
         .collection('bookings')
         .doc(bookingId)
         .snapshots()
-        .map<Either<Failure, Map<String, dynamic>>>((snapshot) {
+        .map<Either<Failure, Booking>>((snapshot) {
       if (!snapshot.exists) {
         return Left(GenericFailure('Booking not found'));
       }
-      return Right(snapshot.data()!);
+      return Right(Booking.fromFirestore(snapshot));
     }).handleError((Object e) {
       // Convert error to Left value
-      return Left<Failure, Map<String, dynamic>>(GenericFailure('Stream error: $e'));
+      return Left<Failure, Booking>(GenericFailure('Stream error: $e'));
     });
   }
 }

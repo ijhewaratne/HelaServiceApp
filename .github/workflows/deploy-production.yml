@@ -1,25 +1,87 @@
-name: Deploy Production
+# Phase 6: DevOps & Monitoring - Production Deployment
+# Deploys to Firebase production environment on release creation
+
+name: Deploy to Production
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - '!v*-beta'
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g., 1.0.0)'
+        description: 'Version to deploy (e.g., 1.2.3)'
         required: true
-        default: '1.0.0'
+        type: string
 
 env:
-  FLUTTER_VERSION: '3.16.0'
+  FLUTTER_VERSION: '3.19.0'
+  JAVA_VERSION: '17'
 
 jobs:
-  deploy-android-production:
-    name: Deploy Android to Play Store
+  # Job 1: Pre-deployment Checks
+  pre-check:
+    name: Pre-deployment Checks
     runs-on: ubuntu-latest
-    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify release tag
+        run: |
+          if [[ ! "${{ github.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Release tag must follow semantic versioning (v1.2.3)"
+            exit 1
+          fi
+          echo "✅ Release tag format valid"
+
+      - name: Check branch protection
+        run: |
+          # Ensure we're deploying from main/master
+          if [[ "${{ github.event.release.target_commitish }}" != "main" && "${{ github.event.release.target_commitish }}" != "master" ]]; then
+            echo "Error: Releases must target main or master branch"
+            exit 1
+          fi
+          echo "✅ Branch protection check passed"
+
+  # Job 2: Full Test Suite
+  test:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    needs: pre-check
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: flutter test --coverage
+
+      - name: Run integration tests
+        run: |
+          # Start Firebase emulator for integration tests
+          npm install -g firebase-tools
+          firebase emulators:exec --only firestore,auth 'flutter test integration_test/'
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/lcov.info
+
+  # Job 3: Build Android App Bundle
+  build-android:
+    name: Build Android AAB
+    runs-on: ubuntu-latest
+    needs: [pre-check, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +90,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -37,47 +99,58 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Firebase Config
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
-
-      - name: Setup Keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/keystore.jks
-          echo "$KEY_PROPERTIES" > android/key.properties
-
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build AppBundle
-        run: flutter build appbundle --release
+      - name: Decode production keystore
+        run: |
+          echo "${{ secrets.PRODUCTION_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
-      - name: Upload to Google Play (Internal Testing)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
-          packageName: com.helaservice.app
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: internal
-          status: completed
-          whatsNewDirectory: distribution/whatsnew
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.PRODUCTION_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.PRODUCTION_KEY_PASSWORD }}
+          keyAlias=${{ secrets.PRODUCTION_KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
 
-      - name: Upload Artifact
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build Production AAB
+        run: |
+          flutter build appbundle \
+            --flavor production \
+            --target lib/main_production.dart \
+            --build-number ${{ github.run_number }} \
+            --build-name "${{ steps.version.outputs.version }}"
+
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-production-bundle
-          path: build/app/outputs/bundle/release/app-release.aab
+          name: production-aab
+          path: build/app/outputs/bundle/productionRelease/app-production-release.aab
           retention-days: 30
 
-  deploy-ios-production:
-    name: Deploy iOS to App Store
+      - name: Upload to Play Store Internal
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT }}
+          packageName: lk.helaservice.app
+          releaseFiles: build/app/outputs/bundle/productionRelease/app-production-release.aab
+          track: internal
+          whatsNewDirectory: distribution/whatsnew
+          mappingFile: build/app/outputs/mapping/productionRelease/mapping.txt
+
+  # Job 4: Build iOS
+  build-ios:
+    name: Build iOS
     runs-on: macos-latest
-    environment: production
+    needs: [pre-check, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,67 +161,166 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
-
-      - name: Setup Firebase Config
-        env:
-          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
-        run: |
-          echo "$GOOGLE_SERVICE_INFO_PLIST" > ios/Runner/GoogleService-Info.plist
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Install CocoaPods
-        run: |
-          cd ios
-          pod install --repo-update
+        working-directory: ios
+        run: pod install --repo-update
+
+      - name: Setup signing
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}
+          p12-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      - name: Install provisioning profile
+        uses: apple-actions/download-provisioning-profiles@v1
+        with:
+          bundle-id: lk.helaservice.app
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Build iOS Archive
         run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist
+          flutter build ipa \
+            --release \
+            --export-options-plist=ios/exportOptions.plist
 
-      # Note: App Store upload requires additional setup with fastlane
-      - name: Prepare for App Store
+      - name: Upload to App Store Connect
         run: |
-          echo "iOS archive prepared for App Store upload"
-          ls -la build/ios/ipa/
+          xcrun altool --upload-app \
+            --type ios \
+            --file build/ios/ipa/*.ipa \
+            --apiKey ${{ secrets.APPSTORE_API_KEY_ID }} \
+            --apiIssuer ${{ secrets.APPSTORE_ISSUER_ID }}
 
-      - name: Upload iOS Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-production-ipa
-          path: build/ios/ipa/*.ipa
-          retention-days: 30
-
-  create-release:
-    name: Create GitHub Release
+  # Job 5: Deploy Firebase Production
+  deploy-firebase:
+    name: Deploy Firebase Production
     runs-on: ubuntu-latest
-    needs: [deploy-android-production, deploy-ios-production]
+    needs: [pre-check, test]
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Android Artifact
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: android-production-bundle
-          path: artifacts/android/
+          node-version: '20'
 
-      - name: Download iOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-production-ipa
-          path: artifacts/ios/
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@13.0.3
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            artifacts/android/*.aab
-            artifacts/ios/*.ipa
-          generate_release_notes: true
-          draft: true
-          prerelease: false
+      - name: Deploy Firestore Rules
+        run: |
+          firebase deploy --only firestore:rules --project ${{ secrets.FIREBASE_PROJECT_PRODUCTION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}
+
+      - name: Deploy Firestore Indexes
+        run: |
+          firebase deploy --only firestore:indexes --project ${{ secrets.FIREBASE_PROJECT_PRODUCTION }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}
+
+      - name: Deploy Storage Rules
+        run: |
+          firebase deploy --only storage --project ${{ secrets.FIREBASE_PROJECT_PRODUCTION }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}
+
+      - name: Install Functions dependencies
+        working-directory: functions
+        run: npm ci
+
+      - name: Build Functions
+        working-directory: functions
+        run: npm run build
+
+      - name: Deploy Functions
+        run: |
+          firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_PRODUCTION }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}
+
+  # Job 6: Post-deployment Verification
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-firebase]
+    steps:
+      - name: Health Check
+        run: |
+          # Check Firebase Functions health endpoint
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://asia-south1-${{ secrets.FIREBASE_PROJECT_PRODUCTION }}.cloudfunctions.net/healthCheck)
+          
+          if [ "$HEALTH_STATUS" != "200" ]; then
+            echo "❌ Health check failed with status $HEALTH_STATUS"
+            exit 1
+          fi
+          echo "✅ Health check passed"
+
+      - name: Run Smoke Tests
+        run: |
+          # Run critical path API tests
+          curl -sf https://api.helaservice.lk/v1/services || exit 1
+          echo "✅ API smoke test passed"
+
+  # Job 7: Notify & Tag
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios, verify-deployment]
+    if: always()
+    steps:
+      - name: Notify Slack - Success
+        if: ${{ needs.build-android.result == 'success' && needs.verify-deployment.result == 'success' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#production-deployments'
+          text: |
+            🚀 **Production Deployment Successful!**
+            
+            Version: ${{ github.event.release.tag_name }}
+            Release: ${{ github.event.release.html_url }}
+            
+            ✅ Android AAB uploaded to Play Store (Internal)
+            ✅ iOS uploaded to App Store Connect
+            ✅ Firebase resources deployed
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}
+
+      - name: Notify Slack - Failure
+        if: ${{ needs.build-android.result == 'failure' || needs.verify-deployment.result == 'failure' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#production-deployments'
+          text: |
+            🚨 **Production Deployment Failed!**
+            
+            Version: ${{ github.event.release.tag_name }}
+            Release: ${{ github.event.release.html_url }}
+            
+            Please check the logs and investigate immediately.
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}
+
+      - name: Create Sentry Release
+        if: success()
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: helaservice
+          SENTRY_PROJECT: mobile-app
+        with:
+          environment: production
+          version: ${{ github.event.release.tag_name }}

@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 
 import '../../../../core/errors/failures.dart';
 import '../entities/user.dart';
@@ -9,13 +9,13 @@ import '../entities/user.dart';
 /// Phase 2: Architecture Refactoring - Updated to use consolidated User entity
 abstract class AuthRepository {
   /// Stream of auth state changes
-  Stream<User?> get authStateChanges;
+  Stream<firebase.User?> get authStateChanges;
 
   /// Verify phone number and send OTP
   Future<Either<Failure, void>> verifyPhone({
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
-    required Function(PhoneAuthCredential credential) onVerificationCompleted,
+    required Function(firebase.PhoneAuthCredential credential) onVerificationCompleted,
     required Function(String error) onVerificationFailed,
   });
 
@@ -29,7 +29,7 @@ abstract class AuthRepository {
   Future<void> signOut();
 
   /// Get current authenticated user
-  User? get currentUser;
+  firebase.User? get currentUser;
 
   /// Update user type after role selection
   Future<Either<Failure, User>> updateUserType(String userId, UserType userType);

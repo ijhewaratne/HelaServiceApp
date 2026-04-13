@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Mixin for optimizing BLoC state updates
@@ -119,6 +120,7 @@ abstract class OptimizedState {
     if (other is! OptimizedState) return false;
     if (runtimeType != other.runtimeType) return false;
     return _listEquals(props, other.props);
+    return listEquals(props, other.props);
   }
 
   @override

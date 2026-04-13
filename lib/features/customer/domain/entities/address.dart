@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -45,7 +46,7 @@ class Address extends Equatable {
   });
 
   /// Empty address (for initial states)
-  static const empty = Address(
+  static final empty = Address(
     id: '',
     customerId: '',
     label: '',
@@ -55,7 +56,7 @@ class Address extends Equatable {
     zoneId: '',
     latitude: 0.0,
     longitude: 0.0,
-    createdAt: null, // ignore: avoid_field_initializing_in_const
+    createdAt: DateTime(2000, 1, 1),
   );
 
   /// Check if address is empty
@@ -203,21 +204,13 @@ extension AddressX on Address {
     final dLat = _toRadians(lat - latitude);
     final dLng = _toRadians(lng - longitude);
     final a = 
-        (dLat / 2).sin() * (dLat / 2).sin() +
-        _toRadians(latitude).cos() * 
-        _toRadians(lat).cos() * 
-        (dLng / 2).sin() * (dLng / 2).sin();
-    final c = 2 * (a.sqrt()).atan2((1 - a).sqrt(), a.sqrt());
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(latitude)) * 
+        math.cos(_toRadians(lat)) * 
+        math.sin(dLng / 2) * math.sin(dLng / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return earthRadius * c;
   }
 
-  double _toRadians(double degrees) => degrees * 3.14159265359 / 180;
-}
-
-/// Math extensions for double
-extension _DoubleMath on double {
-  double sin() => this.sin();
-  double cos() => this.cos();
-  double sqrt() => this.sqrt();
-  double atan2(double y, double x) => this.atan2(y, x);
+  double _toRadians(double degrees) => degrees * math.pi / 180;
 }
