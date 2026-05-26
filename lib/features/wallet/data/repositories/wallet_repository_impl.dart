@@ -199,9 +199,9 @@ class WalletRepositoryImpl implements WalletRepository {
           }
 
           final walletData = snapshot.data()!;
-          final currentBalance = (walletData['balance'] ?? 0.0) as double;
-          final isFrozen = walletData['isFrozen'] ?? false;
-          final isActive = walletData['isActive'] ?? true;
+          final currentBalance = (walletData['balance'] as num?)?.toDouble() ?? 0.0;
+          final isFrozen = walletData['isFrozen'] as bool? ?? false;
+          final isActive = walletData['isActive'] as bool? ?? true;
 
           if (!isActive) {
             return Left(ValidationFailure('Wallet is inactive'));

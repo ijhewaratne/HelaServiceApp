@@ -21,13 +21,13 @@ class AppUser {
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      uid: json['uid'] ?? '',
-      role: json['role'] ?? 'customer',
-      name: json['name'] ?? '',
-      phone: json['phone'] ?? '',
-      isActive: json['isActive'] ?? true,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt'].toString()) 
+      uid: json['uid'] as String? ?? '',
+      role: json['role'] as String? ?? 'customer',
+      name: json['name'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
           : DateTime.now(),
     );
   }

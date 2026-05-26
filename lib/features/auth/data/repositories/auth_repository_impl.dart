@@ -16,7 +16,15 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._auth, this._firestore);
 
   @override
-  Stream<firebase.User?> get authStateChanges => _auth.authStateChanges();
+  Stream<User?> get authStateChanges => _auth.authStateChanges().asyncMap((fbUser) async {
+    if (fbUser == null) return null;
+    try {
+      final doc = await _firestore.collection('users').doc(fbUser.uid).get();
+      return _mapToUser(fbUser, doc);
+    } catch (_) {
+      return User.fromFirebaseUser(fbUser);
+    }
+  });
 
   @override
   Future<Either<Failure, void>> verifyPhone({
@@ -86,7 +94,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  firebase.User? get currentUser => _auth.currentUser;
+  firebase.User? get currentFirebaseUser => _auth.currentUser;
+
+  @override
+  Future<User?> getCurrentUser() async {
+    final fbUser = _auth.currentUser;
+    if (fbUser == null) return null;
+    try {
+      final doc = await _firestore.collection('users').doc(fbUser.uid).get();
+      return _mapToUser(fbUser, doc);
+    } catch (_) {
+      return User.fromFirebaseUser(fbUser);
+    }
+  }
 
   @override
   Future<Either<Failure, User>> updateUserType(String userId, UserType userType) async {

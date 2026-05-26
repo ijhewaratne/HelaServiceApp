@@ -62,15 +62,15 @@ class UserEntity {
 
   factory UserEntity.fromJson(Map<String, dynamic> json) {
     return UserEntity(
-      id: json['id'] ?? '',
-      phoneNumber: json['phoneNumber'] ?? '',
-      email: json['email'],
-      name: json['name'],
-      userType: json['userType'] ?? 'unknown',
-      isOnboarded: json['isOnboarded'] ?? false,
-      isActive: json['isActive'] ?? true,
+      id: json['id'] as String? ?? '',
+      phoneNumber: json['phoneNumber'] as String? ?? '',
+      email: json['email'] as String?,
+      name: json['name'] as String?,
+      userType: json['userType'] as String? ?? 'unknown',
+      isOnboarded: json['isOnboarded'] as bool? ?? false,
+      isActive: json['isActive'] as bool? ?? true,
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? DateTime.parse(json['createdAt'] as String)
           : null,
     );
   }

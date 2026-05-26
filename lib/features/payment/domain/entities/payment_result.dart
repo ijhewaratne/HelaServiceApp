@@ -92,18 +92,18 @@ class PaymentResult extends Equatable {
 
   factory PaymentResult.fromJson(Map<String, dynamic> json) {
     return PaymentResult(
-      success: json['success'] ?? false,
-      paymentId: json['paymentId'],
-      orderId: json['orderId'],
-      message: json['message'],
+      success: json['success'] as bool? ?? false,
+      paymentId: json['paymentId'] as String?,
+      orderId: json['orderId'] as String?,
+      message: json['message'] as String?,
       status: PaymentStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.name == (json['status'] as String?),
         orElse: () => PaymentStatus.unknown,
       ),
-      amount: json['amount']?.toDouble(),
-      currency: json['currency'],
+      amount: (json['amount'] as num?)?.toDouble(),
+      currency: json['currency'] as String?,
       processedAt: json['processedAt'] != null
-          ? DateTime.parse(json['processedAt'])
+          ? DateTime.parse(json['processedAt'] as String)
           : null,
     );
   }

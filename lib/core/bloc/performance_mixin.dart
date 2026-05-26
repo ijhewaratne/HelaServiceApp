@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Mixin for optimizing BLoC state updates
@@ -120,7 +119,6 @@ abstract class OptimizedState {
     if (other is! OptimizedState) return false;
     if (runtimeType != other.runtimeType) return false;
     return _listEquals(props, other.props);
-    return listEquals(props, other.props);
   }
 
   @override
@@ -226,7 +224,7 @@ class PerformanceBlocObserver extends BlocObserver {
   final Map<String, DateTime> _eventStartTimes = {};
 
   @override
-  void onEvent(BlocBase<dynamic> bloc, Object? event) {
+  void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
     if (trackEventProcessingTime) {
       _eventStartTimes[bloc.runtimeType.toString()] = DateTime.now();

@@ -21,14 +21,14 @@ class WorkerDocument {
 
   factory WorkerDocument.fromJson(Map<String, dynamic> json) {
     return WorkerDocument(
-      workerId: json['workerId'] ?? '',
-      nicFrontUrl: json['nicFrontUrl'],
-      nicBackUrl: json['nicBackUrl'],
-      selfieUrl: json['selfieUrl'],
-      addressProofUrl: json['addressProofUrl'],
-      status: json['status'] ?? 'pending',
-      reviewedBy: json['reviewedBy'],
-      reviewedAt: json['reviewedAt'] != null ? DateTime.parse(json['reviewedAt'].toString()) : null,
+      workerId: json['workerId'] as String? ?? '',
+      nicFrontUrl: json['nicFrontUrl'] as String?,
+      nicBackUrl: json['nicBackUrl'] as String?,
+      selfieUrl: json['selfieUrl'] as String?,
+      addressProofUrl: json['addressProofUrl'] as String?,
+      status: json['status'] as String? ?? 'pending',
+      reviewedBy: json['reviewedBy'] as String?,
+      reviewedAt: json['reviewedAt'] != null ? DateTime.parse(json['reviewedAt'] as String) : null,
     );
   }
 

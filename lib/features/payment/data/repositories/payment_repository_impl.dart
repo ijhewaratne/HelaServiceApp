@@ -85,10 +85,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
         success: true,
         paymentId: 'PAY_${DateTime.now().millisecondsSinceEpoch}',
         orderId: bookingId,
-        amount: amount,
+        amount: amount / 100.0,
         currency: 'LKR',
         status: PaymentStatus.completed,
-        timestamp: DateTime.now(),
+        processedAt: DateTime.now(),
       );
 
       // Save to Firestore if successful
@@ -157,7 +157,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       // Also update booking
       final paymentDoc = await _firestore.collection('payments').doc(paymentId).get();
       if (paymentDoc.exists) {
-        final bookingId = paymentDoc.data()?['orderId'];
+        final bookingId = paymentDoc.data()?['orderId'] as String?;
         if (bookingId != null) {
           await _firestore.collection('bookings').doc(bookingId).update({
             'paymentStatus': 'refunded',
@@ -241,40 +241,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     return digits;
-  }
-
-  /// Map PayHere result to our PaymentResult entity
-  PaymentResult _mapToPaymentResult(
-    dynamic result,
-    String orderId,
-    int amount,
-  ) {
-    if (result is PayHerePaymentSuccessResult) {
-      return PaymentResult.success(
-        paymentId: result.paymentId,
-        orderId: result.orderId ?? orderId,
-        amount: amount / 100.0,
-        currency: 'LKR',
-      );
-    } else if (result is PayHerePaymentErrorResult) {
-      return PaymentResult.failure(
-        message: result.message,
-        orderId: orderId,
-        status: PaymentStatus.failed,
-      );
-    } else if (result is PayHerePaymentDismissResult) {
-      return PaymentResult.failure(
-        message: 'Payment cancelled by user',
-        orderId: orderId,
-        status: PaymentStatus.cancelled,
-      );
-    }
-
-    return PaymentResult.failure(
-      message: 'Unknown payment result type',
-      orderId: orderId,
-      status: PaymentStatus.unknown,
-    );
   }
 
   /// Save successful payment to Firestore

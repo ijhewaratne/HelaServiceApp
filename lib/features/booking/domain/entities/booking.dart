@@ -187,45 +187,45 @@ class Booking extends Equatable {
   /// Create from JSON
   factory Booking.fromJson(Map<String, dynamic> json, {String? id}) {
     return Booking(
-      id: id ?? json['id'] ?? '',
-      customerId: json['customerId'] ?? '',
-      workerId: json['workerId'],
-      serviceType: _parseServiceType(json['serviceType']),
-      status: _parseBookingStatus(json['status']),
-      address: Address.fromJson(json['address'] ?? {}),
+      id: id ?? json['id'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
+      workerId: json['workerId'] as String?,
+      serviceType: _parseServiceType(json['serviceType'] as String?),
+      status: _parseBookingStatus(json['status'] as String?),
+      address: Address.fromJson(json['address'] as Map<String, dynamic>? ?? {}),
       scheduledDate: json['scheduledDate'] is Timestamp
           ? (json['scheduledDate'] as Timestamp).toDate()
-          : DateTime.parse(json['scheduledDate'] ?? DateTime.now().toIso8601String()),
-      scheduledTime: json['scheduledTime'],
-      durationHours: json['durationHours'],
-      estimatedPrice: (json['estimatedPrice'] ?? 0.0).toDouble(),
-      finalPrice: json['finalPrice']?.toDouble(),
-      notes: json['notes'],
-      cancellationReason: json['cancellationReason'],
+          : DateTime.parse(json['scheduledDate'] as String? ?? DateTime.now().toIso8601String()),
+      scheduledTime: json['scheduledTime'] as String?,
+      durationHours: json['durationHours'] as int?,
+      estimatedPrice: (json['estimatedPrice'] as num?)?.toDouble() ?? 0.0,
+      finalPrice: (json['finalPrice'] as num?)?.toDouble(),
+      notes: json['notes'] as String?,
+      cancellationReason: json['cancellationReason'] as String?,
       startedAt: json['startedAt'] != null
           ? (json['startedAt'] is Timestamp
               ? (json['startedAt'] as Timestamp).toDate()
-              : DateTime.parse(json['startedAt']))
+              : DateTime.parse(json['startedAt'] as String))
           : null,
       completedAt: json['completedAt'] != null
           ? (json['completedAt'] is Timestamp
               ? (json['completedAt'] as Timestamp).toDate()
-              : DateTime.parse(json['completedAt']))
+              : DateTime.parse(json['completedAt'] as String))
           : null,
       cancelledAt: json['cancelledAt'] != null
           ? (json['cancelledAt'] is Timestamp
               ? (json['cancelledAt'] as Timestamp).toDate()
-              : DateTime.parse(json['cancelledAt']))
+              : DateTime.parse(json['cancelledAt'] as String))
           : null,
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
-          : DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+          : DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       updatedAt: json['updatedAt'] != null
           ? (json['updatedAt'] is Timestamp
               ? (json['updatedAt'] as Timestamp).toDate()
-              : DateTime.parse(json['updatedAt']))
+              : DateTime.parse(json['updatedAt'] as String))
           : null,
-      metadata: json['metadata'],
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 

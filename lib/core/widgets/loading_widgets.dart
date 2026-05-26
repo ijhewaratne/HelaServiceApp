@@ -10,27 +10,27 @@ import 'package:loading_indicator/loading_indicator.dart';
 class HelaLoadingIndicator extends StatelessWidget {
   final double size;
   final Color? color;
-  final LoadingIndicatorType type;
+  final Indicator type;
 
   const HelaLoadingIndicator({
     super.key,
     this.size = 48,
     this.color,
-    this.type = LoadingIndicatorType.ballSpinFadeLoader,
+    this.type = Indicator.ballSpinFadeLoader,
   });
 
   const HelaLoadingIndicator.small({
     super.key,
     this.size = 24,
     this.color,
-    this.type = LoadingIndicatorType.ballPulse,
+    this.type = Indicator.ballPulse,
   });
 
   const HelaLoadingIndicator.large({
     super.key,
     this.size = 72,
     this.color,
-    this.type = LoadingIndicatorType.ballSpinFadeLoader,
+    this.type = Indicator.ballSpinFadeLoader,
   });
 
   @override

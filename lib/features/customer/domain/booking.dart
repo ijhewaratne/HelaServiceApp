@@ -36,23 +36,24 @@ class Booking {
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
+    final address = json['address'] as Map<String, dynamic>?;
     return Booking(
-      bookingId: json['bookingId'] ?? '',
-      customerId: json['customerId'] ?? '',
-      workerId: json['workerId'],
-      serviceType: json['serviceType'] ?? '',
-      packageType: json['packageType'] ?? '',
-      bookingDate: json['bookingDate'] ?? '',
-      startTime: json['startTime'] ?? '',
-      durationHours: json['durationHours'] ?? 1,
-      addressText: json['address']?['text'] ?? '',
-      addressLat: (json['address']?['lat'] ?? 0.0).toDouble(),
-      addressLng: (json['address']?['lng'] ?? 0.0).toDouble(),
-      specialNotes: json['specialNotes'] ?? '',
-      status: json['status'] ?? 'draft',
-      price: (json['price'] ?? 0.0).toDouble(),
-      paymentStatus: json['paymentStatus'] ?? 'unpaid',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+      bookingId: json['bookingId'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
+      workerId: json['workerId'] as String?,
+      serviceType: json['serviceType'] as String? ?? '',
+      packageType: json['packageType'] as String? ?? '',
+      bookingDate: json['bookingDate'] as String? ?? '',
+      startTime: json['startTime'] as String? ?? '',
+      durationHours: json['durationHours'] as int? ?? 1,
+      addressText: address?['text'] as String? ?? '',
+      addressLat: (address?['lat'] as num?)?.toDouble() ?? 0.0,
+      addressLng: (address?['lng'] as num?)?.toDouble() ?? 0.0,
+      specialNotes: json['specialNotes'] as String? ?? '',
+      status: json['status'] as String? ?? 'draft',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      paymentStatus: json['paymentStatus'] as String? ?? 'unpaid',
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
     );
   }
 

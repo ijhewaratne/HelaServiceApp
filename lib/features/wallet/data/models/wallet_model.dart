@@ -39,11 +39,11 @@ class WalletModel {
 
     return WalletModel(
       userId: doc.id,
-      balance: (data['balance'] ?? 0.0).toDouble(),
-      totalCredited: (data['totalCredited'] ?? 0.0).toDouble(),
-      totalDebited: (data['totalDebited'] ?? 0.0).toDouble(),
-      isActive: data['isActive'] ?? true,
-      isFrozen: data['isFrozen'] ?? false,
+      balance: (data['balance'] as num?)?.toDouble() ?? 0.0,
+      totalCredited: (data['totalCredited'] as num?)?.toDouble() ?? 0.0,
+      totalDebited: (data['totalDebited'] as num?)?.toDouble() ?? 0.0,
+      isActive: data['isActive'] as bool? ?? true,
+      isFrozen: data['isFrozen'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: data['updatedAt'] != null
           ? (data['updatedAt'] as Timestamp).toDate()

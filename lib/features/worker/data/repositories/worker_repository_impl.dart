@@ -6,6 +6,8 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/worker.dart';
 import '../../domain/entities/worker_application.dart' as app;
+import '../../domain/entities/worker_profile.dart';
+import '../../domain/entities/worker_document.dart';
 import '../../domain/repositories/worker_repository.dart';
 
 class WorkerRepositoryImpl implements WorkerRepository {
@@ -295,4 +297,46 @@ class WorkerRepositoryImpl implements WorkerRepository {
     );
   }
 
+  @override
+  Future<WorkerProfile?> getWorkerProfile(String workerId) async {
+    final result = await getWorker(workerId);
+    return result.fold((_) => null, (worker) => WorkerProfile(
+      uid: worker.id,
+      nic: worker.nic,
+      name: worker.fullName,
+      phone: worker.mobileNumber,
+      district: '',
+      serviceTypes: worker.services.map((s) => s.name).toList(),
+      languages: [],
+      verificationStatus: worker.status.name,
+      rating: worker.rating,
+      completedJobs: worker.totalJobs,
+      isAvailable: worker.isOnline,
+      availabilityMode: 'part_time',
+      homeLat: worker.homeLat,
+      homeLng: worker.homeLng,
+    ));
+  }
+
+  @override
+  Future<WorkerDocument?> getWorkerDocuments(String workerId) async {
+    try {
+      final doc = await _firestore.collection('worker_documents').doc(workerId).get();
+      if (!doc.exists) return null;
+      return WorkerDocument.fromJson(doc.data()!);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> updateWorkerProfile(WorkerProfile profile) async {}
+
+  @override
+  Future<void> uploadDocument(String workerId, String docType, String filePath) async {}
+
+  @override
+  Future<void> updateAvailability(String workerId, bool isAvailable) async {
+    await updateOnlineStatus(workerId: workerId, isOnline: isAvailable);
+  }
 }

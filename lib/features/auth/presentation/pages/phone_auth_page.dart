@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 
 class PhoneAuthPage extends StatefulWidget {
@@ -185,12 +185,12 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
     );
   }
 
-  void _navigateBasedOnUserType(UserEntity user) {
-    if (user.userType == 'worker') {
+  void _navigateBasedOnUserType(User user) {
+    if (user.userType.name == 'worker') {
       context.go('/worker/dashboard');
-    } else if (user.userType == 'customer') {
+    } else if (user.userType.name == 'customer') {
       context.go('/customer/home');
-    } else if (user.userType == 'admin') {
+    } else if (user.userType.name == 'admin') {
       context.go('/admin/dashboard');
     } else {
       // Unknown user type - go to selection

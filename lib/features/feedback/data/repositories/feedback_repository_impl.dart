@@ -69,7 +69,7 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
       final doc = await _firestore.collection('feedback').doc(feedbackId).get();
 
       if (!doc.exists) {
-        return Left(NotFoundGenericFailure('Feedback not found'));
+        return Left(NotFoundFailure('Feedback not found'));
       }
 
       return Right(FeedbackModel.fromFirestore(doc).toEntity());

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/repositories/customer_repository.dart';
+import '../../domain/entities/address.dart';
 
 /// BLoC for managing customer-related state
 class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
@@ -218,7 +219,7 @@ class LoadSavedAddresses extends CustomerEvent {
 /// Add saved address
 class AddSavedAddress extends CustomerEvent {
   final String customerId;
-  final Map<String, dynamic> address;
+  final Address address;
 
   AddSavedAddress({required this.customerId, required this.address});
 
@@ -230,7 +231,7 @@ class AddSavedAddress extends CustomerEvent {
 class UpdateSavedAddress extends CustomerEvent {
   final String customerId;
   final String addressId;
-  final Map<String, dynamic> address;
+  final Address address;
 
   UpdateSavedAddress({
     required this.customerId,
@@ -311,7 +312,7 @@ class CustomerBookingsLoaded extends CustomerState {
 
 /// Saved addresses loaded
 class SavedAddressesLoaded extends CustomerState {
-  final List<Map<String, dynamic>> addresses;
+  final List<dynamic> addresses;
 
   SavedAddressesLoaded({required this.addresses});
 
@@ -321,7 +322,7 @@ class SavedAddressesLoaded extends CustomerState {
 
 /// Saved address added
 class SavedAddressAdded extends CustomerState {
-  final Map<String, dynamic> address;
+  final dynamic address;
 
   SavedAddressAdded({required this.address});
 
@@ -331,7 +332,7 @@ class SavedAddressAdded extends CustomerState {
 
 /// Saved address updated
 class SavedAddressUpdated extends CustomerState {
-  final Map<String, dynamic> address;
+  final dynamic address;
 
   SavedAddressUpdated({required this.address});
 

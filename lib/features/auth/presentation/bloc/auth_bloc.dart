@@ -37,17 +37,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     if (event.user != null) {
-      // Set user properties for analytics
+      final user = event.user!;
       await _analytics.setUserProperties(
-        userId: event.user!.id,
-        userType: event.user!.userType,
+        userId: user.uid,
+        userType: user.userType.name,
       );
-      await _crashReporting.setUserIdentifier(event.user!.id);
+      await _crashReporting.setUserIdentifier(user.uid);
 
-      if (event.user!.isOnboarded) {
-        emit(AuthAuthenticated(user: event.user!));
+      if (user.isOnboarded) {
+        emit(AuthAuthenticated(user: user));
       } else {
-        emit(AuthNeedsOnboarding(user: event.user!));
+        emit(AuthNeedsOnboarding(user: user));
       }
     } else {
       emit(AuthUnauthenticated());
@@ -56,15 +56,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    
-    final user = _authRepository.currentUser;
+
+    final user = await _authRepository.getCurrentUser();
     if (user != null) {
-      // Set user properties for analytics
       await _analytics.setUserProperties(
-        userId: user.id,
-        userType: user.userType,
+        userId: user.uid,
+        userType: user.userType.name,
       );
-      await _crashReporting.setUserIdentifier(user.id);
+      await _crashReporting.setUserIdentifier(user.uid);
 
       if (user.isOnboarded) {
         emit(AuthAuthenticated(user: user));
@@ -104,10 +103,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             emit(AuthError(message: failure.message));
           },
           (user) async {
-            // Log successful login
             await _analytics.logLogin(
               method: 'phone_auto_verification',
-              userType: user.userType,
+              userType: user.userType.name,
             );
             
             if (user.isOnboarded) {
@@ -168,18 +166,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(message: failure.message));
       },
       (user) async {
-        // Determine if this is a new signup or existing login
-        final isNewUser = user.createdAt.difference(DateTime.now()).inMinutes.abs() < 5;
-        
+        final isNewUser = user.createdAt != null &&
+            user.createdAt!.difference(DateTime.now()).inMinutes.abs() < 5;
+
         if (isNewUser) {
           await _analytics.logSignUp(
             method: 'phone_otp',
-            userType: user.userType,
+            userType: user.userType.name,
           );
         } else {
           await _analytics.logLogin(
             method: 'phone_otp',
-            userType: user.userType,
+            userType: user.userType.name,
           );
         }
         

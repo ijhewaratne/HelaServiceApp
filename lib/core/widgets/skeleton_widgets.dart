@@ -380,7 +380,7 @@ class SkeletonGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Expanded(
-              child: Skeleton(borderRadius: 12),
+              child: Skeleton(width: double.infinity, height: double.infinity, borderRadius: 12),
             ),
             const SizedBox(height: 8),
             const Skeleton.text(width: double.infinity, height: 16),

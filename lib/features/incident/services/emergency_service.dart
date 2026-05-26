@@ -155,20 +155,20 @@ class EmergencyService {
   /// Map Firestore data to Incident entity
   Incident _mapToIncident(Map<String, dynamic> data) {
     return Incident(
-      id: data['id'] ?? '',
-      reporterId: data['reporterId'] ?? '',
-      reporterType: data['reporterType'] ?? 'customer',
-      jobId: data['jobId'],
-      subjectId: data['subjectId'],
-      type: _parseIncidentType(data['type']),
-      description: data['description'] ?? '',
-      audioUrl: data['audioUrl'],
-      imageUrl: data['imageUrl'],
+      id: data['id'] as String? ?? '',
+      reporterId: data['reporterId'] as String? ?? '',
+      reporterType: data['reporterType'] as String? ?? 'customer',
+      jobId: data['jobId'] as String?,
+      subjectId: data['subjectId'] as String?,
+      type: _parseIncidentType(data['type'] as String?),
+      description: data['description'] as String? ?? '',
+      audioUrl: data['audioUrl'] as String?,
+      imageUrl: data['imageUrl'] as String?,
       reportedAt: (data['reportedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      status: _parseIncidentStatus(data['status']),
-      resolvedBy: data['resolvedBy'],
+      status: _parseIncidentStatus(data['status'] as String?),
+      resolvedBy: data['resolvedBy'] as String?,
       resolvedAt: (data['resolvedAt'] as Timestamp?)?.toDate(),
-      resolution: data['resolution'],
+      resolution: data['resolution'] as String?,
     );
   }
   

@@ -32,7 +32,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      emit(const PaymentError(message: 'User not authenticated'));
+      emit(PaymentError(message: 'User not authenticated'));
       return;
     }
 
@@ -69,7 +69,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             paymentId: paymentResult.paymentId ?? 'unknown',
             bookingId: event.bookingId,
             amount: event.amount / 100, // Convert cents to rupees
-            method: paymentResult.paymentMethod ?? 'unknown',
+            method: paymentResult.currency ?? 'unknown',
           );
           emit(PaymentSuccess(payment: paymentResult));
         } else {

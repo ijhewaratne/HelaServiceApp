@@ -178,7 +178,7 @@ class _JobOfferPageState extends State<JobOfferPage> {
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16),
                         ),
-                        onPressed: () => _acceptJob(offerId, offer['jobId']),
+                        onPressed: () => _acceptJob(offerId, offer['jobId'] as String),
                         child: Text(
                           'ACCEPT JOB',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

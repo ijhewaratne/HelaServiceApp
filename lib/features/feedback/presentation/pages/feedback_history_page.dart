@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Feedback;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -295,9 +295,10 @@ class _FeedbackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HelaCard(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: HelaCard(
       onTap: onTap,
-      margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -360,6 +361,7 @@ class _FeedbackCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

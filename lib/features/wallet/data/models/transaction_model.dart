@@ -34,16 +34,16 @@ class TransactionModel {
     final data = doc.data() as Map<String, dynamic>;
     return TransactionModel(
       id: doc.id,
-      userId: data['userId'] ?? '',
-      type: data['type'] ?? 'topUp',
-      amount: (data['amount'] ?? 0.0).toDouble(),
-      balanceAfter: (data['balanceAfter'] ?? 0.0).toDouble(),
-      description: data['description'],
-      relatedBookingId: data['relatedBookingId'],
-      paymentMethod: data['paymentMethod'],
-      status: data['status'] ?? 'completed',
+      userId: data['userId'] as String? ?? '',
+      type: data['type'] as String? ?? 'topUp',
+      amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+      balanceAfter: (data['balanceAfter'] as num?)?.toDouble() ?? 0.0,
+      description: data['description'] as String?,
+      relatedBookingId: data['relatedBookingId'] as String?,
+      paymentMethod: data['paymentMethod'] as String?,
+      status: data['status'] as String? ?? 'completed',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      metadata: data['metadata'],
+      metadata: data['metadata'] as Map<String, dynamic>?,
     );
   }
 

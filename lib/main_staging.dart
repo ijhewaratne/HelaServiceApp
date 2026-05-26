@@ -20,7 +20,7 @@ import 'injection_container.dart' as di;
 
 void main() async {
   // Ensure Flutter is initialized
-  WidgetsFlutterBinding.ensureInitialization();
+  WidgetsFlutterBinding.ensureInitialized();
   
   // Load staging environment variables
   await dotenv.load(fileName: '.env.staging');

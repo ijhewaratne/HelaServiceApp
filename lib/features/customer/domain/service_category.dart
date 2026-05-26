@@ -13,10 +13,10 @@ class ServiceCategory {
 
   factory ServiceCategory.fromJson(Map<String, dynamic> json) {
     return ServiceCategory(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      baseRatePerHour: (json['baseRatePerHour'] ?? 0).toDouble(),
-      active: json['active'] ?? true,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      baseRatePerHour: (json['baseRatePerHour'] as num?)?.toDouble() ?? 0.0,
+      active: json['active'] as bool? ?? true,
     );
   }
 

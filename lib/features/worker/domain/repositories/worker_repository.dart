@@ -4,6 +4,8 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/worker.dart';
 import '../entities/worker_application.dart';
+import '../entities/worker_profile.dart';
+import '../entities/worker_document.dart';
 
 abstract class WorkerRepository {
   /// Create a new worker
@@ -56,4 +58,12 @@ abstract class WorkerRepository {
     required double lat,
     required double lng,
   });
+
+  // ==================== LEGACY VIEWMODEL METHODS ====================
+
+  Future<WorkerProfile?> getWorkerProfile(String workerId);
+  Future<WorkerDocument?> getWorkerDocuments(String workerId);
+  Future<void> updateWorkerProfile(WorkerProfile profile);
+  Future<void> uploadDocument(String workerId, String docType, String filePath);
+  Future<void> updateAvailability(String workerId, bool isAvailable);
 }

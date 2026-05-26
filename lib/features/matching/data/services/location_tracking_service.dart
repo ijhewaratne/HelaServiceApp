@@ -155,9 +155,9 @@ class LocationTrackingService {
         workerId: workerId,
         latitude: geoPoint?.latitude ?? 0.0,
         longitude: geoPoint?.longitude ?? 0.0,
-        accuracy: data['accuracy']?.toDouble() ?? 0.0,
-        heading: data['heading']?.toDouble() ?? 0.0,
-        speed: data['speed']?.toDouble() ?? 0.0,
+        accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0.0,
+        heading: (data['heading'] as num?)?.toDouble() ?? 0.0,
+        speed: (data['speed'] as num?)?.toDouble() ?? 0.0,
         timestamp: timestamp?.toDate(),
       );
     });
@@ -197,7 +197,7 @@ class LocationTrackingService {
               workerId: doc.id,
               latitude: geoPoint.latitude,
               longitude: geoPoint.longitude,
-              accuracy: data['accuracy']?.toDouble() ?? 0.0,
+              accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0.0,
               timestamp: (data['timestamp'] as Timestamp?)?.toDate(),
             );
 

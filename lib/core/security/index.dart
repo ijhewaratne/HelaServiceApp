@@ -18,6 +18,10 @@ export '../utils/nic_validator.dart';
 export '../utils/phone_validator.dart';
 export '../utils/validators.dart';
 
+import '../utils/nic_validator.dart';
+import '../utils/phone_validator.dart';
+import '../utils/validators.dart';
+
 /// Security library version
 const String securityLibraryVersion = '1.0.0';
 

@@ -167,27 +167,27 @@ class IncidentRepositoryImpl implements IncidentRepository {
     final data = doc.data() as Map<String, dynamic>;
     return Incident(
       id: doc.id,
-      reporterId: data['reporterId'] ?? '',
-      reporterType: data['reporterType'] ?? '',
-      jobId: data['jobId'],
-      subjectId: data['subjectId'],
+      reporterId: data['reporterId'] as String? ?? '',
+      reporterType: data['reporterType'] as String? ?? '',
+      jobId: data['jobId'] as String?,
+      subjectId: data['subjectId'] as String?,
       type: IncidentType.values.firstWhere(
-        (e) => e.name == data['type'],
+        (e) => e.name == (data['type'] as String?),
         orElse: () => IncidentType.other,
       ),
-      description: data['description'] ?? '',
-      audioUrl: data['audioUrl'],
-      imageUrl: data['imageUrl'],
+      description: data['description'] as String? ?? '',
+      audioUrl: data['audioUrl'] as String?,
+      imageUrl: data['imageUrl'] as String?,
       reportedAt: (data['reportedAt'] as Timestamp).toDate(),
       status: IncidentStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.name == (data['status'] as String?),
         orElse: () => IncidentStatus.pending,
       ),
-      resolvedBy: data['resolvedBy'],
-      resolvedAt: data['resolvedAt'] != null 
-          ? (data['resolvedAt'] as Timestamp).toDate() 
+      resolvedBy: data['resolvedBy'] as String?,
+      resolvedAt: data['resolvedAt'] != null
+          ? (data['resolvedAt'] as Timestamp).toDate()
           : null,
-      resolution: data['resolution'],
+      resolution: data['resolution'] as String?,
     );
   }
 }

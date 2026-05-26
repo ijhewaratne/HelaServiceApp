@@ -66,7 +66,7 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
                       const Divider(height: 30),
                       ElevatedButton(
                         onPressed: () async {
-                          final confirm = await showConfirmDialog(context, 'Mark this incident as resolved?');
+                          final confirm = await showConfirmDialog(context, title: 'Resolve Incident', message: 'Mark this incident as resolved?');
                           if (confirm && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Incident Resolved')));
                             // In a real app we'd call a ViewModel method here

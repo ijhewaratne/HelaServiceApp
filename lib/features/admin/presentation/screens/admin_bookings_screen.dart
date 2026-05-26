@@ -73,7 +73,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                       if (booking.workerId == null)
                         OutlinedButton.icon(
                           onPressed: () async {
-                            final confirm = await showConfirmDialog(context, 'Assign mock worker to this job?');
+                            final confirm = await showConfirmDialog(context, title: 'Assign Worker', message: 'Assign mock worker to this job?');
                             if (confirm && context.mounted) {
                               await context.read<AdminViewModel>().manuallyAssignWorker(booking.bookingId, 'mock_worker_890');
                             }

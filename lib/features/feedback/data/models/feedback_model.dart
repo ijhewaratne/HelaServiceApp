@@ -35,16 +35,16 @@ class FeedbackModel {
     final data = doc.data() as Map<String, dynamic>;
     return FeedbackModel(
       id: doc.id,
-      userId: data['userId'] ?? '',
-      userType: data['userType'] ?? '',
-      category: data['category'] ?? 'general',
-      message: data['message'] ?? '',
+      userId: data['userId'] as String? ?? '',
+      userType: data['userType'] as String? ?? '',
+      category: data['category'] as String? ?? 'general',
+      message: data['message'] as String? ?? '',
       rating: data['rating'] as int?,
       attachments: data['attachments'] != null
-          ? List<String>.from(data['attachments'])
+          ? List<String>.from(data['attachments'] as List<dynamic>)
           : null,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      isResolved: data['isResolved'] ?? false,
+      isResolved: data['isResolved'] as bool? ?? false,
       adminResponse: data['adminResponse'] as String?,
       resolvedAt: data['resolvedAt'] != null
           ? (data['resolvedAt'] as Timestamp).toDate()

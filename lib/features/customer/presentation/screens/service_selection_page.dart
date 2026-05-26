@@ -70,10 +70,10 @@ class ServiceSelectionPage extends StatelessWidget {
                 (context, index) {
                   final service = _services[index];
                   return _ServiceCard(
-                    title: service['title'],
-                    icon: service['icon'],
-                    color: service['color'],
-                    desc: service['desc'],
+                    title: service['title'] as String,
+                    icon: service['icon'] as IconData,
+                    color: service['color'] as Color,
+                    desc: service['desc'] as String,
                     onTap: () {
                       // Navigate to animated matching queue or form
                       // context.go('/customer/book/form');

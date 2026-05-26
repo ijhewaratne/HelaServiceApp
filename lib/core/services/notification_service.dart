@@ -62,7 +62,7 @@ class NotificationService {
         id: message.hashCode,
         title: notification.title ?? 'HelaService',
         body: notification.body ?? '',
-        payload: message.data['jobId'],
+        payload: message.data['jobId'] as String?,
       );
     }
   }

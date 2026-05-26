@@ -205,6 +205,29 @@ class PayHereRepository implements PaymentRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, PaymentResult>> refundPayment({
+    required String paymentId,
+    int? amount,
+    String? reason,
+  }) async {
+    return Left(ServerFailure('Refund not implemented'));
+  }
+
+  @override
+  Future<Either<Failure, List<PaymentResult>>> getCustomerPaymentHistory(
+    String customerId,
+  ) async {
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, PaymentResult>> getPaymentById(
+    String paymentId,
+  ) async {
+    return Left(NotFoundFailure('Payment not found'));
+  }
+
   /// Generate MD5 hash for PayHere signature verification
   /// 
   /// Format: md5(merchant_id + order_id + amount + currency + merchant_secret)

@@ -134,41 +134,41 @@ class Worker extends Equatable {
 
   factory Worker.fromJson(Map<String, dynamic> json) {
     return Worker(
-      id: json['id'] ?? '',
-      nic: json['nic'] ?? '',
-      fullName: json['fullName'] ?? '',
-      mobileNumber: json['mobileNumber'] ?? '',
-      address: json['address'] ?? '',
-      emergencyContactName: json['emergencyContactName'] ?? '',
-      emergencyContactPhone: json['emergencyContactPhone'] ?? '',
+      id: json['id'] as String? ?? '',
+      nic: json['nic'] as String? ?? '',
+      fullName: json['fullName'] as String? ?? '',
+      mobileNumber: json['mobileNumber'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      emergencyContactName: json['emergencyContactName'] as String? ?? '',
+      emergencyContactPhone: json['emergencyContactPhone'] as String? ?? '',
       services: (json['services'] as List<dynamic>?)
           ?.map((s) => ServiceType.values.firstWhere(
-            (e) => e.name == s,
+            (e) => e.name == s as String?,
             orElse: () => ServiceType.cleaning,
           ))
           .toList() ?? [],
-      profilePhotoUrl: json['profilePhotoUrl'],
-      nicFrontUrl: json['nicFrontUrl'],
-      nicBackUrl: json['nicBackUrl'],
+      profilePhotoUrl: json['profilePhotoUrl'] as String?,
+      nicFrontUrl: json['nicFrontUrl'] as String?,
+      nicBackUrl: json['nicBackUrl'] as String?,
       status: WorkerStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.name == (json['status'] as String?),
         orElse: () => WorkerStatus.pending,
       ),
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt'] as String),
       approvedAt: json['approvedAt'] != null
-          ? DateTime.parse(json['approvedAt'])
+          ? DateTime.parse(json['approvedAt'] as String)
           : null,
-      isOnline: json['isOnline'] ?? false,
-      currentLat: json['currentLat']?.toDouble(),
-      currentLng: json['currentLng']?.toDouble(),
-      homeLat: json['homeLat']?.toDouble(),
-      homeLng: json['homeLng']?.toDouble(),
-      rating: json['rating']?.toDouble() ?? 4.0,
-      totalJobs: json['totalJobs'] ?? 0,
+      isOnline: json['isOnline'] as bool? ?? false,
+      currentLat: (json['currentLat'] as num?)?.toDouble(),
+      currentLng: (json['currentLng'] as num?)?.toDouble(),
+      homeLat: (json['homeLat'] as num?)?.toDouble(),
+      homeLng: (json['homeLng'] as num?)?.toDouble(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.0,
+      totalJobs: (json['totalJobs'] as int?) ?? 0,
       lastJobCompletedAt: json['lastJobCompletedAt'] != null
-          ? DateTime.parse(json['lastJobCompletedAt'])
+          ? DateTime.parse(json['lastJobCompletedAt'] as String)
           : null,
-      hasAcceptedContract: json['hasAcceptedContract'] ?? false,
+      hasAcceptedContract: json['hasAcceptedContract'] as bool? ?? false,
     );
   }
 

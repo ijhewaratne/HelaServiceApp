@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/monitoring/performance_monitoring.dart';
 import '../../../matching/domain/usecases/find_nearest_worker.dart';
+import '../../domain/entities/booking.dart';
 import '../../domain/repositories/booking_repository.dart';
 
 /// BLoC for managing booking-related state
@@ -55,23 +56,16 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         emit(BookingError(message: failure.message));
       },
       (booking) async {
-        // Track booking creation
         await _analytics.logBookingCreated(
-          bookingId: booking['id'] ?? 'unknown',
-          serviceType: booking['serviceType'] ?? 'unknown',
-          estimatedPrice: (booking['estimatedPrice'] ?? 0).toDouble(),
-          zone: booking['zoneId'],
-          scheduledDate: booking['scheduledDate'] != null
-              ? DateTime.tryParse(booking['scheduledDate'])
-              : null,
+          bookingId: booking.id,
+          serviceType: booking.serviceType.name,
+          estimatedPrice: booking.estimatedPrice,
+          scheduledDate: booking.scheduledDate,
         );
-
-        // Track as add to cart
         await _analytics.logAddToCart(
-          serviceType: booking['serviceType'] ?? 'unknown',
-          price: (booking['estimatedPrice'] ?? 0).toDouble(),
+          serviceType: booking.serviceType.name,
+          price: booking.estimatedPrice,
         );
-
         emit(BookingCreated(booking: booking));
       },
     );
@@ -207,35 +201,22 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     result.fold(
       (failure) => emit(BookingError(message: failure.message)),
       (booking) async {
-        // Track job completion
-        if (event.status == 'completed') {
-          final startTime = booking['startTime'] != null
-              ? DateTime.tryParse(booking['startTime'])
-              : null;
-          final endTime = booking['endTime'] != null
-              ? DateTime.tryParse(booking['endTime'])
-              : DateTime.now();
-          final durationMinutes = startTime != null
-              ? endTime.difference(startTime).inMinutes
-              : 0;
-
+        if (event.status == BookingStatus.completed) {
+          final durationMinutes = booking.duration?.inMinutes ?? 0;
           await _analytics.logJobCompleted(
             jobId: event.bookingId,
-            workerId: booking['workerId'] ?? 'unknown',
-            serviceType: booking['serviceType'] ?? 'unknown',
+            workerId: booking.workerId ?? 'unknown',
+            serviceType: booking.serviceType.name,
             durationMinutes: durationMinutes,
-            finalPrice: (booking['finalPrice'] ?? booking['estimatedPrice'] ?? 0).toDouble(),
-            workerRating: (event.additionalData?['rating'] ?? 0).toDouble(),
+            finalPrice: booking.finalPrice ?? booking.estimatedPrice,
+            workerRating: ((event.additionalData?['rating'] as num?) ?? 0).toDouble(),
           );
-
-          // Track as purchase
           await _analytics.logPurchase(
             bookingId: event.bookingId,
-            value: (booking['finalPrice'] ?? booking['estimatedPrice'] ?? 0).toDouble(),
-            serviceType: booking['serviceType'] ?? 'unknown',
+            value: booking.finalPrice ?? booking.estimatedPrice,
+            serviceType: booking.serviceType.name,
           );
         }
-
         emit(BookingStatusUpdated(booking: booking, status: event.status));
       },
     );
@@ -272,7 +253,7 @@ abstract class BookingEvent extends Equatable {
 
 /// Create new booking
 class CreateBooking extends BookingEvent {
-  final Map<String, dynamic> bookingData;
+  final Booking bookingData;
 
   CreateBooking({required this.bookingData});
 
@@ -368,7 +349,7 @@ class AssignWorker extends BookingEvent {
 /// Update booking status
 class UpdateBookingStatus extends BookingEvent {
   final String bookingId;
-  final String status;
+  final BookingStatus status;
   final Map<String, dynamic>? additionalData;
 
   UpdateBookingStatus({
@@ -406,7 +387,7 @@ class BookingLoading extends BookingState {}
 
 /// Booking created
 class BookingCreated extends BookingState {
-  final Map<String, dynamic> booking;
+  final Booking booking;
 
   BookingCreated({required this.booking});
 
@@ -416,7 +397,7 @@ class BookingCreated extends BookingState {
 
 /// Booking loaded
 class BookingLoaded extends BookingState {
-  final Map<String, dynamic> booking;
+  final Booking booking;
 
   BookingLoaded({required this.booking});
 
@@ -426,7 +407,7 @@ class BookingLoaded extends BookingState {
 
 /// Booking updated
 class BookingUpdated extends BookingState {
-  final Map<String, dynamic> booking;
+  final Booking booking;
 
   BookingUpdated({required this.booking});
 
@@ -446,7 +427,7 @@ class BookingCancelled extends BookingState {
 
 /// Booking list loaded
 class BookingListLoaded extends BookingState {
-  final List<Map<String, dynamic>> bookings;
+  final List<Booking> bookings;
 
   BookingListLoaded({required this.bookings});
 
@@ -466,7 +447,7 @@ class WorkersFound extends BookingState {
 
 /// Worker assigned
 class WorkerAssigned extends BookingState {
-  final Map<String, dynamic> booking;
+  final Booking booking;
   final String workerId;
 
   WorkerAssigned({required this.booking, required this.workerId});
@@ -477,8 +458,8 @@ class WorkerAssigned extends BookingState {
 
 /// Booking status updated
 class BookingStatusUpdated extends BookingState {
-  final Map<String, dynamic> booking;
-  final String status;
+  final Booking booking;
+  final BookingStatus status;
 
   BookingStatusUpdated({required this.booking, required this.status});
 

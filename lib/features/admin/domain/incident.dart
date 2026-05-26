@@ -21,14 +21,14 @@ class Incident {
 
   factory Incident.fromJson(Map<String, dynamic> json) {
     return Incident(
-      incidentId: json['incidentId'] ?? '',
-      bookingId: json['bookingId'] ?? '',
-      reportedBy: json['reportedBy'] ?? '',
-      type: json['type'] ?? '',
-      description: json['description'] ?? '',
-      severity: json['severity'] ?? 'low',
-      status: json['status'] ?? 'open',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+      incidentId: json['incidentId'] as String? ?? '',
+      bookingId: json['bookingId'] as String? ?? '',
+      reportedBy: json['reportedBy'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      severity: json['severity'] as String? ?? 'low',
+      status: json['status'] as String? ?? 'open',
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
     );
   }
 

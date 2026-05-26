@@ -210,7 +210,7 @@ class ChatRepositoryImpl implements ChatRepository {
       // Batch update
       final batch = _firestore.batch();
       for (final doc in querySnapshot.docs) {
-        final readBy = List<String>.from(doc.data()['readBy'] ?? []);
+        final readBy = List<String>.from(doc.data()['readBy'] as List<dynamic>? ?? []);
         if (!readBy.contains(userId)) {
           batch.update(doc.reference, {
             'readBy': FieldValue.arrayUnion([userId]),

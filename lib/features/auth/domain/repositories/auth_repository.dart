@@ -5,11 +5,11 @@ import '../../../../core/errors/failures.dart';
 import '../entities/user.dart';
 
 /// Abstract repository for authentication operations
-/// 
+///
 /// Phase 2: Architecture Refactoring - Updated to use consolidated User entity
 abstract class AuthRepository {
-  /// Stream of auth state changes
-  Stream<firebase.User?> get authStateChanges;
+  /// Stream of auth state changes (emits custom User entity)
+  Stream<User?> get authStateChanges;
 
   /// Verify phone number and send OTP
   Future<Either<Failure, void>> verifyPhone({
@@ -28,8 +28,11 @@ abstract class AuthRepository {
   /// Sign out current user
   Future<void> signOut();
 
-  /// Get current authenticated user
-  firebase.User? get currentUser;
+  /// Get raw Firebase user (for auth checks only)
+  firebase.User? get currentFirebaseUser;
+
+  /// Get current user as app entity (requires Firestore lookup)
+  Future<User?> getCurrentUser();
 
   /// Update user type after role selection
   Future<Either<Failure, User>> updateUserType(String userId, UserType userType);

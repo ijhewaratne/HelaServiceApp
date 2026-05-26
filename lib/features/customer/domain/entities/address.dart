@@ -147,27 +147,27 @@ class Address extends Equatable {
   /// Create from JSON
   factory Address.fromJson(Map<String, dynamic> json, {String? id}) {
     return Address(
-      id: id ?? json['id'] ?? '',
-      customerId: json['customerId'] ?? '',
-      label: json['label'] ?? '',
-      type: _parseAddressType(json['type']),
-      houseNumber: json['houseNumber'] ?? '',
-      street: json['street'],
-      landmark: json['landmark'],
-      city: json['city'] ?? '',
-      district: json['district'] ?? '',
-      zoneId: json['zoneId'] ?? '',
-      latitude: (json['latitude'] ?? 0.0).toDouble(),
-      longitude: (json['longitude'] ?? 0.0).toDouble(),
-      geohash: json['geohash'],
-      isDefault: json['isDefault'] ?? false,
+      id: id ?? json['id'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+      type: _parseAddressType(json['type'] as String?),
+      houseNumber: json['houseNumber'] as String? ?? '',
+      street: json['street'] as String?,
+      landmark: json['landmark'] as String?,
+      city: json['city'] as String? ?? '',
+      district: json['district'] as String? ?? '',
+      zoneId: json['zoneId'] as String? ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      geohash: json['geohash'] as String?,
+      isDefault: json['isDefault'] as bool? ?? false,
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
-          : DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+          : DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       updatedAt: json['updatedAt'] != null
           ? (json['updatedAt'] is Timestamp
               ? (json['updatedAt'] as Timestamp).toDate()
-              : DateTime.parse(json['updatedAt']))
+              : DateTime.parse(json['updatedAt'] as String))
           : null,
     );
   }

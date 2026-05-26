@@ -283,7 +283,7 @@ class AppTheme {
       ),
 
       // Card
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardColor,
         elevation: isDark ? 0 : 1,
         shadowColor: isDark ? Colors.transparent : Colors.black.withOpacity(0.1),
@@ -337,7 +337,7 @@ class AppTheme {
       ),
 
       // Dialog
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: surfaceColor,
         elevation: isDark ? 0 : 8,
         shape: RoundedRectangleBorder(

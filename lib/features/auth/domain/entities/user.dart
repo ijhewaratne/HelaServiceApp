@@ -125,23 +125,23 @@ class User extends Equatable {
   /// Create from JSON
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      uid: json['uid'] ?? '',
-      phoneNumber: json['phoneNumber'] ?? '',
-      email: json['email'],
-      displayName: json['displayName'],
-      photoUrl: json['photoUrl'],
-      userType: _parseUserType(json['userType']),
-      status: _parseUserStatus(json['status']),
-      isEmailVerified: json['isEmailVerified'] ?? false,
-      isPhoneVerified: json['isPhoneVerified'] ?? false,
-      isOnboarded: json['isOnboarded'] ?? false,
+      uid: json['uid'] as String? ?? '',
+      phoneNumber: json['phoneNumber'] as String? ?? '',
+      email: json['email'] as String?,
+      displayName: json['displayName'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      userType: _parseUserType(json['userType'] as String?),
+      status: _parseUserStatus(json['status'] as String?),
+      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+      isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
+      isOnboarded: json['isOnboarded'] as bool? ?? false,
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? DateTime.parse(json['createdAt'] as String)
           : null,
       lastSignInAt: json['lastSignInAt'] != null
-          ? DateTime.parse(json['lastSignInAt'])
+          ? DateTime.parse(json['lastSignInAt'] as String)
           : null,
-      metadata: json['metadata'],
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -169,14 +169,14 @@ class User extends Equatable {
     return User(
       uid: firebaseUser.uid,
       phoneNumber: firebaseUser.phoneNumber ?? '',
-      email: firebaseUser.email ?? data?['email'],
-      displayName: firebaseUser.displayName ?? data?['displayName'],
-      photoUrl: firebaseUser.photoURL ?? data?['photoUrl'],
-      userType: _parseUserType(data?['userType']),
-      status: _parseUserStatus(data?['status']),
+      email: firebaseUser.email ?? data?['email'] as String?,
+      displayName: firebaseUser.displayName ?? data?['displayName'] as String?,
+      photoUrl: firebaseUser.photoURL ?? data?['photoUrl'] as String?,
+      userType: _parseUserType(data?['userType'] as String?),
+      status: _parseUserStatus(data?['status'] as String?),
       isEmailVerified: firebaseUser.emailVerified,
-      isPhoneVerified: data?['isPhoneVerified'] ?? firebaseUser.phoneNumber != null,
-      isOnboarded: data?['isOnboarded'] ?? false,
+      isPhoneVerified: (data?['isPhoneVerified'] as bool?) ?? firebaseUser.phoneNumber != null,
+      isOnboarded: (data?['isOnboarded'] as bool?) ?? false,
       createdAt: firebaseUser.metadata.creationTime ?? 
           (data?['createdAt'] != null ? (data!['createdAt'] as Timestamp).toDate() : null),
       lastSignInAt: firebaseUser.metadata.lastSignInTime,
