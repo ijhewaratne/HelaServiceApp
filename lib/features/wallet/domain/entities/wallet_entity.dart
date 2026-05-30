@@ -133,6 +133,7 @@ class TransactionEntity extends Equatable {
 class WalletEntity extends Equatable {
   final String userId;
   final double balance;
+  final double heldBalance; // funds locked pending booking completion
   final double totalCredited;
   final double totalDebited;
   final List<TransactionEntity> transactions;
@@ -144,6 +145,7 @@ class WalletEntity extends Equatable {
   const WalletEntity({
     required this.userId,
     this.balance = 0.0,
+    this.heldBalance = 0.0,
     this.totalCredited = 0.0,
     this.totalDebited = 0.0,
     this.transactions = const [],
@@ -162,7 +164,10 @@ class WalletEntity extends Equatable {
   bool get isEmpty => userId.isEmpty;
 
   /// Check if wallet has sufficient balance
-  bool hasSufficientBalance(double amount) => balance >= amount && !isFrozen;
+  double get availableBalance => balance - heldBalance;
+
+  bool hasSufficientBalance(double amount) =>
+      availableBalance >= amount && !isFrozen;
 
   /// Get formatted balance
   String get formattedBalance => 'LKR ${balance.toStringAsFixed(2)}';
@@ -210,6 +215,7 @@ class WalletEntity extends Equatable {
   WalletEntity copyWith({
     String? userId,
     double? balance,
+    double? heldBalance,
     double? totalCredited,
     double? totalDebited,
     List<TransactionEntity>? transactions,
@@ -221,6 +227,7 @@ class WalletEntity extends Equatable {
     return WalletEntity(
       userId: userId ?? this.userId,
       balance: balance ?? this.balance,
+      heldBalance: heldBalance ?? this.heldBalance,
       totalCredited: totalCredited ?? this.totalCredited,
       totalDebited: totalDebited ?? this.totalDebited,
       transactions: transactions ?? this.transactions,
@@ -235,6 +242,7 @@ class WalletEntity extends Equatable {
   List<Object?> get props => [
         userId,
         balance,
+        heldBalance,
         isActive,
         isFrozen,
       ];

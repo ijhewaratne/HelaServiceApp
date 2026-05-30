@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
+import 'worker_verification.dart';
 
 class Worker extends Equatable {
   final String id;
@@ -25,6 +26,7 @@ class Worker extends Equatable {
   final int totalJobs;
   final DateTime? lastJobCompletedAt;
   final bool hasAcceptedContract;
+  final VerificationTier verificationTier;
 
   const Worker({
     required this.id,
@@ -50,6 +52,7 @@ class Worker extends Equatable {
     this.totalJobs = 0,
     this.lastJobCompletedAt,
     this.hasAcceptedContract = false,
+    this.verificationTier = VerificationTier.green,
   });
 
   Worker copyWith({
@@ -76,6 +79,7 @@ class Worker extends Equatable {
     int? totalJobs,
     DateTime? lastJobCompletedAt,
     bool? hasAcceptedContract,
+    VerificationTier? verificationTier,
   }) {
     return Worker(
       id: id ?? this.id,
@@ -101,6 +105,7 @@ class Worker extends Equatable {
       totalJobs: totalJobs ?? this.totalJobs,
       lastJobCompletedAt: lastJobCompletedAt ?? this.lastJobCompletedAt,
       hasAcceptedContract: hasAcceptedContract ?? this.hasAcceptedContract,
+      verificationTier: verificationTier ?? this.verificationTier,
     );
   }
 
@@ -129,6 +134,7 @@ class Worker extends Equatable {
       'totalJobs': totalJobs,
       'lastJobCompletedAt': lastJobCompletedAt?.toIso8601String(),
       'hasAcceptedContract': hasAcceptedContract,
+      'verificationTier': verificationTier.name,
     };
   }
 
@@ -169,6 +175,10 @@ class Worker extends Equatable {
           ? DateTime.parse(json['lastJobCompletedAt'] as String)
           : null,
       hasAcceptedContract: json['hasAcceptedContract'] as bool? ?? false,
+      verificationTier: VerificationTier.values.firstWhere(
+        (e) => e.name == (json['verificationTier'] as String?),
+        orElse: () => VerificationTier.green,
+      ),
     );
   }
 
@@ -197,6 +207,7 @@ class Worker extends Equatable {
         totalJobs,
         lastJobCompletedAt,
         hasAcceptedContract,
+        verificationTier,
       ];
 }
 

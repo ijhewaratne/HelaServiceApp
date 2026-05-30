@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../core/utils/geohash_helper.dart';
@@ -233,21 +234,21 @@ class LocationTrackingService {
     double lat2,
     double lon2,
   ) {
-    const earthRadius = 6371; // km
+    const earthRadius = 6371.0; // km
     final dLat = _toRadians(lat2 - lat1);
     final dLon = _toRadians(lon2 - lon1);
-    
-    final a = 
-        (dLat / 2).sin() * (dLat / 2).sin() +
-        _toRadians(lat1).cos() * 
-        _toRadians(lat2).cos() * 
-        (dLon / 2).sin() * (dLon / 2).sin();
-    
-    final c = 2 * (a.sqrt()).atan2((1 - a).sqrt(), a.sqrt());
+
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(lat1)) *
+        math.cos(_toRadians(lat2)) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return earthRadius * c;
   }
 
-  double _toRadians(double degrees) => degrees * 3.14159265359 / 180;
+  double _toRadians(double degrees) => degrees * math.pi / 180;
 
   /// Dispose resources
   Future<void> dispose() async {
@@ -326,21 +327,3 @@ class LocationServiceDisabledException implements Exception {
   String toString() => 'Location services are disabled';
 }
 
-/// Extension for double math operations
-extension _DoubleMath on double {
-  double sin() {
-    return this.sin();
-  }
-  
-  double cos() {
-    return this.cos();
-  }
-  
-  double sqrt() {
-    return this.sqrt();
-  }
-  
-  double atan2(double y, double x) {
-    return this.atan2(y, x);
-  }
-}
