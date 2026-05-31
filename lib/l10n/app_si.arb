@@ -74,5 +74,52 @@
   "reportIncident": "සිදුවීමක් වාර්තා කරන්න",
   "language": "භාෂාව",
   "english": "English",
-  "sinhala": "සිංහල"
+  "sinhala": "සිංහල",
+  "tamil": "தமிழ்",
+
+  "walletBalance": "පසුම්බිය",
+  "topUp": "මුදල් ඇතුළත් කරන්න",
+  "topUpWallet": "පසුම්බියට මුදල් ඇතුළත් කිරීම",
+  "insufficientBalance": "ශේෂ ප්‍රමාණවත් නොවේ",
+  "topUpNow": "දැනම ඇතුළත් කරන්න",
+
+  "recurringBooking": "නැවත නැවත වෙන්කරවීම",
+  "repeatBooking": "මෙම වෙන්කරවීම නැවත කරන්න",
+  "weekly": "සෑම සතියකම",
+  "biweekly": "සෑම සති දෙකකට වරක්",
+  "setEndDate": "අවසාන දිනය සකසන්න",
+  "lastBookingDate": "අවසාන වෙන්කරවීම් දිනය",
+
+  "specialInstructions": "විශේෂ උපදෙස්",
+  "specialInstructionsHint": "උදා: දෙවරක් සීනුව 누르න්න. බල්ලා හොඳ ළදරුවෙකු.",
+
+  "howLong": "කොපමණ කාලයක්?",
+  "whenDoYouNeedIt": "කවදා අවශ්‍යද?",
+  "where": "කොතැනද?",
+  "reviewBooking": "වෙන්කරවීම සමීක්ෂා කරන්න",
+  "perHour": "පැයකට",
+
+  "myAvailability": "මගේ ලැබිය හැකිකම",
+  "weeklySchedule": "සාප්තාහික කාලසටහන",
+  "blockedDates": "අවහිර දිනයන්",
+  "blockDate": "දිනයක් අවහිර කරන්න",
+  "addSlot": "කාලය එකතු කරන්න",
+  "notAvailable": "ලැබිය නොහැකිය",
+  "saveAvailability": "ලැබිය හැකිකම සුරකින්න",
+  "availabilitySaved": "ලැබිය හැකිකම සුරකිනු ලැබිණ",
+
+  "sosAlert": "SOS අනතුරු ඇඟවීම",
+  "confirmSos": "SOS යවන්නද?",
+  "sosConfirmBody": "මෙය HelaService ආරක්ෂාව කණ්ඩායමට ඔබේ ස්ථානය දැනුම් දෙනු ඇත.",
+  "sendSos": "SOS යවන්න",
+
+  "elderCompanionship": "වැඩිහිටි සහකාරිත්වය",
+  "nonMedicalCare": "අශක්ත රෝගී සත්කාර",
+  "homeworkSupport": "ගෙදර පාඩම් සහාය",
+  "kitchenHelper": "කුස්සිය සහායක",
+  "laundryHelper": "රෙදි සෝදන සේවය",
+  "groceryHelper": "කඩේ ගිහිල්ල ගෙනෙන සේවය",
+  "houseSitting": "ගෙදර රැකවල් සේවය",
+  "petSitting": "සත්ව රැකවරණය",
+  "hourlyHouseholdSupport": "පැයකාලීන ගෘහ සේවය"
 }

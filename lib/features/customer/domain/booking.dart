@@ -11,6 +11,9 @@ class Booking {
   final double addressLat;
   final double addressLng;
   final String specialNotes;
+  final bool isRecurring;
+  final String? recurringPattern; // 'weekly' | 'biweekly'
+  final DateTime? recurringEndDate;
   final String status;
   final double price;
   final String paymentStatus;
@@ -29,6 +32,9 @@ class Booking {
     required this.addressLat,
     required this.addressLng,
     required this.specialNotes,
+    this.isRecurring = false,
+    this.recurringPattern,
+    this.recurringEndDate,
     required this.status,
     required this.price,
     required this.paymentStatus,
@@ -50,6 +56,9 @@ class Booking {
       addressLat: (address?['lat'] as num?)?.toDouble() ?? 0.0,
       addressLng: (address?['lng'] as num?)?.toDouble() ?? 0.0,
       specialNotes: json['specialNotes'] as String? ?? '',
+      isRecurring: json['isRecurring'] as bool? ?? false,
+      recurringPattern: json['recurringPattern'] as String?,
+      recurringEndDate: json['recurringEndDate'] != null ? DateTime.parse(json['recurringEndDate'] as String) : null,
       status: json['status'] as String? ?? 'draft',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       paymentStatus: json['paymentStatus'] as String? ?? 'unpaid',
@@ -73,6 +82,9 @@ class Booking {
         'lng': addressLng,
       },
       'specialNotes': specialNotes,
+      'isRecurring': isRecurring,
+      'recurringPattern': recurringPattern,
+      'recurringEndDate': recurringEndDate?.toIso8601String(),
       'status': status,
       'price': price,
       'paymentStatus': paymentStatus,

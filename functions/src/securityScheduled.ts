@@ -27,7 +27,7 @@ export const cleanupRateLimitsDaily = functions.pubsub
       return { success: true, deleted };
     } catch (error) {
       console.error('❌ Rate limit cleanup failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });
 
@@ -65,7 +65,7 @@ export const cleanupExpiredOTPs = functions.pubsub
       return { success: true, deleted: count };
     } catch (error) {
       console.error('❌ OTP cleanup failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });
 
@@ -106,7 +106,7 @@ export const cleanupOldJobOffers = functions.pubsub
       return { success: true, deleted: count };
     } catch (error) {
       console.error('❌ Job offer cleanup failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });
 
@@ -148,7 +148,7 @@ export const cleanupOldMessages = functions.pubsub
       return { success: true, deleted: count };
     } catch (error) {
       console.error('❌ Message cleanup failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });
 
@@ -198,7 +198,7 @@ export const archiveOldJobs = functions.pubsub
       return { success: true, archived, deleted };
     } catch (error) {
       console.error('❌ Job archiving failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });
 
@@ -277,6 +277,6 @@ export const detectSuspiciousActivity = functions.pubsub
       return { success: true, alerts: alerts.length };
     } catch (error) {
       console.error('❌ Suspicious activity detection failed:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: String(error) };
     }
   });

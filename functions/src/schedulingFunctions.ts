@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
 const db = admin.firestore();
+const MIN_PAYOUT_THRESHOLD_LKR = 1000;
 
 // ── Recurring Bookings ────────────────────────────────────────────────────────
 
@@ -134,13 +135,15 @@ export const processWeeklyPayouts = functions.pubsub
       if (entry.gross <= 0) return;
       const ref = db.collection('payouts').doc();
       const platformFee = entry.gross * 0.20;
+      const workerAmount = entry.gross - platformFee;
       batch.set(ref, {
         id: ref.id,
         workerId,
         grossAmount: entry.gross,
         platformFee,
-        workerAmount: entry.gross - platformFee,
-        status: 'pending',
+        workerAmount,
+        status: workerAmount >= MIN_PAYOUT_THRESHOLD_LKR ? 'pending' : 'below_threshold',
+        thresholdLkr: MIN_PAYOUT_THRESHOLD_LKR,
         periodStart: admin.firestore.Timestamp.fromDate(weekStart),
         periodEnd: admin.firestore.Timestamp.fromDate(weekEnd),
         bookingIds: entry.ids,
@@ -266,6 +269,7 @@ export const checkMissedCheckOuts = functions.pubsub
 
 /**
  * Every hour: send reminders for bookings starting in ~24 hours and ~2 hours.
+ * Notifies both the customer AND the assigned worker.
  */
 export const notifyUpcomingBookings = functions.pubsub
   .schedule('every 60 minutes')
@@ -287,16 +291,33 @@ export const notifyUpcomingBookings = functions.pubsub
       const batch = db.batch();
       snap.docs.forEach(doc => {
         const data = doc.data();
-        const notifRef = db.collection('notifications').doc();
-        batch.set(notifRef, {
+        const scheduledStr = (data.scheduledDate as admin.firestore.Timestamp).toDate().toLocaleString('en-LK');
+
+        // ── Customer notification ──
+        const customerRef = db.collection('notifications').doc();
+        batch.set(customerRef, {
           userId: data.customerId,
           type: 'booking_reminder',
-          title: windowHours === 24 ? 'Reminder: booking tomorrow' : 'Reminder: booking in 2 hours',
-          body: `Your booking is scheduled for ${(data.scheduledDate as admin.firestore.Timestamp).toDate().toLocaleString('en-LK')}`,
+          title: windowHours === 24 ? 'Reminder: your booking is tomorrow' : 'Reminder: booking in 2 hours',
+          body: `Your booking is scheduled for ${scheduledStr}`,
           bookingId: doc.id,
           read: false,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+
+        // ── Worker notification (only if a worker has been assigned) ──
+        if (data.workerId) {
+          const workerRef = db.collection('notifications').doc();
+          batch.set(workerRef, {
+            userId: data.workerId,
+            type: 'upcoming_job_reminder',
+            title: windowHours === 24 ? 'Job reminder: tomorrow' : 'Job reminder: starting in 2 hours',
+            body: `You have a booking at ${scheduledStr}. Please prepare and be on time.`,
+            bookingId: doc.id,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
       });
       await batch.commit();
     }

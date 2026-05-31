@@ -267,8 +267,8 @@ async function checkAuth(): Promise<ServiceCheck> {
   const start = Date.now();
   
   try {
-    // Try to get project config (lightweight operation)
-    await admin.auth().getProjectConfig();
+    // Try listing a single user as a lightweight auth liveness check
+    await (admin.auth() as any).listUsers(1);
     
     return {
       status: 'up',

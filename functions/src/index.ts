@@ -1,17 +1,15 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { GeoFirestore } from 'geofirestore';
 import * as geofire from 'geofire-common';
 
 admin.initializeApp();
 const db = admin.firestore();
-const geoFirestore = new GeoFirestore(db);
 
 // Sri Lankan service zones (matching your app constants)
-const SERVICE_ZONES = {
+const SERVICE_ZONES: Record<string, { center: { lat: number; lng: number }; radiusKm: number }> = {
     'col_03_04': { center: { lat: 6.8940, lng: 79.8580 }, radiusKm: 2.5 },
     'col_07': { center: { lat: 6.9119, lng: 79.8716 }, radiusKm: 3.0 },
-    'rajagiriya': { center: { lat: 6.9108, lng: 79.8927 }, radiusKm: 2.0 }
+    'rajagiriya': { center: { lat: 6.9108, lng: 79.8927 }, radiusKm: 2.0 },
 };
 
 interface WorkerLocation {
@@ -22,10 +20,11 @@ interface WorkerLocation {
     lastJobCompletedAt: admin.firestore.Timestamp | null;
     homeLocation: { latitude: number; longitude: number };
     rating: number;
+    distanceToCustomer?: number;
 }
 
 interface JobRequest {
-    jobId: string;
+    jobId?: string;
     customerId: string;
     serviceType: string;
     zoneId: string;
@@ -34,7 +33,11 @@ interface JobRequest {
     landmark?: string;
     estimatedEarnings: number;
     createdAt: admin.firestore.Timestamp;
+    status?: string;
+    offerCount?: number;
+    retryCount?: number;
 }
+
 
 /**
  * Main Dispatch Function - Triggered when customer creates job
@@ -119,7 +122,7 @@ export const dispatchJob = functions.firestore
 
         } catch (error) {
             console.error('Dispatch error:', error);
-            await snap.ref.update({ status: 'error', error: error.message });
+            await snap.ref.update({ status: 'error', error: String(error) });
         }
     });
 
@@ -130,7 +133,7 @@ async function findEligibleWorkers(job: JobRequest): Promise<WorkerLocation[]> {
     const zone = SERVICE_ZONES[job.zoneId];
 
     // Query: Online workers in geohash range (approximate, then filter precisely)
-    const center = [zone.center.lat, zone.center.lng];
+    const center: [number, number] = [zone.center.lat, zone.center.lng];
     const radiusInM = zone.radiusKm * 1000;
 
     // Get bounds for geohash query
@@ -151,10 +154,10 @@ async function findEligibleWorkers(job: JobRequest): Promise<WorkerLocation[]> {
             const data = doc.data() as any;
 
             // Precise distance calculation
-            const distanceInKm = geofire.getDistance(
-                [data.lat, data.lng],
-                [job.location.latitude, job.location.longitude]
-            ) / 1000;
+            const distanceInKm = geofire.distanceBetween(
+                [data.lat as number, data.lng as number] as [number, number],
+                [job.location.latitude, job.location.longitude] as [number, number],
+            );
 
             // Filters
             if (distanceInKm > 5) return; // Max 5km from customer
@@ -183,7 +186,7 @@ async function findEligibleWorkers(job: JobRequest): Promise<WorkerLocation[]> {
 function scoreWorkers(workers: WorkerLocation[], job: JobRequest) {
     return workers.map(worker => {
         // Factor 1: Distance to customer (closer = better)
-        const distanceScore = 1 / (worker.distanceToCustomer + 0.1); // +0.1 avoid div by zero
+        const distanceScore = 1 / ((worker.distanceToCustomer ?? 1) + 0.1);
 
         // Factor 2: Idle time (workers who just finished get priority - PickMe style)
         let idleScore = 0;
@@ -195,10 +198,10 @@ function scoreWorkers(workers: WorkerLocation[], job: JobRequest) {
         }
 
         // Factor 3: Distance from home (don't send too far from home base)
-        const homeDistKm = geofire.getDistance(
+        const homeDistKm = geofire.distanceBetween(
             [worker.lat, worker.lng],
-            [worker.homeLocation.latitude, worker.homeLocation.longitude]
-        ) / 1000;
+            [worker.homeLocation.latitude, worker.homeLocation.longitude],
+        );
         const homeScore = 1 / (homeDistKm + 0.1);
 
         // Weighted score
@@ -299,7 +302,7 @@ async function handleOfferTimeout(jobId: string, workerIds: string[]) {
     });
 
     // Try to find more workers (wider radius) or fail
-    if (jobData.offerCount < 6) { // Max 2 rounds of dispatch
+    if ((jobData.offerCount ?? 0) < 6) { // Max 2 rounds of dispatch
         batch.update(jobRef, {
             status: 'searching_extended',
             retryCount: (jobData.retryCount || 0) + 1
@@ -315,12 +318,11 @@ async function handleOfferTimeout(jobId: string, workerIds: string[]) {
 }
 
 /**
- * SMS Fallback for workers without data (Sri Lanka specific)
+ * SMS Fallback for workers without data (Sri Lanka specific).
+ * TODO: wire to Notify.lk API when merchant account is approved.
  */
-async function notifyViaSMS(phoneNumber: string, message: string) {
-    // Integration with Notify.lk or similar Sri Lankan gateway
+export async function notifyViaSMS(phoneNumber: string, message: string): Promise<void> {
     console.log(`📱 SMS to ${phoneNumber}: ${message}`);
-    // Implementation: Call Notify.lk API here
 }
 
 async function notifyCustomerNoWorkers(customerId: string, jobId: string) {
@@ -409,3 +411,17 @@ export {
   autoCompleteBookings,
   escalateSafetyAlert,
 } from "./schedulingFunctions";
+
+// Phase 9: Service Catalog + Wallet Escrow + Recurring Booking Management
+export { seedServiceCatalog } from "./seedServiceCatalog";
+export {
+  holdWalletFunds,
+  releaseWalletFunds,
+} from "./walletFunctions";
+export {
+  cancelRecurringInstance,
+  modifyRecurringSeries,
+  verifyWorkerCheckInLocation,
+  suspendWorker,
+  suspendWorkerManually,
+} from "./bookingManagementFunctions";

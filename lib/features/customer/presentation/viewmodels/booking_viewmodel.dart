@@ -18,6 +18,11 @@ class BookingViewModel extends ChangeNotifier {
   String? addressText;
   double? addressLat;
   double? addressLng;
+  String? specialNotes;
+  bool isRecurring = false;
+  String recurringPattern = 'weekly'; // 'weekly' | 'biweekly'
+  DateTime? recurringEndDate;
+  double walletBalance = 0.0;
 
   BookingViewModel(this._bookingRepository);
 
@@ -72,7 +77,10 @@ class BookingViewModel extends ChangeNotifier {
         addressText: addressText!,
         addressLat: addressLat ?? 6.9,
         addressLng: addressLng ?? 79.8,
-        specialNotes: '',
+        specialNotes: specialNotes ?? '',
+        isRecurring: isRecurring,
+        recurringPattern: isRecurring ? recurringPattern : null,
+        recurringEndDate: isRecurring ? recurringEndDate : null,
         status: 'draft',
         price: calculateTotalPrice(),
         paymentStatus: 'unpaid',
@@ -89,6 +97,16 @@ class BookingViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchWalletBalance(String customerId) async {
+    try {
+      final doc = await _bookingRepository.getWalletBalance(customerId);
+      walletBalance = doc;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  bool get hasSufficientBalance => walletBalance >= calculateTotalPrice();
+
   void clearBookingState() {
     selectedCategory = null;
     bookingDate = null;
@@ -97,6 +115,10 @@ class BookingViewModel extends ChangeNotifier {
     addressText = null;
     addressLat = null;
     addressLng = null;
+    specialNotes = null;
+    isRecurring = false;
+    recurringPattern = 'weekly';
+    recurringEndDate = null;
     notifyListeners();
   }
 }
