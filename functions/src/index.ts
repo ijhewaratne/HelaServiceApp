@@ -353,7 +353,7 @@ async function notifyCustomerWorkerAssigned(customerId: string, workerId: string
     });
 }
 // Export PayHere webhook
-export { payhereNotify, checkPaymentStatus } from "./payhereWebhook";
+export { payhereNotify, checkPaymentStatus, generatePayHereUrl } from "./payhereWebhook";
 
 // Sprint 5: Security Hardening - Rate Limiting
 export { 

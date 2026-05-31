@@ -97,6 +97,45 @@ export const payhereNotify = functions.https.onRequest(async (req, res) => {
         const bookingId = custom_1 || order_id;
         const customerId = custom_2;
 
+        // ── Wallet top-up shortcut ────────────────────────────────────────
+        // order_id convention: 'topup_{userId}_{timestamp}'
+        if (order_id.startsWith('topup_') && status_code === '2') {
+            const topupUserId = customerId || order_id.split('_')[1];
+            const topupAmount = parseFloat(payhere_amount);
+            if (topupUserId && topupAmount > 0) {
+                await db.runTransaction(async (tx) => {
+                    const walletRef = db.collection('wallets').doc(topupUserId);
+                    const walletSnap = await tx.get(walletRef);
+                    const wallet = walletSnap.data() ?? {};
+                    const newBalance = (wallet.balance as number ?? 0) + topupAmount;
+                    tx.set(walletRef, {
+                        userId: topupUserId,
+                        balance: newBalance,
+                        totalCredited: (wallet.totalCredited as number ?? 0) + topupAmount,
+                        isActive: true,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    }, { merge: true });
+                    const txRef = db.collection('transactions').doc();
+                    tx.set(txRef, {
+                        id: txRef.id,
+                        userId: topupUserId,
+                        type: 'topUp',
+                        amount: topupAmount,
+                        balanceAfter: newBalance,
+                        paymentMethod: 'payhere',
+                        description: `PayHere wallet top-up`,
+                        relatedBookingId: null,
+                        status: 'completed',
+                        payherePaymentId: payment_id,
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    });
+                });
+                console.log(`✅ Wallet top-up: LKR ${topupAmount} for user ${topupUserId}`);
+                res.status(200).send('OK');
+                return;
+            }
+        }
+
         // Create payment record
         const paymentData = {
             paymentId: payment_id,
@@ -270,4 +309,109 @@ export const checkPaymentStatus = functions.https.onCall(async (data, context) =
         console.error('Check payment status error:', error);
         throw new functions.https.HttpsError('internal', 'Failed to check status');
     }
+});
+
+// ─── generatePayHereUrl ──────────────────────────────────────────────────────
+// Callable: signs the payment hash server-side so the merchant secret never
+// reaches the client. Works for both booking payments and wallet top-ups.
+//
+// Input:  { type: 'booking'|'topup', bookingId?, userId?, amount, customerName,
+//           customerPhone, customerEmail? }
+// Output: { url: string, orderId: string }
+
+export const generatePayHereUrl = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Login required');
+    }
+
+    const {
+        type = 'booking',
+        bookingId,
+        amount,       // in LKR (not cents)
+        customerName,
+        customerPhone,
+        customerEmail,
+    } = data as {
+        type?: 'booking' | 'topup';
+        bookingId?: string;
+        amount: number;
+        customerName: string;
+        customerPhone: string;
+        customerEmail?: string;
+    };
+
+    if (!amount || amount <= 0) {
+        throw new functions.https.HttpsError('invalid-argument', 'amount must be > 0');
+    }
+
+    const merchantId: string = functions.config().payhere?.merchant_id || '';
+    const merchantSecret: string = functions.config().payhere?.secret || '';
+    const sandbox: boolean = functions.config().payhere?.sandbox === 'true';
+
+    if (!merchantId || !merchantSecret) {
+        throw new functions.https.HttpsError('failed-precondition', 'PayHere not configured');
+    }
+
+    // Build order ID
+    const ts = Date.now();
+    const orderId = type === 'topup'
+        ? `topup_${context.auth.uid}_${ts}`
+        : (bookingId ?? `booking_${ts}`);
+
+    // Format amount to 2 decimal places (PayHere requires this exact format)
+    const amountStr = amount.toFixed(2);
+    const currency  = 'LKR';
+
+    // PayHere hash for PAYMENT initiation:
+    // MD5( merchantId + orderId + amount + currency + MD5(merchantSecret).toUpperCase() )
+    const secretHash = crypto
+        .createHash('md5')
+        .update(merchantSecret)
+        .digest('hex')
+        .toUpperCase();
+
+    const hash = crypto
+        .createHash('md5')
+        .update(`${merchantId}${orderId}${amountStr}${currency}${secretHash}`)
+        .digest('hex')
+        .toUpperCase();
+
+    const baseUrl = sandbox
+        ? 'https://sandbox.payhere.lk/pay/checkout'
+        : 'https://www.payhere.lk/pay/checkout';
+
+    const notifyUrl =
+        `https://us-central1-helaservice-prod.cloudfunctions.net/payhereNotify`;
+    const returnUrl  = 'helaservice://payment/success';
+    const cancelUrl  = 'helaservice://payment/cancel';
+
+    const nameParts = customerName.trim().split(' ');
+    const firstName = nameParts[0] ?? 'Customer';
+    const lastName  = nameParts.slice(1).join(' ') || 'User';
+
+    const params = new URLSearchParams({
+        merchant_id: merchantId,
+        return_url:  returnUrl,
+        cancel_url:  cancelUrl,
+        notify_url:  notifyUrl,
+        order_id:    orderId,
+        items:       type === 'topup' ? 'Wallet Top-up' : `Booking ${bookingId ?? orderId}`,
+        currency,
+        amount:      amountStr,
+        first_name:  firstName,
+        last_name:   lastName,
+        email:       customerEmail ?? `${context.auth.uid}@helaservice.lk`,
+        phone:       customerPhone,
+        address:     'Colombo',
+        city:        'Colombo',
+        country:     'Sri Lanka',
+        hash,
+        custom_1:    type === 'topup' ? `topup_${context.auth.uid}` : (bookingId ?? orderId),
+        custom_2:    context.auth.uid,
+    });
+
+    return {
+        url:     `${baseUrl}?${params.toString()}`,
+        orderId,
+    };
 });

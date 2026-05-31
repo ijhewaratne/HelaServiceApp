@@ -28,9 +28,10 @@ import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_workers_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 
-// Payment
+// Payment / Wallet
 import '../../features/payment/presentation/pages/payment_page.dart';
 import '../../features/payment/presentation/pages/payout_history_page.dart';
+import '../../features/wallet/presentation/pages/wallet_topup_page.dart';
 
 // Shared
 import '../../features/incident/presentation/pages/incident_report_page.dart';
@@ -127,6 +128,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/worker/payouts',
       builder: (context, state) => const PayoutHistoryPage(),
+    ),
+
+    // ── Wallet Routes ────────────────────────────────────────────────────────
+    GoRoute(
+      path: '/wallet/topup',
+      builder: (context, state) => const WalletTopUpPage(),
     ),
 
     // ── Customer Routes ──────────────────────────────────────────────────────
