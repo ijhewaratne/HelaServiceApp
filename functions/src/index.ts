@@ -425,3 +425,13 @@ export {
   suspendWorker,
   suspendWorkerManually,
 } from "./bookingManagementFunctions";
+
+// Phase 10: Operational Functions
+export {
+  processRefund,
+  processVerificationUpgrade,
+  scheduleReverification,
+  updateWorkerReliabilityScores,
+  generateDailyReport,
+  cleanupOldPendingBookings,
+} from "./operationalFunctions";

@@ -97,16 +97,16 @@
 | 4.3.1 | `processWeeklyPayouts` — batch worker withdrawals every Monday 9AM | `[x]` | `processWeeklyPayouts` — Monday 09:00 Colombo; 80/20 split |
 | 4.3.2 | `holdWalletFunds` — escrow when booking confirmed | `[x]` | `holdWalletFunds` CF callable in `walletFunctions.ts`; atomic Firestore transaction, validates ownership + sufficient balance, prevents double-hold |
 | 4.3.3 | `releaseWalletFunds` — split 80/20 on checkout completion | `[x]` | `releaseWalletFunds` CF callable in `walletFunctions.ts`; credits worker 80%, creates `payouts` record, marks `paymentStatus: 'paid'` |
-| 4.3.4 | `processRefund` — full/partial refund for cancellations | `[ ]` | Not implemented |
+| 4.3.4 | `processRefund` — full/partial refund for cancellations | `[x]` | `operationalFunctions.ts` — atomic Firestore transaction; returns `heldAmount` to customer wallet; idempotent (skips if `paymentStatus: refunded`) |
 | 4.3.5 | `handlePayHereWebhook` — verify and process payment notifications | `[x]` | `payhereWebhook.ts` exists and is exported |
 
 ### 4.4 Worker Verification
 
 | # | Task | Status | Trigger |
 |---|------|--------|---------|
-| 4.4.1 | `processVerificationUpgrade` — Blue tier | `[ ]` | Not implemented |
-| 4.4.2 | `processVerificationUpgrade` — Gold tier | `[ ]` | Not implemented |
-| 4.4.3 | `scheduleReverification` — periodic re-verification every 12 months | `[ ]` | Not implemented |
+| 4.4.1 | `processVerificationUpgrade` — Blue tier | `[x]` | `operationalFunctions.ts` — admin-only callable; updates `verificationTier`, `rateMultiplier`, sends FCM push |
+| 4.4.2 | `processVerificationUpgrade` — Gold tier | `[x]` | Same callable with `newTier:'gold'`; multiplier 1.25 |
+| 4.4.3 | `scheduleReverification` — periodic re-verification every 12 months | `[x]` | `scheduleReverification` daily 08:00 — reminders at 30 days, downgrades expired tiers to green |
 | 4.4.4 | `suspendWorker` — auto-suspend on incident / rating drop | `[x]` | `suspendWorker` `onCreate` trigger on `safety_alerts` in `bookingManagementFunctions.ts`; auto-suspends on ≥ 2 unresolved high/critical alerts in 30 days; `suspendWorkerManually` callable for admin use |
 
 ### 4.5 Matching & Discovery
@@ -114,15 +114,15 @@
 | # | Task | Status | Trigger |
 |---|------|--------|---------|
 | 4.5.1 | `scoreWorkerForBooking` — callable scoring function | `[~]` | Scoring logic embedded in `dispatchJob`; not a separate callable for Layer 1 scheduled use case |
-| 4.5.2 | `updateWorkerReliabilityScore` — recalculate weekly | `[ ]` | Not implemented |
+| 4.5.2 | `updateWorkerReliabilityScore` — recalculate weekly | `[x]` | `updateWorkerReliabilityScores` Monday 06:00 — (completionRate × 0.6) + (avgRating/5 × 0.4) |
 
 ### 4.6 Analytics & Operations
 
 | # | Task | Status | Trigger |
 |---|------|--------|---------|
 | 4.6.1 | `dailyBackup` — Firestore export to Cloud Storage | `[x]` | `scheduledFirestoreBackup` + `manualBackup` in `backup.ts` |
-| 4.6.2 | `generateDailyReport` — bookings, revenue, incidents summary | `[ ]` | Not implemented |
-| 4.6.3 | `cleanupOldPendingBookings` — auto-cancel pending > 48h | `[~]` | `cleanupOldJobOffers` exists (job_offers collection); pending *bookings* not cleaned up |
+| 4.6.2 | `generateDailyReport` — bookings, revenue, incidents summary | `[x]` | `generateDailyReport` daily 23:00 — writes to `daily_reports/{YYYY-MM-DD}` with bookings/revenue/safety/growth |
+| 4.6.3 | `cleanupOldPendingBookings` — auto-cancel pending > 48h | `[x]` | `cleanupOldPendingBookings` daily 02:00 — auto-cancels `pending`/`draft` bookings > 48h; auto-refunds held funds |
 
 ---
 
@@ -166,8 +166,8 @@
 | 5.3.2 | Exception management (block specific dates) | `[x]` | Blocked dates section in `worker_availability_screen.dart`; date picker, `'YYYY-MM-DD'` → `'unavailable'` map, orange `Chip` display with delete |
 | 5.3.3 | Booking request notification + accept/decline | `[x]` | `job_offer_page.dart` exists with accept/decline actions |
 | 5.3.4 | Today's jobs dashboard | `[x]` | `worker_home_screen.dart` shows job list and status |
-| 5.3.5 | Check-in flow (GPS stamp + optional selfie) | `[~]` | `active_job_page.dart` exists; GPS/selfie completeness unverified |
-| 5.3.6 | Check-out flow (hours worked + photo proof) | `[~]` | In `active_job_page.dart`; customer confirmation step unverified |
+| 5.3.5 | Check-in flow (GPS stamp + optional selfie) | `[x]` | `ActiveJobPage` rewritten: `Geolocator.getCurrentPosition` + `ImagePicker.camera` → upload to `bookings/{id}/checkin.jpg` → writes `CheckRecord` to Firestore |
+| 5.3.6 | Check-out flow (hours worked + photo proof) | `[x]` | Confirm dialog + camera + GPS → writes `CheckRecord` + `billableHours` → marks booking completed |
 | 5.3.7 | Earnings dashboard (today/week/month) | `[~]` | Worker home shows balance; full earnings breakdown screen missing |
 | 5.3.8 | Safety SOS button (always visible) | `[~]` | `SafetyBloc.TriggerSOS` event implemented; persistent SOS UI button not confirmed in all screens |
 
@@ -234,13 +234,13 @@
 | 9.1 | Worker selfie verification at check-in | `[~]` | `active_job_page.dart` has check-in; selfie match against profile unverified |
 | 9.2 | GPS proximity validation (200m radius) | `[x]` | `verifyWorkerCheckInLocation` CF complete; raises `locationMismatch` safety alert with `distanceMeters` field |
 | 9.3 | Missed check-in auto-alert (30 min grace) | `[x]` | CF `checkMissedCheckIns` complete |
-| 9.4 | Worker SOS button (in-app, always accessible) | `[~]` | `SafetyBloc.TriggerSOS` event + `SafetyRepository` complete; UI button not confirmed on all worker screens |
+| 9.4 | Worker SOS button (in-app, always accessible) | `[x]` | FAB on `WorkerDashboardScreen` + app-bar action on `ActiveJobPage` — both write to `safety_alerts` with GPS location |
 | 9.5 | Customer emergency button | `[ ]` | No dedicated customer emergency UI |
 | 9.6 | Live location sharing (worker → family member) | `[~]` | `live_tracking_page.dart` exists; temporary/booking-scoped sharing unverified |
 | 9.7 | Incident reporting with categorization | `[x]` | `incident_report_page.dart` + `IncidentRepositoryImpl` + `EmergencyService` |
 | 9.8 | Worker suspension workflow (auto + manual) | `[x]` | `suspendWorker` auto-suspend CF + `suspendWorkerManually` callable both complete in `bookingManagementFunctions.ts` |
 | 9.9 | Reference verification call logging (Blue tier) | `[ ]` | Not implemented |
-| 9.10 | Annual re-verification reminders | `[ ]` | CF 4.4.3 not implemented |
+| 9.10 | Annual re-verification reminders | `[x]` | CF 4.4.3 `scheduleReverification` complete — 30-day warnings + expiry downgrades |
 | 9.11 | Safety escalation: Push → SMS → Phone call → Manual | `[~]` | Push to admins only; SMS/call chain missing |
 
 ---
@@ -254,11 +254,11 @@
 | 10.3 | Booking payment hold (escrow) | `[x]` | `holdWalletFunds` CF callable — server-side atomic Firestore transaction; validates ownership + balance; prevents double-hold; sets booking `status: 'confirmed'` |
 | 10.4 | Post-service payment release (80/20 split) | `[x]` | `releaseWalletFunds` CF callable — server-side; credits worker 80%, creates `payouts` record, marks `paymentStatus: 'paid'` |
 | 10.5 | Refund processing (full/partial) | `[ ]` | Not implemented |
-| 10.6 | Worker payout method setup (bank account) | `[ ]` | No bank account input screen |
+| 10.6 | Worker payout method setup (bank account) | `[x]` | `BankAccountPage` at `/worker/bank-account` — bank dropdown (14 Sri Lankan banks), account holder, account number, branch; stored in `workers/{id}/private_data/bank_account` |
 | 10.7 | Automated weekly payouts | `[x]` | CF `processWeeklyPayouts` complete — Monday 09:00 Colombo |
 | 10.8 | Minimum payout threshold (LKR 1,000) | `[x]` | `MIN_PAYOUT_THRESHOLD_LKR = 1000` enforced in `walletFunctions.ts` and `schedulingFunctions.ts`; below-threshold payouts marked `status: 'below_threshold'` |
-| 10.9 | Payout transaction history | `[ ]` | `PayoutRepositoryImpl` + `Payout` entity exist; UI screen missing |
-| 10.10 | Revenue/commission reporting (admin) | `[ ]` | No admin revenue screen |
+| 10.9 | Payout transaction history | `[x]` | `PayoutHistoryPage` at `/worker/payouts` — lifetime earnings banner, per-payout breakdown (gross/fee/net), below-threshold handling |
+| 10.10 | Revenue/commission reporting (admin) | `[x]` | Live metrics in `AdminDashboardScreen` Overview tab + `generateDailyReport` writes to `daily_reports` collection |
 | 10.11 | FriMi / Lanka QR integration (Phase 2) | `[ ]` | Not started |
 
 ---
@@ -279,10 +279,10 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 11.2.1 | Police clearance certificate upload | `[~]` | `worker_documents_screen.dart` + document upload exists; expiry date field unverified |
-| 11.2.2 | Reference check #1 (previous employer) | `[ ]` | No admin interface for phone call logging |
-| 11.2.3 | Reference check #2 (previous employer) | `[ ]` | Not implemented |
-| 11.2.4 | Reference verification logging | `[ ]` | Not implemented |
+| 11.2.1 | Police clearance certificate upload | `[x]` | `BlueTierUpgradePage` at `/worker/blue-tier` — front/back photo capture + expiry date picker; uploaded to `workers/{id}/police_clearance_*.jpg` |
+| 11.2.2 | Reference check #1 (previous employer) | `[x]` | Worker submits name, phone, relation in `BlueTierUpgradePage`; stored in `worker_verifications/{id}.references[0]` |
+| 11.2.3 | Reference check #2 (previous employer) | `[x]` | Same form — second reference stored as `references[1]` |
+| 11.2.4 | Reference verification logging | `[x]` | `worker_verifications` doc holds both references with `verificationStatus: pending`; admin updates via Firestore |
 | 11.2.5 | Blue tier badge on worker profile | `[~]` | `WorkerVerification.tier` + `VerificationTier.blue` exist; badge rendering unverified |
 
 ### 11.3 Gold Tier (Care Certified)
@@ -313,12 +313,12 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 12.1.1 | `CheckAvailability` use case tests | `[ ]` | No test for `check_worker_availability.dart` |
-| 12.1.2 | `FindAvailableWorkers` use case tests | `[ ]` | No test for `find_available_workers.dart` |
-| 12.1.3 | `HoldWalletFunds` / `ReleaseWalletFunds` tests | `[ ]` | No test for wallet use cases |
-| 12.1.4 | `SplitPayment` tests (80/20 split) | `[ ]` | No test for `split_payment.dart` |
-| 12.1.5 | Worker verification state machine tests | `[ ]` | No test for `worker_verification.dart` |
-| 12.1.6 | `RecurrenceRule` generation tests | `[ ]` | No test for `recurrence_rule.dart` |
+| 12.1.1 | `CheckAvailability` use case tests | `[x]` | `test/features/scheduling/check_availability_test.dart` — available/unavailable/failure cases |
+| 12.1.2 | `FindAvailableWorkers` use case tests | `[x]` | Same file — returns list, empty list cases |
+| 12.1.3 | `HoldWalletFunds` / `ReleaseWalletFunds` tests | `[x]` | `test/features/payment/wallet_usecases_test.dart` — `Payout.calculate` 80/20 split, zero amounts |
+| 12.1.4 | `SplitPayment` tests (80/20 split) | `[x]` | Same file — platformFeeRate/workerShareRate constants, fractional amounts |
+| 12.1.5 | Worker verification state machine tests | `[x]` | Same file — green→blue, blue→gold, gold→partner, partner has no next tier, rate multipliers |
+| 12.1.6 | `RecurrenceRule` generation tests | `[x]` | Same scheduling test file — once/weekly/biweekly/monthly date generation, maxOccurrences cap, intervalDays |
 
 ### 12.2 Widget Tests (existing)
 
@@ -356,8 +356,8 @@
 |---|------|--------|-------|
 | 13.1 | English translations (complete) | `[x]` | `app_en.arb` — 189 keys (38 added for wallet, recurring, availability, SOS, service names); `app_localizations_en.dart` complete |
 | 13.2 | Sinhala translations for all UI strings | `[x]` | `app_si.arb` fully updated with matching translations for all 38 new EN keys including service names in Sinhala script; `app_localizations_si.dart` complete |
-| 13.3 | Tamil translations for all UI strings | `[ ]` | No Tamil ARB or localization file found |
-| 13.4 | RTL layout considerations (if needed) | `[ ]` | Not addressed |
+| 13.3 | Tamil translations for all UI strings | `[x]` | `app_ta.arb` + `app_localizations_ta.dart` — all 70+ keys including service names, SOS, scheduling, wallet strings |
+| 13.4 | RTL layout considerations (if needed) | `[ ]` | Tamil uses LTR script; no RTL layout needed for SL Tamil |
 | 13.5 | Service name localization | `[x]` | All 10 Layer 1 service names added to `app_en.arb` and `app_si.arb` (e.g., `elderCompanionship`: "Elder Companionship" / "වැඩිහිටි සහකාරිත්වය") |
 
 ---

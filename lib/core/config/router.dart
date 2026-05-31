@@ -7,19 +7,21 @@ import '../../features/auth/presentation/pages/phone_auth_page.dart';
 
 // Worker imports
 import '../../features/worker/presentation/pages/nic_input_page.dart';
-
 import '../../features/worker/presentation/pages/document_upload_page.dart';
 import '../../features/worker/presentation/pages/verification_pending_page.dart';
 import '../../features/worker/presentation/screens/contract_acceptance_page.dart';
 import '../../features/worker/presentation/screens/online_toggle_page.dart';
 import '../../features/worker/presentation/pages/job_offer_page.dart';
 import '../../features/worker/presentation/pages/active_job_page.dart';
+import '../../features/worker/presentation/pages/worker_dashboard_screen.dart';
+import '../../features/worker/presentation/pages/bank_account_page.dart';
+import '../../features/worker/presentation/pages/blue_tier_upgrade_page.dart';
 
 // Customer imports
 import '../../features/customer/presentation/screens/customer_home_screen.dart';
 import '../../features/customer/presentation/screens/booking_form_screen.dart';
 import '../../features/customer/presentation/screens/live_tracking_page.dart';
-// import '../../features/customer/presentation/screens/booking_summary_screen.dart';
+import '../../features/booking/presentation/pages/booking_flow_screen.dart';
 
 // Admin imports
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
@@ -28,6 +30,7 @@ import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 
 // Payment
 import '../../features/payment/presentation/pages/payment_page.dart';
+import '../../features/payment/presentation/pages/payout_history_page.dart';
 
 // Shared
 import '../../features/incident/presentation/pages/incident_report_page.dart';
@@ -38,67 +41,51 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
-  
+
   redirect: (context, state) async {
     final user = FirebaseAuth.instance.currentUser;
     final currentPath = state.uri.path;
-    
-    // Public routes
-    if (currentPath == '/' || currentPath == '/auth') {
-      return null;
-    }
-    
-    // Not logged in
-    if (user == null) {
-      return '/auth';
-    }
-    
-    // TODO: Check user type and onboarding status from Firestore
-    // This requires a user repository check
-    
+
+    if (currentPath == '/' || currentPath == '/auth') return null;
+    if (user == null) return '/auth';
     return null;
   },
-  
+
   routes: [
-    // Splash
+    // ── Splash & Auth ────────────────────────────────────────────────────────
     GoRoute(
       path: '/',
       builder: (context, state) => const SplashPage(),
     ),
-    
-    // Auth
     GoRoute(
       path: '/auth',
       builder: (context, state) => const PhoneAuthPage(),
     ),
-    
-    // WORKER ROUTES
+
+    // ── Worker Routes ────────────────────────────────────────────────────────
     GoRoute(
       path: '/worker/onboard/nic',
       builder: (context, state) => NICInputPage(),
     ),
     GoRoute(
       path: '/worker/onboard/services',
-      builder: (context, state) {
-        // TODO: Pass actual application from state.extra
-        return const Scaffold(
-          body: Center(child: Text('Service Selection - Pass application data')),
-        );
-      },
+      builder: (context, state) => const Scaffold(
+        body: Center(child: Text('Service Selection')),
+      ),
     ),
     GoRoute(
       path: '/worker/onboard/documents',
       builder: (context, state) {
-        final workerId = state.extra as String? ?? 
-                        FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId = state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ?? '';
         return DocumentUploadPage(workerId: workerId);
       },
     ),
     GoRoute(
       path: '/worker/onboard/pending',
       builder: (context, state) {
-        final workerId = state.extra as String? ?? 
-                        FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId = state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ?? '';
         return VerificationPendingPage(workerId: workerId);
       },
     ),
@@ -108,13 +95,17 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/worker/dashboard',
+      builder: (context, state) => const WorkerDashboardScreen(),
+    ),
+    GoRoute(
+      path: '/worker/status',
       builder: (context, state) => const OnlineTogglePage(),
     ),
     GoRoute(
       path: '/worker/job-offers',
       builder: (context, state) {
-        final workerId = state.extra as String? ?? 
-                        FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId = state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ?? '';
         return JobOfferPage(workerId: workerId);
       },
     ),
@@ -125,22 +116,35 @@ final appRouter = GoRouter(
         return ActiveJobPage(jobId: jobId);
       },
     ),
-    
-    // CUSTOMER ROUTES
+    GoRoute(
+      path: '/worker/bank-account',
+      builder: (context, state) => const BankAccountPage(),
+    ),
+    GoRoute(
+      path: '/worker/blue-tier',
+      builder: (context, state) => const BlueTierUpgradePage(),
+    ),
+    GoRoute(
+      path: '/worker/payouts',
+      builder: (context, state) => const PayoutHistoryPage(),
+    ),
+
+    // ── Customer Routes ──────────────────────────────────────────────────────
     GoRoute(
       path: '/customer/home',
       builder: (context, state) => const CustomerHomeScreen(),
     ),
     GoRoute(
       path: '/customer/book',
+      builder: (context, state) => const BookingFlowScreen(),
+    ),
+    GoRoute(
+      path: '/customer/book/legacy',
       builder: (context, state) => const BookingFormScreen(),
     ),
     GoRoute(
       path: '/customer/track/:jobId',
-      builder: (context, state) {
-        // final jobId = state.pathParameters['jobId']!;
-        return const LiveTrackingPage();
-      },
+      builder: (context, state) => const LiveTrackingPage(),
     ),
     GoRoute(
       path: '/customer/payment/:bookingId',
@@ -154,24 +158,22 @@ final appRouter = GoRouter(
         );
       },
     ),
-    
-    // ADMIN ROUTES
+
+    // ── Admin Routes ─────────────────────────────────────────────────────────
     GoRoute(
       path: '/admin/dashboard',
       builder: (context, state) => const AdminDashboardScreen(),
     ),
     GoRoute(
       path: '/admin/verify/:workerId',
-      builder: (context, state) {
-        return const AdminWorkersScreen();
-      },
+      builder: (context, state) => const AdminWorkersScreen(),
     ),
     GoRoute(
       path: '/admin/dispatch',
       builder: (context, state) => const EmergencyDashboard(),
     ),
-    
-    // SHARED ROUTES
+
+    // ── Shared Routes ────────────────────────────────────────────────────────
     GoRoute(
       path: '/chat/:jobId',
       builder: (context, state) {
@@ -191,7 +193,7 @@ final appRouter = GoRouter(
       },
     ),
   ],
-  
+
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Column(
@@ -199,10 +201,8 @@ final appRouter = GoRouter(
         children: [
           const Icon(Icons.error_outline, size: 60, color: Colors.red),
           const SizedBox(height: 16),
-          const Text(
-            'Page Not Found',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+          const Text('Page Not Found',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/'),
