@@ -17,6 +17,9 @@ import '../bloc/booking_bloc.dart';
 
 // ── Draft state ──────────────────────────────────────────────────────────────
 
+enum GenderPref { any, female, male }
+enum LanguagePref { any, sinhala, tamil, english }
+
 class _BookingDraft {
   ServiceCatalogItem? service;
   DateTime date = DateTime.now().add(const Duration(days: 1));
@@ -25,6 +28,10 @@ class _BookingDraft {
   int durationHours = 4;
   RecurrencePattern recurrence = RecurrencePattern.once;
   DateTime? recurrenceEndDate;
+  // Worker preferences (5.2.5)
+  GenderPref genderPref = GenderPref.any;
+  LanguagePref languagePref = LanguagePref.any;
+  bool sameWorkerPreferred = false;
   String houseNumber = '';
   String street = '';
   String city = 'Colombo';
@@ -111,7 +118,7 @@ class BookingFlowScreen extends StatefulWidget {
 class _BookingFlowScreenState extends State<BookingFlowScreen> {
   final _draft = _BookingDraft();
   int _step = 0;
-  static const _totalSteps = 6;
+  static const _totalSteps = 7;
 
   late final Future<List<ServiceCatalogItem>> _servicesFuture;
   Future<WalletEntity>? _walletFuture;
@@ -142,7 +149,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   bool get _canAdvance {
     switch (_step) {
       case 0: return _draft.service != null;
-      case 4: return _draft.houseNumber.isNotEmpty;
+      case 5: return _draft.houseNumber.isNotEmpty; // address step
       default: return true;
     }
   }
@@ -153,7 +160,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
           const SnackBar(content: Text('Please complete the required fields.')));
       return;
     }
-    if (_step == 4) _loadWallet();
+    if (_step == 5) _loadWallet(); // before review step
     if (_step < _totalSteps - 1) setState(() => _step++);
   }
 
@@ -197,6 +204,11 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       estimatedPrice: _draft.estimatedPrice,
       notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       createdAt: now,
+      metadata: {
+        'workerGenderPref': _draft.genderPref.name,
+        'workerLanguagePref': _draft.languagePref.name,
+        'sameWorkerPreferred': _draft.sameWorkerPreferred,
+      },
     );
     context.read<BookingBloc>().add(CreateBooking(bookingData: booking));
   }

@@ -375,26 +375,102 @@ export const escalateSafetyAlert = functions.firestore
   .document('safety_alerts/{alertId}')
   .onCreate(async (snap) => {
     const data = snap.data();
-    if (data.severity !== 'critical') return;
+    const isSOS       = data.type === 'sos';
+    const isCritical  = data.severity === 'critical' || isSOS;
+    if (!isCritical) return;
 
-    // Notify all admin users
+    const alertId  = snap.id;
+    const workerId = data.workerId as string | undefined;
+    const alertMsg = isSOS ? 'Worker triggered SOS' : (data.description as string ?? 'Safety alert');
+
+    // ── Step 1: Push notification to all admins ───────────────────────────
     const admins = await db.collection('users')
       .where('userType', '==', 'admin')
       .get();
 
     const batch = db.batch();
+    const fcmTokens: string[] = [];
+
     admins.docs.forEach(adminDoc => {
-      const ref = db.collection('notifications').doc();
-      batch.set(ref, {
+      const notifRef = db.collection('notifications').doc();
+      batch.set(notifRef, {
         userId: adminDoc.id,
         type: 'safety_alert_critical',
-        title: '🚨 Critical Safety Alert',
-        body: data.message,
-        alertId: snap.id,
-        bookingId: data.bookingId,
+        title: isSOS ? '🚨 SOS — Worker Emergency' : '⚠️ Critical Safety Alert',
+        body: alertMsg,
+        alertId,
+        workerId: workerId ?? null,
+        bookingId: data.bookingId ?? null,
         read: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      const token = adminDoc.data().fcmToken as string | undefined;
+      if (token) fcmTokens.push(token);
     });
     await batch.commit();
+
+    // Send FCM push to all admin devices
+    if (fcmTokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        tokens: fcmTokens,
+        notification: {
+          title: isSOS ? '🚨 SOS Emergency' : '⚠️ Safety Alert',
+          body: alertMsg,
+        },
+        data: { alertId, type: data.type ?? 'alert' },
+      });
+    }
+
+    // ── Step 2: SMS via Notify.lk to all admin phone numbers ─────────────
+    const notifyApiKey  = functions.config().notify?.api_key  ?? '';
+    const notifyUserId  = functions.config().notify?.user_id  ?? '';
+    const notifyService = functions.config().notify?.service_id ?? '';
+
+    if (notifyApiKey && notifyUserId && notifyService) {
+      const adminPhones: string[] = [];
+      admins.docs.forEach(d => {
+        const phone = d.data().phone as string | undefined;
+        if (phone) adminPhones.push(phone);
+      });
+
+      if (workerId) {
+        const workerSnap = await db.collection('workers').doc(workerId).get();
+        const workerPhone = workerSnap.data()?.phone as string | undefined;
+        if (workerPhone) {
+          const smsText = isSOS
+            ? `HelaService SOS: Worker ${workerSnap.data()?.fullName ?? workerId} triggered emergency. Alert ID: ${alertId}`
+            : `HelaService Safety Alert: ${alertMsg}. Worker: ${workerId}. Alert ID: ${alertId}`;
+
+          // SMS to all admin numbers
+          for (const phone of adminPhones) {
+            try {
+              const resp = await fetch('https://app.notify.lk/api/v1/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id:    notifyUserId,
+                  api_key:    notifyApiKey,
+                  service_id: notifyService,
+                  to:         phone,
+                  message:    smsText,
+                }),
+              });
+              if (!resp.ok) console.error('Notify.lk SMS failed:', await resp.text());
+            } catch (err) {
+              console.error('SMS send error:', err);
+            }
+          }
+        }
+      }
+    } else {
+      console.log('Notify.lk not configured — skipping SMS escalation');
+    }
+
+    // ── Step 3: Mark alert as escalated ──────────────────────────────────
+    await snap.ref.update({
+      escalatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      escalationChannels: ['push', notifyApiKey ? 'sms' : 'push_only'],
+    });
+
+    console.log(`escalateSafetyAlert: alert ${alertId} escalated to ${admins.size} admins`);
   });
