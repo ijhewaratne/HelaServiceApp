@@ -150,18 +150,21 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   ) async {
     emit(BookingLoading());
     try {
-      final workers = await _performance.measure(
+      final result = await _performance.measure(
         'find_workers',
-        () => _findNearestWorker.execute(
+        () => _findNearestWorker(FindNearestWorkerParams(
           customerLat: event.latitude,
           customerLng: event.longitude,
           serviceType: event.serviceType,
           zoneId: event.zoneId,
           maxRadiusKm: event.maxRadiusKm,
           topN: event.topN,
-        ),
+        )),
       );
-      emit(WorkersFound(workers: workers));
+      result.fold(
+        (failure) => emit(BookingError(message: failure.message)),
+        (workers) => emit(WorkersFound(workers: workers)),
+      );
     } catch (e) {
       _analytics.logError(
         error: 'Find workers failed: $e',

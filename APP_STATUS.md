@@ -1,188 +1,122 @@
 # HelaService App Status
 
-## Current Status: Build Issues ❌
+## Current Status: Compilable — Architecture Complete ✅
 
-The app has compilation errors that need to be fixed before it can run.
-
-## What Was Accomplished
-
-### ✅ Completed Sprints
-1. **Sprint 1**: Project Setup - ✅ Complete
-2. **Sprint 2**: Core Features - ✅ Complete  
-3. **Sprint 3**: User Feedback System - ✅ Complete
-4. **Sprint 4**: Performance Optimization - ✅ Complete
-5. **Sprint 5**: Security Hardening - ✅ Complete
-6. **Sprint 6**: Final QA & Deployment - ✅ Complete (Documentation)
-
-### ✅ Implemented Features
-- Clean Architecture with BLoC pattern
-- Firebase integration (Auth, Firestore, Storage, Functions)
-- Phone OTP authentication
-- Worker onboarding with NIC verification
-- Service booking system
-- Real-time worker matching (PickMe-style algorithm)
-- User feedback system
-- Image optimization with caching
-- Pagination helpers
-- Input validation and sanitization
-- Rate limiting (Cloud Functions)
-- Firebase App Check
-- Security rules
-- Complete documentation
-
-### ⚠️ Known Issues
-1. **Missing Dependencies**: `flutter_payhere` package not available
-2. **Missing Files**: 
-   - `lib/shared/dialogs/confirm_dialog.dart`
-   - `lib/features/incident/services/emergency_service.dart`
-3. **Import Path Issues**: Some imports use incorrect paths
-4. **Type Errors**: Various type mismatches in repository implementations
-5. **Abstract Class Instantiation**: `Failure` abstract class being instantiated directly
-
-## To Run The App
-
-### Step 1: Fix Critical Issues
-
-```bash
-# 1. Fix Payment Integration
-# Replace flutter_payhere with local implementation or stub
-# File: lib/features/payment/data/repositories/payment_repository_impl.dart
-
-# 2. Create Missing Files
-touch lib/shared/dialogs/confirm_dialog.dart
-touch lib/features/incident/services/emergency_service.dart
-
-# 3. Fix Import Paths
-# Update all incorrect import paths in:
-# - lib/features/admin/data/admin_repository.dart
-# - lib/features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart
-# - lib/features/admin/presentation/screens/admin_workers_screen.dart
-# - lib/features/incident/presentation/pages/incident_report_page.dart
-
-# 4. Fix Failure Class Usage
-# Replace Failure() with GenericFailure() in repository implementations
-```
-
-### Step 2: Quick Fix Commands
-
-```bash
-cd /Users/ishanthahewaratne/Documents/Quantum/Care/home_service_app
-
-# Create missing directories
-mkdir -p lib/shared/dialogs
-mkdir -p lib/features/incident/services
-
-# Create stub files
-cat > lib/shared/dialogs/confirm_dialog.dart << 'ENDOFFILE'
-import 'package:flutter/material.dart';
-
-Future<bool> showConfirmDialog(BuildContext context, {String? title, String? message}) async {
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title ?? 'Confirm'),
-      content: Text(message ?? 'Are you sure?'),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirm')),
-      ],
-    ),
-  );
-  return result ?? false;
-}
-ENDOFFILE
-
-cat > lib/features/incident/services/emergency_service.dart << 'ENDOFFILE'
-import '../../incident/domain/entities/incident.dart';
-
-class EmergencyService {
-  Future<Incident?> reportEmergency({
-    required String reporterId,
-    required String reporterType,
-    required IncidentType type,
-    required String description,
-    String? jobId,
-    String? subjectId,
-  }) async {
-    // TODO: Implement actual emergency reporting
-    await Future.delayed(const Duration(seconds: 1));
-    return null;
-  }
-  
-  Future<void> contactEmergencyOperator({required String message}) async {
-    // TODO: Implement emergency contact
-  }
-}
-ENDOFFILE
-```
-
-### Step 3: Run The App
-
-```bash
-# Get dependencies
-flutter pub get
-
-# Run on web (fastest for development)
-flutter run -d chrome
-
-# Or run on mobile
-flutter run
-```
-
-## File Structure
-
-```
-lib/
-├── core/           # Shared components (constants, utils, widgets)
-├── features/       # Feature modules
-│   ├── auth/      # Authentication
-│   ├── booking/   # Service booking
-│   ├── chat/      # Chat system
-│   ├── customer/  # Customer features
-│   ├── feedback/  # User feedback
-│   ├── matching/  # Worker matching
-│   ├── payment/   # Payment integration
-│   ├── worker/    # Worker management
-│   └── incident/  # Emergency reporting
-├── injection_container.dart  # DI setup
-└── main.dart      # App entry point
-```
-
-## Documentation
-
-All documentation is complete in `docs/` folder:
-- ARCHITECTURE.md
-- DEPLOYMENT_GUIDE.md
-- SECURITY_HARDENING.md
-- PERFORMANCE_OPTIMIZATION.md
-- TROUBLESHOOTING.md
-- PRIVACY_POLICY.md
-- TERMS_OF_SERVICE.md
-
-## Deployment Scripts
-
-Ready-to-use scripts in `scripts/`:
-- `deploy.sh` - Full deployment automation
-- `qa_check.sh` - Pre-deployment quality checks
-
-## Firebase Functions
-
-Cloud Functions ready in `functions/src/`:
-- Job dispatch algorithm
-- Rate limiting
-- Security scheduled jobs
-- PayHere webhook
-
-## Next Steps
-
-1. Fix compilation errors (see above)
-2. Run QA checks: `./scripts/qa_check.sh`
-3. Deploy to Firebase: `firebase deploy`
-4. Build release: `flutter build appbundle`
-5. Upload to Play Store / App Store
+All `lib/` compilation errors are resolved. The app compiles cleanly.
+Remaining analyzer output is warnings/infos in test files (pre-existing mock infrastructure).
 
 ---
 
-**Status**: All sprints completed, code structure complete, needs compilation fixes
-**Estimated Fix Time**: 1-2 hours
-**Priority**: High (needed for production deployment)
+## Architecture Maturity
+
+| Layer | Status | Notes |
+|-------|--------|-------|
+| Auth (Phone OTP) | ✅ Complete | Firebase Auth, custom User entity |
+| Worker onboarding | ✅ Complete | NIC, photo, contract acceptance |
+| Scheduling Engine | ✅ Complete | Recurring bookings, calendar availability |
+| Verification Tiers | ✅ Complete | Green → Blue → Gold → Partner state machine |
+| Service Catalog | ✅ Complete | 4-layer hierarchy, 3 pricing models |
+| Real-time matching | ✅ Complete | Geohash + Haversine, PickMe scoring |
+| Wallet & Payments | ✅ Complete | Hold/release/split (80/20), payouts |
+| Trust & Safety | ✅ Complete | SOS, missed check-in/out detection |
+| Chat | ✅ Complete | Firestore-backed messaging |
+| Reviews & Feedback | ✅ Complete | Rating, photo, dispute flow |
+| Promos & Referrals | ✅ Complete | Code redemption, reward credits |
+| Cloud Functions | ✅ Complete | Dispatch, payouts, safety scans, reminders |
+| Firestore indexes | ✅ Complete | All query patterns covered |
+| DI container | ✅ Complete | All blocs/repos/use-cases registered |
+
+---
+
+## Features Implemented
+
+### Core Platform
+- Clean Architecture with BLoC pattern throughout
+- Firebase integration: Auth, Firestore, Storage, Messaging, Analytics, Crashlytics
+- Phone OTP authentication with custom User entity
+- Role-based routing (customer / worker / admin)
+- Offline-first connectivity handling
+
+### Scheduling Engine (`features/scheduling/`)
+- `BookingSchedule` — date, time window, duration, timezone
+- `RecurrenceRule` — once/weekly/biweekly/monthly, end date, max occurrences
+- `WorkerCalendar` — per-weekday availability slots + exception map
+- `SchedulingRepository` — Firestore at `workers/{id}/calendar/availability`
+- Use cases: `CheckWorkerAvailability`, `FindAvailableWorkers`, `GenerateRecurringBookings`
+- `SchedulingBloc` — full event/state coverage
+
+### Worker Verification Tiers (`features/worker/domain/entities/worker_verification.dart`)
+- Green (baseline) → Blue (trained) → Gold (certified) → Partner (exclusive zone)
+- Checklist per tier, `canPromote` computed getter
+- Rate multipliers: 1.0x / 1.1x / 1.25x / 1.40x
+- `VerificationBloc` — load, update checklist, promote (mirrors tier to worker doc)
+
+### Service Catalog (`features/service/`)
+- `ServiceCatalogItem` — 4-layer hierarchy, 3 pricing models, tier requirements
+- Repository with category/children/popular/upsert/watch operations
+
+### Payment Architecture (`features/payment/`, `features/wallet/`)
+- `WalletEntity` updated with `heldBalance` and `availableBalance`
+- `HoldWalletFunds` / `ReleaseWalletFunds` — atomic Firestore transactions
+- `SplitPayment` — release hold + debit + log + create payout in one transaction
+- `Payout` entity with `Payout.calculate()` factory (80/20 split)
+- `PayoutRepository` + `generateWeeklyPayouts()` batch operation
+
+### Trust & Safety (`features/safety/`)
+- `SafetyAlert` — 5 types (missedCheckIn, missedCheckOut, sosPanic, customerReport, locationLost)
+- `SafetyRepositoryImpl` — missed check-in/out detection scans
+- `SafetyBloc` — SOS trigger, acknowledge, resolve, escalate, `watchOpenAlerts` stream
+
+### Real-Time Matching (`features/matching/`)
+- `LocationTrackingService` — geohash + `distanceFilter: 10m` updates
+- `FindNearestWorker` — geohash neighbourhood query + Haversine scoring (40/40/20)
+- `FindAvailableWorkers` — calendar-aware scheduling-based matching (Layer 1)
+- Layer 1 scheduled services use `FindAvailableWorkers`; Layer 2 real-time uses `FindNearestWorker`
+
+### Cloud Functions (`functions/src/`)
+- `dispatchJob` — PickMe-style top-3 offer broadcast
+- `acceptJob` — race-condition resolver
+- `generateRecurringBookings` — triggered on booking confirmation
+- `processWeeklyPayouts` — Monday 09:00 Colombo, 80/20 split
+- `checkMissedCheckIns` / `checkMissedCheckOuts` — every 30 min safety scans
+- `notifyUpcomingBookings` — 24h and 2h reminders
+- `autoCompleteBookings` — stalled booking cleanup
+- `escalateSafetyAlert` — critical alert to admin push notification
+- `payhereWebhook`, `rateLimit`, `referral`, `securityScheduled`, `backup`, `health`
+
+---
+
+## Known Remaining Gaps
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| PayHere integration | P1 | `flutter_payhere` commented out; REST API wrapper needed |
+| Admin dashboard UI | P2 | Safety alerts, payout approval screens not yet built |
+| Scheduling UI | P2 | Calendar picker, recurrence selector not yet built |
+| Unit tests | P2 | Use-case and BLoC tests for new features needed |
+| Integration tests | P2 | End-to-end booking -> payment flow |
+| Worker availability UI | P2 | Screen to set WorkerCalendar slots |
+| Push notification deep links | P3 | Alert to screen navigation not wired |
+
+---
+
+## To Run The App
+
+```bash
+cd /path/to/home_service_app
+flutter pub get
+flutter run --flavor staging -t lib/main_staging.dart
+# or
+flutter run --flavor production -t lib/main_production.dart
+```
+
+Cloud Functions:
+```bash
+cd functions && npm install && npm run build
+firebase deploy --only functions
+```
+
+Firestore indexes:
+```bash
+firebase deploy --only firestore:indexes
+```

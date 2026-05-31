@@ -398,3 +398,14 @@ export {
   getReferralStats,
   getLeaderboard,
 } from "./referral";
+
+// Phase 8: Scheduling, Safety & Payouts
+export {
+  generateRecurringBookings,
+  processWeeklyPayouts,
+  checkMissedCheckIns,
+  checkMissedCheckOuts,
+  notifyUpcomingBookings,
+  autoCompleteBookings,
+  escalateSafetyAlert,
+} from "./schedulingFunctions";
