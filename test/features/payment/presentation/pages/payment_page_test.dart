@@ -19,7 +19,7 @@ void main() {
     mockAnalytics = MockAnalyticsService();
   });
 
-  Widget createWidget({double amount = 1500.0}) {
+  Widget createWidget({int amount = 150000}) {
     return MaterialApp(
       home: BlocProvider(
         create: (_) => PaymentBloc(
@@ -66,7 +66,7 @@ void main() {
     });
 
     testWidgets('displays correct amount formatting', (tester) async {
-      await tester.pumpWidget(createWidget(amount: 2500.50));
+      await tester.pumpWidget(createWidget(amount: 250050));
       await tester.pumpAndSettle();
 
       expect(find.text('LKR 2,500.50'), findsOneWidget);

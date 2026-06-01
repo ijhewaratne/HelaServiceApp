@@ -55,6 +55,35 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // BOOKINGS (canonical operational model used by the Flutter app)
+    // =========================================================================
+    match /bookings/{bookingId} {
+      // Customers create their own bookings
+      allow create: if isAuthenticated()
+        && request.resource.data.customerId == request.auth.uid;
+
+      // Customers read their own bookings; assigned workers read theirs
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.workerId == request.auth.uid
+      );
+
+      // Workers update status/timestamps on jobs assigned to them
+      allow update: if isAuthenticated()
+        && resource.data.workerId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+            'status', 'updatedAt', 'startedAt', 'completedAt',
+            'arrivedAt', 'checkInPhotoUrl', 'checkOutPhotoUrl',
+            'checkInLocation', 'checkOutLocation'
+          ]);
+
+      // Customers cancel their own bookings
+      allow update: if isAuthenticated()
+        && resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'cancelled';
+    }
+
+    // =========================================================================
     // JOBS (State Machine + Zone Enforcement)
     // =========================================================================
     match /jobs/{jobId} {
@@ -115,7 +144,7 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Job matching specific rules
+    // Job matching specific rules (mirrors bookings collection for Cloud Function dispatch)
 match /job_requests/{jobId} {
   // Customers can create jobs
   allow create: if request.auth != null 
@@ -151,6 +180,22 @@ match /worker_locations/{workerId} {
   // Only Cloud Functions can read all (for matching)
   allow read: if false; // Deny direct reads, use Cloud Functions
 }
+
+    // =========================================================================
+    // SUPPORT TICKETS
+    // =========================================================================
+    match /support_tickets/{ticketId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.customerId == request.auth.uid;
+
+      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
+
+      // Admins respond and update status
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+            'adminResponse', 'respondedBy', 'status', 'updatedAt'
+          ]);
+    }
 
     // =========================================================================
     // USER FEEDBACK SYSTEM (Sprint 3)

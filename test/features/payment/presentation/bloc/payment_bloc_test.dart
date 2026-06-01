@@ -40,7 +40,7 @@ void main() {
     final successResult = PaymentResult(
       success: true,
       paymentId: 'pay_123',
-      status: PaymentStatus.success,
+      status: PaymentStatus.completed,
       message: 'Payment successful',
     );
 
@@ -71,7 +71,7 @@ void main() {
         )).thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(const ProcessPayment(
+      act: (bloc) => bloc.add(ProcessPayment(
         bookingId: bookingId,
         amount: amount,
         customerName: customerName,
@@ -105,7 +105,7 @@ void main() {
         )).thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(const ProcessPayment(
+      act: (bloc) => bloc.add(ProcessPayment(
         bookingId: bookingId,
         amount: amount,
         customerName: customerName,
@@ -129,13 +129,13 @@ void main() {
       'emits [PaymentLoading, PaymentStatusChecked] when successful',
       build: () {
         when(mockRepository.checkPaymentStatus(orderId))
-            .thenAnswer((_) async => const Right(PaymentStatus.success));
+            .thenAnswer((_) async => const Right(PaymentStatus.completed));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckPaymentStatus(orderId: orderId)),
+      act: (bloc) => bloc.add(CheckPaymentStatus(orderId: orderId)),
       expect: () => [
         PaymentLoading(),
-        const PaymentStatusChecked(status: PaymentStatus.success),
+        PaymentStatusChecked(status: PaymentStatus.completed),
       ],
     );
   });
@@ -146,12 +146,12 @@ void main() {
       PaymentResult(
         success: true,
         paymentId: 'pay_1',
-        status: PaymentStatus.success,
+        status: PaymentStatus.completed,
       ),
       PaymentResult(
         success: true,
         paymentId: 'pay_2',
-        status: PaymentStatus.success,
+        status: PaymentStatus.completed,
       ),
     ];
 
@@ -162,7 +162,7 @@ void main() {
             .thenAnswer((_) async => Right(payments));
         return bloc;
       },
-      act: (bloc) => bloc.add(const LoadPaymentHistory(customerId: customerId)),
+      act: (bloc) => bloc.add(LoadPaymentHistory(customerId: customerId)),
       expect: () => [
         PaymentLoading(),
         PaymentHistoryLoaded(payments: payments),
@@ -189,7 +189,7 @@ void main() {
         )).thenAnswer((_) async => Right(refundResult));
         return bloc;
       },
-      act: (bloc) => bloc.add(const RequestRefund(
+      act: (bloc) => bloc.add(RequestRefund(
         paymentId: paymentId,
         amount: 150000,
         reason: 'Customer request',

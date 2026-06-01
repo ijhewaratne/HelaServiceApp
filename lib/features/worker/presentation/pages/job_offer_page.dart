@@ -17,7 +17,7 @@ class JobOfferPage extends StatefulWidget {
 }
 
 class _JobOfferPageState extends State<JobOfferPage> {
-  StreamSubscription<DocumentSnapshot>? _offerSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _offerSubscription;
   bool _hasActiveOffer = false;
   Map<String, dynamic>? _currentOffer;
   Timer? _countdownTimer;

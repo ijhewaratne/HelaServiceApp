@@ -118,7 +118,7 @@ class BookingFlowScreen extends StatefulWidget {
 class _BookingFlowScreenState extends State<BookingFlowScreen> {
   final _draft = _BookingDraft();
   int _step = 0;
-  static const _totalSteps = 7;
+  static const _totalSteps = 7; // 0-service 1-datetime 2-duration 3-recurrence 4-address 5-prefs 6-review
 
   late final Future<List<ServiceCatalogItem>> _servicesFuture;
   Future<WalletEntity>? _walletFuture;
@@ -149,7 +149,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   bool get _canAdvance {
     switch (_step) {
       case 0: return _draft.service != null;
-      case 5: return _draft.houseNumber.isNotEmpty; // address step
+      case 4: return _draft.houseNumber.isNotEmpty; // address step
       default: return true;
     }
   }
@@ -160,7 +160,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
           const SnackBar(content: Text('Please complete the required fields.')));
       return;
     }
-    if (_step == 5) _loadWallet(); // before review step
+    if (_step == 5) _loadWallet(); // load wallet before review step (step 6)
     if (_step < _totalSteps - 1) setState(() => _step++);
   }
 
@@ -228,10 +228,8 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       child: BlocConsumer<BookingBloc, BookingState>(
         listener: (ctx, state) {
           if (state is BookingCreated) {
-            ctx.go('/customer/home');
-            ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                content: Text('Booking confirmed! Finding you a worker.'),
-                backgroundColor: AppTheme.successColor));
+            ctx.push('/customer/booking-confirm',
+                extra: state.booking);
           } else if (state is BookingError) {
             ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
                 content: Text(state.message),
@@ -257,7 +255,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                     child: _buildStep(ctx, state)),
               ),
             ),
-            if (_step < _totalSteps - 1 && _step != 4)
+            if (_step < _totalSteps - 1 && _step != 4) // address (4) has its own button
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                 child: SizedBox(
@@ -277,7 +275,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
 
   static const _titles = [
     'Choose a Service', 'Date & Time', 'Duration',
-    'Repeat', 'Address', 'Review & Confirm',
+    'Repeat', 'Address', 'Worker Preferences', 'Review & Confirm',
   ];
 
   Widget _buildStep(BuildContext context, BookingState state) {
@@ -326,6 +324,15 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
             onStreetChanged: (s) => _draft.street = s,
             onAdvance: _advance);
       case 5:
+        return _PreferencesStep(
+            genderPref: _draft.genderPref,
+            languagePref: _draft.languagePref,
+            sameWorker: _draft.sameWorkerPreferred,
+            onGenderChanged: (g) => setState(() => _draft.genderPref = g),
+            onLanguageChanged: (l) => setState(() => _draft.languagePref = l),
+            onSameWorkerChanged: (v) =>
+                setState(() => _draft.sameWorkerPreferred = v));
+      case 6:
         return _ReviewStep(
             draft: _draft,
             walletFuture: _walletFuture,
@@ -788,7 +795,129 @@ class _AddressStep extends StatelessWidget {
   }
 }
 
-// ── Step 5 — Review & Confirm ─────────────────────────────────────────────────
+// ── Step 5 — Worker Preferences ──────────────────────────────────────────────
+
+class _PreferencesStep extends StatelessWidget {
+  final GenderPref genderPref;
+  final LanguagePref languagePref;
+  final bool sameWorker;
+  final void Function(GenderPref) onGenderChanged;
+  final void Function(LanguagePref) onLanguageChanged;
+  final void Function(bool) onSameWorkerChanged;
+
+  const _PreferencesStep({
+    required this.genderPref,
+    required this.languagePref,
+    required this.sameWorker,
+    required this.onGenderChanged,
+    required this.onLanguageChanged,
+    required this.onSameWorkerChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('These preferences are optional — they help us match you better.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+        const SizedBox(height: 24),
+
+        // Worker gender preference
+        Text('Worker gender', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+        _ChoiceRow<GenderPref>(
+          options: const [
+            (GenderPref.any, 'No preference', Icons.people),
+            (GenderPref.female, 'Female', Icons.female),
+            (GenderPref.male, 'Male', Icons.male),
+          ],
+          selected: genderPref,
+          onChanged: onGenderChanged,
+        ),
+        const SizedBox(height: 24),
+
+        // Language preference
+        Text('Communication language', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+        _ChoiceRow<LanguagePref>(
+          options: const [
+            (LanguagePref.any, 'Any', Icons.language),
+            (LanguagePref.sinhala, 'Sinhala', Icons.record_voice_over),
+            (LanguagePref.tamil, 'Tamil', Icons.record_voice_over),
+            (LanguagePref.english, 'English', Icons.translate),
+          ],
+          selected: languagePref,
+          onChanged: onLanguageChanged,
+        ),
+        const SizedBox(height: 24),
+
+        // Same worker preference (for recurring bookings)
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Prefer same worker', style: Theme.of(context).textTheme.titleMedium),
+            Text('For recurring bookings, try to assign the same worker each time.',
+                style: Theme.of(context).textTheme.bodySmall),
+          ])),
+          Switch(
+            value: sameWorker,
+            onChanged: onSameWorkerChanged,
+            activeColor: AppTheme.primaryColor,
+          ),
+        ]),
+      ]),
+    );
+  }
+}
+
+class _ChoiceRow<T> extends StatelessWidget {
+  final List<(T, String, IconData)> options;
+  final T selected;
+  final void Function(T) onChanged;
+
+  const _ChoiceRow({
+    required this.options,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: options.map((opt) {
+        final (value, label, icon) = opt;
+        final sel = selected == value;
+        return GestureDetector(
+          onTap: () => onChanged(value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                  color: sel ? AppTheme.primaryColor : Theme.of(context).colorScheme.outline,
+                  width: sel ? 2 : 1),
+              color: sel ? AppTheme.primaryColor.withValues(alpha: 0.08) : null,
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(icon, size: 16,
+                  color: sel ? AppTheme.primaryColor : Theme.of(context).colorScheme.onSurface),
+              const SizedBox(width: 6),
+              Text(label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                      color: sel ? AppTheme.primaryColor : null)),
+            ]),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Step 6 — Review & Confirm ─────────────────────────────────────────────────
 
 class _ReviewStep extends StatelessWidget {
   final _BookingDraft draft;
@@ -888,7 +1017,8 @@ class _ReviewStep extends StatelessWidget {
         _rRow(context, Icons.access_time, 'Time', _timeLabel(draft.timeFlexibility, draft.exactStartTime)),
         _rRow(context, Icons.timer_outlined, 'Duration', '${draft.durationHours} hours'),
         _rRow(context, Icons.repeat, 'Repeat', _recurrLabel(draft.recurrence)),
-        _rRow(context, Icons.location_on_outlined, 'Address', '${draft.houseNumber}, ${draft.city}', last: true),
+        _rRow(context, Icons.location_on_outlined, 'Address', '${draft.houseNumber}, ${draft.city}'),
+        _rRow(context, Icons.person_search, 'Worker', _prefLabel(draft), last: true),
       ]),
     );
   }
@@ -925,6 +1055,18 @@ class _ReviewStep extends StatelessWidget {
       case TimeFlexibility.plusMinus2h:  return 'Flexible ±2 hours';
       case TimeFlexibility.exact:        return exact ?? '09:00';
     }
+  }
+
+  static String _prefLabel(_BookingDraft d) {
+    final parts = <String>[];
+    if (d.genderPref != GenderPref.any) {
+      parts.add(d.genderPref == GenderPref.female ? 'Female' : 'Male');
+    }
+    if (d.languagePref != LanguagePref.any) {
+      parts.add(d.languagePref.name[0].toUpperCase() + d.languagePref.name.substring(1));
+    }
+    if (d.sameWorkerPreferred) parts.add('Same worker');
+    return parts.isEmpty ? 'No preference' : parts.join(' · ');
   }
 
   static String _recurrLabel(RecurrencePattern p) {

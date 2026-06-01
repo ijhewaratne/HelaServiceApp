@@ -16,6 +16,8 @@ import 'core/localization/localization_service.dart';
 import 'core/providers/theme_provider.dart';
 
 import 'features/incident/services/emergency_service.dart';
+import 'features/admin/data/admin_repository.dart';
+import 'features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart';
 
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -25,6 +27,7 @@ import 'features/worker/data/repositories/worker_repository_impl.dart';
 import 'features/worker/domain/repositories/worker_repository.dart';
 import 'features/worker/presentation/bloc/worker_bloc.dart';
 import 'features/worker/presentation/bloc/verification_bloc.dart';
+import 'features/worker/presentation/bloc/worker_onboarding_bloc.dart';
 
 import 'features/customer/data/repositories/customer_repository_impl.dart';
 import 'features/customer/domain/repositories/customer_repository.dart';
@@ -72,14 +75,20 @@ import 'features/safety/data/repositories/safety_repository_impl.dart';
 import 'features/safety/domain/repositories/safety_repository.dart';
 import 'features/safety/presentation/bloc/safety_bloc.dart';
 
+import 'features/support/data/repositories/support_repository_impl.dart';
+import 'features/support/domain/repositories/support_repository.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  final prefs = await SharedPreferences.getInstance();
+
   // External
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseStorage.instance);
   sl.registerLazySingleton(() => FirebaseMessaging.instance);
+  sl.registerLazySingleton(() => prefs);
 
   // Services
   sl.registerLazySingleton(() => LocationService(sl()));
@@ -92,16 +101,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LocationTrackingService(firestore: sl()));
 
   // Localization Service
-  sl.registerLazySingletonAsync<LocalizationService>(() async {
-    final prefs = await SharedPreferences.getInstance();
-    return LocalizationService(prefs);
-  });
+  sl.registerLazySingleton<LocalizationService>(() => LocalizationService(sl()));
 
   // Theme Provider
-  sl.registerLazySingletonAsync<ThemeProvider>(() async {
-    final prefs = await SharedPreferences.getInstance();
-    return ThemeProvider(prefs);
-  });
+  sl.registerLazySingleton<ThemeProvider>(() => ThemeProvider(sl()));
 
   // Security Services
   sl.registerFactory<EncryptionService>(
@@ -125,6 +128,7 @@ Future<void> init() async {
   sl.registerLazySingleton<PaymentRepository>(
       () => PaymentRepositoryImpl(sl()));
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => AdminRepository(firestore: sl()));
 
   // Business features
   sl.registerLazySingleton<WalletRepository>(
@@ -182,6 +186,7 @@ Future<void> init() async {
       ));
 
   sl.registerFactory(() => VerificationBloc(firestore: sl()));
+  sl.registerFactory(() => WorkerOnboardingBloc(repository: sl()));
 
   sl.registerFactory(() => CustomerBloc(
         customerRepository: sl(),
@@ -207,6 +212,11 @@ Future<void> init() async {
       ));
 
   sl.registerFactory(() => SafetyBloc(repository: sl()));
+  sl.registerFactory(() => AdminViewModel(sl()));
+
+  // Support
+  sl.registerLazySingleton<SupportRepository>(
+      () => SupportRepositoryImpl(firestore: sl()));
 }
 
 /// Initialize services that need async setup

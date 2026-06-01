@@ -47,28 +47,27 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       () => _bookingRepository.createBooking(event.bookingData),
     );
 
-    result.fold(
-      (failure) {
-        _analytics.logError(
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (_) => throw StateError(''));
+      await _analytics.logError(
           error: 'Booking creation failed: ${failure.message}',
-          context: 'booking_bloc',
-        );
-        emit(BookingError(message: failure.message));
-      },
-      (booking) async {
-        await _analytics.logBookingCreated(
-          bookingId: booking.id,
-          serviceType: booking.serviceType.name,
-          estimatedPrice: booking.estimatedPrice,
-          scheduledDate: booking.scheduledDate,
-        );
-        await _analytics.logAddToCart(
-          serviceType: booking.serviceType.name,
-          price: booking.estimatedPrice,
-        );
-        emit(BookingCreated(booking: booking));
-      },
+          context: 'booking_bloc');
+      emit(BookingError(message: failure.message));
+      return;
+    }
+
+    final booking = result.getOrElse(() => throw StateError(''));
+    await _analytics.logBookingCreated(
+      bookingId: booking.id,
+      serviceType: booking.serviceType.name,
+      estimatedPrice: booking.estimatedPrice,
+      scheduledDate: booking.scheduledDate,
     );
+    await _analytics.logAddToCart(
+      serviceType: booking.serviceType.name,
+      price: booking.estimatedPrice,
+    );
+    if (!emit.isDone) emit(BookingCreated(booking: booking));
   }
 
   Future<void> _onLoadBooking(
@@ -107,17 +106,15 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       event.bookingId,
       reason: event.reason,
     );
-    result.fold(
-      (failure) => emit(BookingError(message: failure.message)),
-      (_) async {
-        // Track cancellation
-        await _analytics.logBookingCancelled(
-          bookingId: event.bookingId,
-          reason: event.reason,
-        );
-        emit(BookingCancelled(bookingId: event.bookingId));
-      },
+    if (result.isLeft()) {
+      emit(BookingError(message: result.fold((l) => l.message, (_) => '')));
+      return;
+    }
+    await _analytics.logBookingCancelled(
+      bookingId: event.bookingId,
+      reason: event.reason,
     );
+    if (!emit.isDone) emit(BookingCancelled(bookingId: event.bookingId));
   }
 
   Future<void> _onLoadCustomerBookings(

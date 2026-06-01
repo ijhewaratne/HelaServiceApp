@@ -121,24 +121,55 @@ class WorkerRepositoryImpl implements WorkerRepository {
         'isOnline': isOnline,
         'lastStatusChange': FieldValue.serverTimestamp(),
       };
-      
+
       if (isOnline && lat != null && lng != null) {
         data['currentLat'] = lat;
         data['currentLng'] = lng;
       }
-      
+
       await _firestore.collection('workers').doc(workerId).update(data);
-      
-      // Also update worker_locations collection for geohash queries
-      await _firestore.collection('worker_locations').doc(workerId).set({
+
+      // Build the worker_locations document. When going online, include the
+      // dispatch contract fields (skills, isVerified, homeLocation) so the
+      // Cloud Function matching query never fails with missing fields.
+      final locationDoc = <String, dynamic>{
         'status': isOnline ? 'online' : 'offline',
         'updatedAt': FieldValue.serverTimestamp(),
         if (isOnline && lat != null && lng != null) ...{
           'lat': lat,
           'lng': lng,
         },
-      }, SetOptions(merge: true));
-      
+      };
+
+      if (isOnline) {
+        final workerDoc =
+            await _firestore.collection('workers').doc(workerId).get();
+        if (workerDoc.exists) {
+          final d = workerDoc.data()!;
+          final services = (d['services'] as List<dynamic>?)
+                  ?.map((s) => s as String)
+                  .toList() ??
+              [];
+          final status = d['status'] as String? ?? 'pending';
+          final homeLat = (d['homeLat'] as num?)?.toDouble();
+          final homeLng = (d['homeLng'] as num?)?.toDouble();
+
+          locationDoc['skills'] = services;
+          locationDoc['isVerified'] = status == 'approved';
+          if (homeLat != null && homeLng != null) {
+            locationDoc['homeLocation'] = {
+              'latitude': homeLat,
+              'longitude': homeLng,
+            };
+          }
+        }
+      }
+
+      await _firestore
+          .collection('worker_locations')
+          .doc(workerId)
+          .set(locationDoc, SetOptions(merge: true));
+
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

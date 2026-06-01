@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/core/errors/failures.dart';
 import 'package:home_service_app/core/services/location_service.dart';
 import 'package:home_service_app/features/worker/domain/entities/worker.dart';
-import 'package:home_service_app/features/worker/domain/entities/worker_application.dart';
+import 'package:home_service_app/features/worker/domain/entities/worker_application.dart'
+    as app;
 import 'package:home_service_app/features/worker/domain/repositories/worker_repository.dart';
 import 'package:home_service_app/features/worker/presentation/bloc/worker_bloc.dart';
 import 'package:mockito/annotations.dart';
@@ -55,7 +56,7 @@ void main() {
             .thenAnswer((_) async => Right(worker));
         return bloc;
       },
-      act: (bloc) => bloc.add(const LoadWorker(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(LoadWorker(workerId: 'worker_123')),
       expect: () => [
         WorkerLoading(),
         WorkerLoaded(worker: worker),
@@ -69,7 +70,7 @@ void main() {
             .thenAnswer((_) async => Left(ServerFailure('Network error')));
         return bloc;
       },
-      act: (bloc) => bloc.add(const LoadWorker(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(LoadWorker(workerId: 'worker_123')),
       expect: () => [
         WorkerLoading(),
         WorkerError(message: 'Network error'),
@@ -91,7 +92,7 @@ void main() {
             .thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(const UpdateOnlineStatus(
+      act: (bloc) => bloc.add(UpdateOnlineStatus(
         workerId: 'worker_123',
         isOnline: true,
         lat: 6.9271,
@@ -99,7 +100,8 @@ void main() {
       )),
       expect: () => [
         WorkerLoading(),
-        const WorkerOnlineStatusUpdated(isOnline: true),
+        WorkerOnlineStatusUpdated(isOnline: true),
+        WorkerTrackingStarted(),
       ],
     );
 
@@ -116,13 +118,14 @@ void main() {
             .thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(const UpdateOnlineStatus(
+      act: (bloc) => bloc.add(UpdateOnlineStatus(
         workerId: 'worker_123',
         isOnline: false,
       )),
       expect: () => [
         WorkerLoading(),
-        const WorkerOnlineStatusUpdated(isOnline: false),
+        WorkerOnlineStatusUpdated(isOnline: false),
+        WorkerTrackingStopped(),
       ],
     );
 
@@ -137,7 +140,7 @@ void main() {
         )).thenAnswer((_) async => Left(ServerFailure('Update failed')));
         return bloc;
       },
-      act: (bloc) => bloc.add(const UpdateOnlineStatus(
+      act: (bloc) => bloc.add(UpdateOnlineStatus(
         workerId: 'worker_123',
         isOnline: true,
         lat: 6.9271,
@@ -158,10 +161,10 @@ void main() {
             .thenAnswer((_) async => const Right(true));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckNICExists(nic: '123456789V')),
+      act: (bloc) => bloc.add(CheckNICExists(nic: '123456789V')),
       expect: () => [
         WorkerLoading(),
-        const WorkerNICCheckResult(exists: true),
+        WorkerNICCheckResult(exists: true),
       ],
     );
 
@@ -172,16 +175,16 @@ void main() {
             .thenAnswer((_) async => const Right(false));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckNICExists(nic: '987654321V')),
+      act: (bloc) => bloc.add(CheckNICExists(nic: '987654321V')),
       expect: () => [
         WorkerLoading(),
-        const WorkerNICCheckResult(exists: false),
+        WorkerNICCheckResult(exists: false),
       ],
     );
   });
 
   group('SubmitApplication', () {
-    final application = WorkerApplication(
+    final application = app.WorkerApplication(
       id: 'app_123',
       nic: '123456789V',
       fullName: 'Test Applicant',
@@ -189,8 +192,8 @@ void main() {
       address: 'Colombo',
       emergencyContactName: 'Emergency',
       emergencyContactPhone: '+94771234568',
-      selectedServices: [app.ServiceType.cleaning],
-      status: ApplicationStatus.pendingDocs,
+      selectedServices: const [app.ServiceType.cleaning],
+      status: app.ApplicationStatus.pendingDocs,
       appliedAt: DateTime.now(),
     );
 
@@ -217,7 +220,7 @@ void main() {
             .thenAnswer((_) async => const Right(null));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CompleteTraining(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(CompleteTraining(workerId: 'worker_123')),
       expect: () => [
         WorkerLoading(),
         WorkerTrainingCompleted(),
@@ -233,7 +236,7 @@ void main() {
             .thenAnswer((_) async => const Right(null));
         return bloc;
       },
-      act: (bloc) => bloc.add(const AcceptContract(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(AcceptContract(workerId: 'worker_123')),
       expect: () => [
         WorkerLoading(),
         WorkerContractAccepted(),

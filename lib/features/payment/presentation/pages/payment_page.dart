@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../bloc/payment_bloc.dart';
 import '../../domain/entities/payment_result.dart';
@@ -30,7 +31,9 @@ class PaymentPage extends StatelessWidget {
       ),
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
-          if (state is PaymentSuccess) {
+          if (state is PaymentInitiated) {
+            _launchCheckout(context, state.checkoutUrl);
+          } else if (state is PaymentSuccess) {
             _showSuccessDialog(context, state.payment);
           } else if (state is PaymentFailed) {
             _showErrorDialog(context, state.message);
@@ -39,8 +42,12 @@ class PaymentPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is PaymentProcessing) {
+          if (state is PaymentProcessing || state is PaymentLoading) {
             return const _ProcessingView();
+          }
+
+          if (state is PaymentInitiated) {
+            return _AwaitingWebhookView(orderId: state.orderId);
           }
 
           if (state is PaymentSuccess) {
@@ -63,6 +70,20 @@ class PaymentPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _launchCheckout(
+      BuildContext context, String checkoutUrl) async {
+    final uri = Uri.tryParse(checkoutUrl);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open PayHere checkout.')),
+        );
+      }
+    }
   }
 
   void _initiatePayment(BuildContext context) {
@@ -278,6 +299,41 @@ class _ProcessingView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Shown after the PayHere URL has been launched. Guides the user to complete
+/// payment in the browser and return here; the webhook will update Firestore.
+class _AwaitingWebhookView extends StatelessWidget {
+  final String orderId;
+  const _AwaitingWebhookView({required this.orderId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Icon(Icons.open_in_browser, size: 72, color: Colors.indigo),
+        const SizedBox(height: 24),
+        Text('Complete your payment',
+            style: Theme.of(context).textTheme.headlineSmall,
+            textAlign: TextAlign.center),
+        const SizedBox(height: 12),
+        const Text(
+          'The PayHere checkout has been opened in your browser. '
+          'Complete the payment there and return to this screen.',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        Text('Order ID: $orderId',
+            style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 32),
+        const CircularProgressIndicator(),
+        const SizedBox(height: 16),
+        const Text('Waiting for payment confirmation…',
+            style: TextStyle(color: Colors.grey)),
+      ]),
     );
   }
 }

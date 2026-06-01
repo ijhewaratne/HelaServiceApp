@@ -58,6 +58,28 @@ class ResolveAlert extends SafetyEvent {
   List<Object?> get props => [alertId];
 }
 
+class EscalateAlert extends SafetyEvent {
+  final String alertId;
+  const EscalateAlert(this.alertId);
+  @override
+  List<Object?> get props => [alertId];
+}
+
+class LogManualContact extends SafetyEvent {
+  final String alertId;
+  final String adminId;
+  final String contactType; // 'phone' | 'sms' | 'police'
+  final String notes;
+  const LogManualContact({
+    required this.alertId,
+    required this.adminId,
+    required this.contactType,
+    required this.notes,
+  });
+  @override
+  List<Object?> get props => [alertId, contactType];
+}
+
 class RunMissedCheckInScan extends SafetyEvent {}
 
 class RunMissedCheckOutScan extends SafetyEvent {}
@@ -125,6 +147,8 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     on<TriggerSOS>(_onTriggerSOS);
     on<AcknowledgeAlert>(_onAcknowledge);
     on<ResolveAlert>(_onResolve);
+    on<EscalateAlert>(_onEscalate);
+    on<LogManualContact>(_onLogManualContact);
     on<RunMissedCheckInScan>(_onCheckInScan);
     on<RunMissedCheckOutScan>(_onCheckOutScan);
   }
@@ -186,6 +210,29 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     final result = await _repository.resolveAlert(
       alertId: event.alertId,
       adminId: event.adminId,
+      notes: event.notes,
+    );
+    result.fold(
+      (f) => emit(SafetyError(f.message)),
+      (_) => emit(AlertUpdated()),
+    );
+  }
+
+  Future<void> _onEscalate(
+      EscalateAlert event, Emitter<SafetyState> emit) async {
+    final result = await _repository.escalateAlert(event.alertId);
+    result.fold(
+      (f) => emit(SafetyError(f.message)),
+      (_) => emit(AlertUpdated()),
+    );
+  }
+
+  Future<void> _onLogManualContact(
+      LogManualContact event, Emitter<SafetyState> emit) async {
+    final result = await _repository.logManualContact(
+      alertId: event.alertId,
+      adminId: event.adminId,
+      contactType: event.contactType,
       notes: event.notes,
     );
     result.fold(

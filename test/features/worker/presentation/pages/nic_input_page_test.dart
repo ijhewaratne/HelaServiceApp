@@ -5,7 +5,6 @@ import 'package:home_service_app/features/worker/domain/repositories/worker_repo
 import 'package:home_service_app/features/worker/presentation/bloc/worker_onboarding_bloc.dart';
 import 'package:home_service_app/features/worker/presentation/pages/nic_input_page.dart';
 import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import 'nic_input_page_test.mocks.dart';
 
@@ -21,7 +20,7 @@ void main() {
     return MaterialApp(
       home: BlocProvider(
         create: (_) => WorkerOnboardingBloc(repository: mockRepository),
-        child: const NICInputPage(),
+        child: NICInputPage(),
       ),
     );
   }
@@ -30,14 +29,15 @@ void main() {
     testWidgets('renders correctly with all required elements', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      expect(find.text('Enter Your NIC'), findsOneWidget);
-      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Worker Registration'), findsOneWidget);
+      expect(find.byType(TextFormField), findsNWidgets(6));
       expect(find.text('Continue'), findsOneWidget);
     });
 
     testWidgets('shows validation error for empty NIC', (tester) async {
       await tester.pumpWidget(createWidget());
 
+      await tester.ensureVisible(find.text('Continue'));
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
@@ -47,10 +47,13 @@ void main() {
     testWidgets('accepts valid old format NIC', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      await tester.enterText(find.byType(TextField), '123456789V');
+      await tester.enterText(find.byType(TextFormField).first, '123456789V');
       await tester.pump();
 
-      expect(find.text('Invalid NIC format'), findsNothing);
+      expect(
+        find.text('Enter valid Sri Lankan NIC (e.g., 853202937V or 198532029372)'),
+        findsNothing,
+      );
     });
   });
 }

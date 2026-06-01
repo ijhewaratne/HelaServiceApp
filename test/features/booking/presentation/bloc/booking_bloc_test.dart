@@ -2,6 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/core/errors/failures.dart';
+import 'package:home_service_app/features/booking/domain/entities/booking.dart';
+import 'package:home_service_app/features/customer/domain/entities/address.dart';
 import 'package:home_service_app/features/booking/domain/repositories/booking_repository.dart';
 import 'package:home_service_app/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:home_service_app/features/matching/domain/usecases/find_nearest_worker.dart';
@@ -16,12 +18,38 @@ void main() {
   late MockBookingRepository mockRepository;
   late MockFindNearestWorker mockFindNearestWorker;
 
+  final testAddress = Address(
+    id: 'addr_1',
+    customerId: 'customer_123',
+    label: 'Home',
+    houseNumber: '12A',
+    city: 'Colombo',
+    district: 'Colombo',
+    zoneId: 'colombo_03_04',
+    latitude: 6.9271,
+    longitude: 79.8612,
+    createdAt: DateTime(2026, 1, 1),
+  );
+
+  late Booking testBooking;
+
   setUp(() {
     mockRepository = MockBookingRepository();
     mockFindNearestWorker = MockFindNearestWorker();
     bloc = BookingBloc(
       bookingRepository: mockRepository,
       findNearestWorker: mockFindNearestWorker,
+    );
+    testBooking = Booking(
+      id: 'booking_123',
+      customerId: 'customer_123',
+      serviceType: ServiceType.cleaning,
+      address: testAddress,
+      scheduledDate: DateTime(2026, 6, 15),
+      scheduledTime: '10:00',
+      durationHours: 4,
+      estimatedPrice: 4800.0,
+      createdAt: DateTime(2026, 6, 1),
     );
   });
 
@@ -30,44 +58,28 @@ void main() {
   });
 
   group('CreateBooking', () {
-    final bookingData = {
-      'customerId': 'customer_123',
-      'serviceType': 'cleaning',
-      'zoneId': 'col_03_04',
-      'location': {'latitude': 6.9271, 'longitude': 79.8612},
-      'houseNumber': '45/A',
-      'estimatedPrice': 1500.0,
-    };
-
-    final createdBooking = {
-      'id': 'booking_123',
-      ...bookingData,
-      'status': 'searching',
-      'createdAt': DateTime.now().toIso8601String(),
-    };
-
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingCreated] when successful',
       build: () {
-        when(mockRepository.createBooking(bookingData))
-            .thenAnswer((_) async => Right(createdBooking));
+        when(mockRepository.createBooking(testBooking))
+            .thenAnswer((_) async => Right(testBooking));
         return bloc;
       },
-      act: (bloc) => bloc.add(CreateBooking(bookingData: bookingData)),
+      act: (bloc) => bloc.add(CreateBooking(bookingData: testBooking)),
       expect: () => [
         BookingLoading(),
-        BookingCreated(booking: createdBooking),
+        BookingCreated(booking: testBooking),
       ],
     );
 
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingError] when creation fails',
       build: () {
-        when(mockRepository.createBooking(bookingData))
+        when(mockRepository.createBooking(testBooking))
             .thenAnswer((_) async => Left(ServerFailure('Creation failed')));
         return bloc;
       },
-      act: (bloc) => bloc.add(CreateBooking(bookingData: bookingData)),
+      act: (bloc) => bloc.add(CreateBooking(bookingData: testBooking)),
       expect: () => [
         BookingLoading(),
         BookingError(message: 'Creation failed'),
@@ -76,100 +88,47 @@ void main() {
   });
 
   group('LoadBooking', () {
-    const bookingId = 'booking_123';
-    final booking = {
-      'id': bookingId,
-      'customerId': 'customer_123',
-      'serviceType': 'cleaning',
-      'status': 'assigned',
-      'workerId': 'worker_456',
-    };
-
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingLoaded] when successful',
       build: () {
-        when(mockRepository.getBooking(bookingId))
-            .thenAnswer((_) async => Right(booking));
+        when(mockRepository.getBooking('booking_123'))
+            .thenAnswer((_) async => Right(testBooking));
         return bloc;
       },
-      act: (bloc) => bloc.add(const LoadBooking(bookingId: bookingId)),
+      act: (bloc) => bloc.add(LoadBooking(bookingId: 'booking_123')),
       expect: () => [
         BookingLoading(),
-        BookingLoaded(booking: booking),
+        BookingLoaded(booking: testBooking),
+      ],
+    );
+
+    blocTest<BookingBloc, BookingState>(
+      'emits [BookingLoading, BookingError] when not found',
+      build: () {
+        when(mockRepository.getBooking('booking_123'))
+            .thenAnswer((_) async => Left(NotFoundFailure('Not found')));
+        return bloc;
+      },
+      act: (bloc) => bloc.add(LoadBooking(bookingId: 'booking_123')),
+      expect: () => [
+        BookingLoading(),
+        BookingError(message: 'Not found'),
       ],
     );
   });
 
   group('CancelBooking', () {
-    const bookingId = 'booking_123';
-
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingCancelled] when successful',
       build: () {
-        when(mockRepository.cancelBooking(bookingId, reason: anyNamed('reason')))
+        when(mockRepository.cancelBooking('booking_123'))
             .thenAnswer((_) async => const Right(null));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CancelBooking(
-        bookingId: bookingId,
-        reason: 'Customer request',
-      )),
+      act: (bloc) => bloc.add(CancelBooking(bookingId: 'booking_123')),
       expect: () => [
         BookingLoading(),
-        const BookingCancelled(bookingId: bookingId),
-      ],
-    );
-  });
-
-  group('AssignWorker', () {
-    const bookingId = 'booking_123';
-    const workerId = 'worker_456';
-    final booking = {
-      'id': bookingId,
-      'status': 'assigned',
-      'workerId': workerId,
-    };
-
-    blocTest<BookingBloc, BookingState>(
-      'emits [BookingLoading, WorkerAssigned] when successful',
-      build: () {
-        when(mockRepository.assignWorker(bookingId, workerId))
-            .thenAnswer((_) async => Right(booking));
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const AssignWorker(
-        bookingId: bookingId,
-        workerId: workerId,
-      )),
-      expect: () => [
-        BookingLoading(),
-        WorkerAssigned(booking: booking, workerId: workerId),
-      ],
-    );
-  });
-
-  group('UpdateBookingStatus', () {
-    const bookingId = 'booking_123';
-    const status = 'inProgress';
-    final booking = {
-      'id': bookingId,
-      'status': status,
-    };
-
-    blocTest<BookingBloc, BookingState>(
-      'emits [BookingLoading, BookingStatusUpdated] when successful',
-      build: () {
-        when(mockRepository.updateBookingStatus(bookingId, status, additionalData: anyNamed('additionalData')))
-            .thenAnswer((_) async => Right(booking));
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const UpdateBookingStatus(
-        bookingId: bookingId,
-        status: status,
-      )),
-      expect: () => [
-        BookingLoading(),
-        BookingStatusUpdated(booking: booking, status: status),
+        BookingCancelled(bookingId: 'booking_123'),
       ],
     );
   });

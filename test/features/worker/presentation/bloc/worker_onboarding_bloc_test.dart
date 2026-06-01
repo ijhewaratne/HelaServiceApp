@@ -2,7 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/core/errors/failures.dart';
-import 'package:home_service_app/features/worker/domain/entities/worker_application.dart';
+import 'package:home_service_app/features/worker/domain/entities/worker_application.dart'
+    as app;
 import 'package:home_service_app/features/worker/domain/repositories/worker_repository.dart';
 import 'package:home_service_app/features/worker/presentation/bloc/worker_onboarding_bloc.dart';
 import 'package:mockito/annotations.dart';
@@ -32,7 +33,7 @@ void main() {
     const emergencyContactName = 'Emergency Contact';
     const emergencyContactPhone = '+94771234568';
 
-    final application = WorkerApplication(
+    final application = app.WorkerApplication(
       nic: nic,
       fullName: fullName,
       mobileNumber: mobileNumber,
@@ -89,7 +90,7 @@ void main() {
   });
 
   group('SelectServices', () {
-    final initialApplication = WorkerApplication(
+    final initialApplication = app.WorkerApplication(
       id: 'app_123',
       nic: '123456789V',
       fullName: 'Test Applicant',
@@ -98,7 +99,7 @@ void main() {
       emergencyContactName: 'Emergency',
       emergencyContactPhone: '+94771234568',
       selectedServices: const [],
-      status: ApplicationStatus.draft,
+      status: app.ApplicationStatus.draft,
       appliedAt: DateTime.now(),
     );
 
@@ -117,7 +118,7 @@ void main() {
   });
 
   group('CheckApplicationStatus', () {
-    final application = WorkerApplication(
+    final application = app.WorkerApplication(
       id: 'app_123',
       nic: '123456789V',
       fullName: 'Test Applicant',
@@ -126,7 +127,7 @@ void main() {
       emergencyContactName: 'Emergency',
       emergencyContactPhone: '+94771234568',
       selectedServices: const [app.ServiceType.cleaning],
-      status: ApplicationStatus.approved,
+      status: app.ApplicationStatus.approved,
       appliedAt: DateTime.now(),
     );
 
@@ -137,7 +138,7 @@ void main() {
             .thenAnswer((_) async => Right(application));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckApplicationStatus(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
       expect: () => [
         WorkerOnboardingLoading(),
         isA<ApplicationApproved>(),
@@ -148,13 +149,13 @@ void main() {
       'emits TrainingRequired when training is required',
       build: () {
         final trainingApp = application.copyWith(
-          status: ApplicationStatus.trainingRequired,
+          status: app.ApplicationStatus.trainingRequired,
         );
         when(mockRepository.getApplicationStatus('worker_123'))
             .thenAnswer((_) async => Right(trainingApp));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckApplicationStatus(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
       expect: () => [
         WorkerOnboardingLoading(),
         isA<TrainingRequired>(),
@@ -165,14 +166,14 @@ void main() {
       'emits ApplicationRejected when application is rejected',
       build: () {
         final rejectedApp = application.copyWith(
-          status: ApplicationStatus.rejected,
+          status: app.ApplicationStatus.rejected,
           rejectionReason: 'Invalid documents',
         );
         when(mockRepository.getApplicationStatus('worker_123'))
             .thenAnswer((_) async => Right(rejectedApp));
         return bloc;
       },
-      act: (bloc) => bloc.add(const CheckApplicationStatus(workerId: 'worker_123')),
+      act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
       expect: () => [
         WorkerOnboardingLoading(),
         isA<ApplicationRejected>(),
@@ -181,7 +182,7 @@ void main() {
   });
 
   group('CompleteTraining', () {
-    final application = WorkerApplication(
+    final application = app.WorkerApplication(
       id: 'app_123',
       nic: '123456789V',
       fullName: 'Test Applicant',
@@ -190,7 +191,7 @@ void main() {
       emergencyContactName: 'Emergency',
       emergencyContactPhone: '+94771234568',
       selectedServices: const [app.ServiceType.cleaning],
-      status: ApplicationStatus.trainingRequired,
+      status: app.ApplicationStatus.trainingRequired,
       appliedAt: DateTime.now(),
     );
 

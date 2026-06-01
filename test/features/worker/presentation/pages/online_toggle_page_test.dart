@@ -1,63 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/core/services/location_service.dart';
-import 'package:home_service_app/features/worker/domain/repositories/worker_repository.dart';
-import 'package:home_service_app/features/worker/presentation/bloc/worker_bloc.dart';
+import 'package:home_service_app/injection_container.dart';
 import 'package:home_service_app/features/worker/presentation/pages/online_toggle_page.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
 import 'online_toggle_page_test.mocks.dart';
 
-@GenerateMocks([WorkerRepository, LocationService])
+@GenerateMocks([LocationService])
 void main() {
-  late MockWorkerRepository mockRepository;
   late MockLocationService mockLocationService;
 
-  setUp(() {
-    mockRepository = MockWorkerRepository();
+  setUp(() async {
+    await sl.reset();
     mockLocationService = MockLocationService();
+    sl.registerSingleton<LocationService>(mockLocationService);
+    when(mockLocationService.startTracking(any)).thenAnswer((_) async {});
+    when(mockLocationService.stopTracking()).thenAnswer((_) async {});
   });
 
-  Widget createWidget() {
-    return MaterialApp(
-      home: BlocProvider(
-        create: (_) => WorkerBloc(
-          workerRepository: mockRepository,
-          locationService: mockLocationService,
-        ),
-        child: const OnlineTogglePage(),
-      ),
-    );
-  }
+  tearDown(() async => sl.reset());
+
+  Widget createWidget() => const MaterialApp(home: OnlineTogglePage());
 
   group('OnlineTogglePage', () {
     testWidgets('renders correctly with offline state', (tester) async {
       await tester.pumpWidget(createWidget());
 
       expect(find.text('Go Online'), findsOneWidget);
-      expect(find.byType(Switch), findsOneWidget);
+      expect(find.text('You are Offline'), findsOneWidget);
+      expect(find.text('GO ONLINE'), findsOneWidget);
     });
 
-    testWidgets('toggles online status when switch is tapped', (tester) async {
+    testWidgets('calls startTracking when GO ONLINE is tapped', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      final switchWidget = find.byType(Switch);
-      expect(switchWidget, findsOneWidget);
-
-      // Tap the switch
-      await tester.tap(switchWidget);
-      await tester.pump();
-    });
-
-    testWidgets('shows location permission dialog when going online', (tester) async {
-      await tester.pumpWidget(createWidget());
-
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.text('GO ONLINE'));
       await tester.pumpAndSettle();
 
-      // May show permission dialog
-      expect(find.byType(AlertDialog), findsNothing);
+      // The worker ID comes from FirebaseAuth.currentUser?.uid — in tests
+      // Firebase is not initialized so uid is '' or null-safe fallback ''.
+      verify(mockLocationService.startTracking(any)).called(1);
     });
   });
 }

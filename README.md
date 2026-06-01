@@ -171,6 +171,25 @@ flutter run -d android       # Android Emulator
 
 ---
 
+## Known Gaps & Issues
+
+The architecture is complete and the app compiles cleanly. The following items remain before production launch:
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| **PayHere Flutter integration** | P1 | `flutter_payhere` is commented out in `pubspec.yaml`; only native Android/iOS PayHere configuration exists. A REST API wrapper or re-enabling the package is needed. |
+| **Admin dashboard UI** | P2 | Safety alerts, payout approval, and worker verification screens are not yet built. |
+| **Scheduling UI** | P2 | Calendar picker, recurrence selector, and worker availability slot editor are not yet built. |
+| **Unit tests for new features** | P2 | Use-case and BLoC tests needed for scheduling, safety, verification tiers, and wallet modules. |
+| **Integration tests (E2E payment)** | P2 | End-to-end booking → payment flow test not yet implemented. |
+| **Worker availability UI** | P2 | Screen to set `WorkerCalendar` availability slots is not yet built. |
+| **Push notification deep links** | P3 | Alert-to-screen navigation (e.g., tapping a job offer notification) is not yet wired. |
+| **Bundle ID alignment** | — | Android/iOS projects use `com.example.home_service_app`; Fastlane configs reference `com.helaservice.app`. Must be aligned for store submission. |
+| **Android release signing** | — | Release build still uses debug signing config; production keystore needs to be configured in `android/app/build.gradle.kts`. |
+| **macOS Firebase support** | — | `firebase_options.dart` explicitly throws `UnsupportedError` for macOS, yet Firebase plugins are registered in the macOS runner. |
+
+---
+
 ## Quick Start
 
 ```bash
@@ -216,6 +235,9 @@ For detailed setup, see [QUICK_START.md](QUICK_START.md).
 - [ ] Create `assets/images/` directory
 - [ ] Set Admin custom claims via Firebase Admin SDK (`admin: true`)
 - [ ] Register Google Maps API key in `AndroidManifest.xml` and `AppDelegate.swift`
+- [ ] Align bundle IDs: update Android (`android/app/build.gradle.kts`) and iOS (`project.pbxproj`) to match Fastlane (`com.helaservice.app`)
+- [ ] Configure Android release signing keystore in `android/app/build.gradle.kts`
+- [ ] Complete PayHere Flutter integration (uncomment or wrap REST API)
 
 ### Security & Compliance
 - [ ] Configure Firebase App Check for production
@@ -225,9 +247,10 @@ For detailed setup, see [QUICK_START.md](QUICK_START.md).
 
 ### Testing & QA
 - [ ] Run `./scripts/qa_check.sh` - all checks pass
-- [ ] Test coverage > 80%
+- [ ] Test coverage > 80% (focus on scheduling, safety, verification, and wallet modules)
 - [ ] Manual QA on 5+ devices
 - [ ] Beta testing with 20+ users
+- [ ] Run end-to-end booking → payment integration test
 
 ### Deployment
 - [ ] Run `./scripts/deploy.sh production`

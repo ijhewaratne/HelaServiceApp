@@ -16,7 +16,9 @@
       "Bash(grep -c \"\\\\`\\\\[~\\\\]\\\\`\" /Users/ishanthahewaratne/Documents/Quantum/Care/home_service_app/IMPLEMENTATION_CHECKLIST.md)",
       "Bash(grep -c \"\\\\`\\\\[ \\\\]\\\\`\" /Users/ishanthahewaratne/Documents/Quantum/Care/home_service_app/IMPLEMENTATION_CHECKLIST.md)",
       "Bash(awk '/## __TRACKED_VAR__/,/^## [^$]/' /Users/ishanthahewaratne/Documents/Quantum/Care/home_service_app/IMPLEMENTATION_CHECKLIST.md)",
-      "Bash(python3 -)"
+      "Bash(python3 -)",
+      "Bash(dart pub *)",
+      "Bash(grep -v \"ms\\\\]\\\\|executing:\\\\|Exit code\\\\|Artifact\\\\|^$\")"
     ]
   }
 }

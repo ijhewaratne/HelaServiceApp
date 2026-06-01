@@ -156,38 +156,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       verificationId: _verificationId!,
       smsCode: event.otpCode,
     );
-    
-    result.fold(
-      (failure) {
-        _analytics.logError(
-          error: 'OTP verification failed: ${failure.message}',
-          context: 'auth_bloc',
-        );
-        emit(AuthError(message: failure.message));
-      },
-      (user) async {
-        final isNewUser = user.createdAt != null &&
-            user.createdAt!.difference(DateTime.now()).inMinutes.abs() < 5;
 
-        if (isNewUser) {
-          await _analytics.logSignUp(
-            method: 'phone_otp',
-            userType: user.userType.name,
-          );
-        } else {
-          await _analytics.logLogin(
-            method: 'phone_otp',
-            userType: user.userType.name,
-          );
-        }
-        
-        if (user.isOnboarded) {
-          emit(AuthAuthenticated(user: user));
-        } else {
-          emit(AuthNeedsOnboarding(user: user));
-        }
-      },
-    );
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (_) => throw StateError(''));
+      await _analytics.logError(
+          error: 'OTP verification failed: ${failure.message}',
+          context: 'auth_bloc');
+      emit(AuthError(message: failure.message));
+      return;
+    }
+
+    final user = result.getOrElse(() => throw StateError(''));
+    final isNewUser = user.createdAt != null &&
+        user.createdAt!.difference(DateTime.now()).inMinutes.abs() < 5;
+    if (isNewUser) {
+      await _analytics.logSignUp(
+          method: 'phone_otp', userType: user.userType.name);
+    } else {
+      await _analytics.logLogin(
+          method: 'phone_otp', userType: user.userType.name);
+    }
+
+    if (!emit.isDone) {
+      if (user.isOnboarded) {
+        emit(AuthAuthenticated(user: user));
+      } else {
+        emit(AuthNeedsOnboarding(user: user));
+      }
+    }
   }
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {

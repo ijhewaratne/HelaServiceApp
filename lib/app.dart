@@ -18,24 +18,8 @@ import 'injection_container.dart';
 /// Main application widget
 /// 
 /// Phase 3: Essential Features - Added localization support
-class HelaServiceApp extends StatefulWidget {
+class HelaServiceApp extends StatelessWidget {
   const HelaServiceApp({super.key});
-
-  @override
-  State<HelaServiceApp> createState() => _HelaServiceAppState();
-}
-
-class _HelaServiceAppState extends State<HelaServiceApp> {
-  @override
-  void initState() {
-    super.initState();
-    _initializeServices();
-  }
-
-  Future<void> _initializeServices() async {
-    // Initialize all async services
-    await initServices();
-  }
 
   @override
   Widget build(BuildContext context) {

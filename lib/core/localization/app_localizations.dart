@@ -549,6 +549,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sinhala'**
   String get sinhala;
+
+  /// Tamil language
+  ///
+  /// In en, this message translates to:
+  /// **'Tamil'**
+  String get tamil;
+
+  /// Wallet balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Balance'**
+  String get walletBalance;
+
+  /// Top up wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up'**
+  String get topUp;
+
+  /// Top up wallet screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up Wallet'**
+  String get topUpWallet;
+
+  /// Insufficient wallet balance error title
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient Balance'**
+  String get insufficientBalance;
+
+  /// Top up now button in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up Now'**
+  String get topUpNow;
+
+  /// Recurring booking toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring Booking'**
+  String get recurringBooking;
+
+  /// Switch label to enable recurring
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat this booking'**
+  String get repeatBooking;
+
+  /// Weekly recurrence pattern
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// Biweekly recurrence pattern
+  ///
+  /// In en, this message translates to:
+  /// **'Biweekly'**
+  String get biweekly;
+
+  /// Recurring booking end date button
+  ///
+  /// In en, this message translates to:
+  /// **'Set end date'**
+  String get setEndDate;
+
+  /// Help text for recurring end date picker
+  ///
+  /// In en, this message translates to:
+  /// **'Last booking date'**
+  String get lastBookingDate;
+
+  /// Special instructions field label
+  ///
+  /// In en, this message translates to:
+  /// **'Special Instructions'**
+  String get specialInstructions;
+
+  /// Special instructions hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Ring the bell twice. Dog is friendly.'**
+  String get specialInstructionsHint;
+
+  /// Duration section heading in booking form
+  ///
+  /// In en, this message translates to:
+  /// **'How long?'**
+  String get howLong;
+
+  /// Date/time section heading in booking form
+  ///
+  /// In en, this message translates to:
+  /// **'When do you need it?'**
+  String get whenDoYouNeedIt;
+
+  /// Address section heading in booking form
+  ///
+  /// In en, this message translates to:
+  /// **'Where?'**
+  String get where;
+
+  /// Review booking button
+  ///
+  /// In en, this message translates to:
+  /// **'Review Booking'**
+  String get reviewBooking;
+
+  /// Per hour suffix in pricing
+  ///
+  /// In en, this message translates to:
+  /// **'per hour'**
+  String get perHour;
+
+  /// Worker availability screen title
+  ///
+  /// In en, this message translates to:
+  /// **'My Availability'**
+  String get myAvailability;
+
+  /// Worker availability weekly schedule section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Schedule'**
+  String get weeklySchedule;
+
+  /// Worker blocked dates section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked Dates'**
+  String get blockedDates;
+
+  /// Block date button
+  ///
+  /// In en, this message translates to:
+  /// **'Block a date'**
+  String get blockDate;
+
+  /// Add time slot tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Add slot'**
+  String get addSlot;
+
+  /// Day not available label
+  ///
+  /// In en, this message translates to:
+  /// **'Not available'**
+  String get notAvailable;
+
+  /// Save availability button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Availability'**
+  String get saveAvailability;
+
+  /// Availability saved snackbar message
+  ///
+  /// In en, this message translates to:
+  /// **'Availability saved'**
+  String get availabilitySaved;
+
+  /// SOS alert title
+  ///
+  /// In en, this message translates to:
+  /// **'SOS Alert'**
+  String get sosAlert;
+
+  /// SOS confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Send SOS Alert?'**
+  String get confirmSos;
+
+  /// SOS confirmation dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'This will immediately alert the HelaService safety team and share your location.'**
+  String get sosConfirmBody;
+
+  /// Send SOS button
+  ///
+  /// In en, this message translates to:
+  /// **'Send SOS'**
+  String get sendSos;
+
+  /// Elder companionship service name
+  ///
+  /// In en, this message translates to:
+  /// **'Elder Companionship'**
+  String get elderCompanionship;
+
+  /// Non-medical immobilized care service name
+  ///
+  /// In en, this message translates to:
+  /// **'Non-Medical Immobilized Care'**
+  String get nonMedicalCare;
+
+  /// Homework support service name
+  ///
+  /// In en, this message translates to:
+  /// **'Homework Support'**
+  String get homeworkSupport;
+
+  /// Kitchen helper service name
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen Helper'**
+  String get kitchenHelper;
+
+  /// Laundry helper service name
+  ///
+  /// In en, this message translates to:
+  /// **'Laundry Helper'**
+  String get laundryHelper;
+
+  /// Grocery helper service name
+  ///
+  /// In en, this message translates to:
+  /// **'Grocery Helper'**
+  String get groceryHelper;
+
+  /// House sitting service name
+  ///
+  /// In en, this message translates to:
+  /// **'House Sitting'**
+  String get houseSitting;
+
+  /// Pet sitting service name
+  ///
+  /// In en, this message translates to:
+  /// **'Pet Sitting'**
+  String get petSitting;
+
+  /// Hourly household support service name
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly Household Support'**
+  String get hourlyHouseholdSupport;
 }
 
 class _AppLocalizationsDelegate

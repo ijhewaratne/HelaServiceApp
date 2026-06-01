@@ -9,11 +9,15 @@ import 'dart:io' as _i8;
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:geolocator/geolocator.dart' as _i3;
 import 'package:home_service_app/core/errors/failures.dart' as _i6;
-import 'package:home_service_app/core/services/location_service.dart' as _i10;
+import 'package:home_service_app/core/services/location_service.dart' as _i12;
 import 'package:home_service_app/features/worker/domain/entities/worker.dart'
     as _i7;
 import 'package:home_service_app/features/worker/domain/entities/worker_application.dart'
     as _i9;
+import 'package:home_service_app/features/worker/domain/entities/worker_document.dart'
+    as _i11;
+import 'package:home_service_app/features/worker/domain/entities/worker_profile.dart'
+    as _i10;
 import 'package:home_service_app/features/worker/domain/repositories/worker_repository.dart'
     as _i4;
 import 'package:mockito/mockito.dart' as _i1;
@@ -254,12 +258,59 @@ class MockWorkerRepository extends _i1.Mock implements _i4.WorkerRepository {
             ),
           )
           as _i5.Future<_i2.Either<_i6.Failure, void>>);
+
+  @override
+  _i5.Future<_i10.WorkerProfile?> getWorkerProfile(String? workerId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getWorkerProfile, [workerId]),
+            returnValue: _i5.Future<_i10.WorkerProfile?>.value(),
+          )
+          as _i5.Future<_i10.WorkerProfile?>);
+
+  @override
+  _i5.Future<_i11.WorkerDocument?> getWorkerDocuments(String? workerId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getWorkerDocuments, [workerId]),
+            returnValue: _i5.Future<_i11.WorkerDocument?>.value(),
+          )
+          as _i5.Future<_i11.WorkerDocument?>);
+
+  @override
+  _i5.Future<void> updateWorkerProfile(_i10.WorkerProfile? profile) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateWorkerProfile, [profile]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> uploadDocument(
+    String? workerId,
+    String? docType,
+    String? filePath,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#uploadDocument, [workerId, docType, filePath]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateAvailability(String? workerId, bool? isAvailable) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateAvailability, [workerId, isAvailable]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }
 
 /// A class which mocks [LocationService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLocationService extends _i1.Mock implements _i10.LocationService {
+class MockLocationService extends _i1.Mock implements _i12.LocationService {
   MockLocationService() {
     _i1.throwOnMissingStub(this);
   }
@@ -270,9 +321,16 @@ class MockLocationService extends _i1.Mock implements _i10.LocationService {
           as bool);
 
   @override
-  _i5.Future<void> startTracking(String? workerId) =>
+  _i5.Future<void> startTracking(
+    String? workerId, {
+    Map<String, dynamic>? workerMetadata,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#startTracking, [workerId]),
+            Invocation.method(
+              #startTracking,
+              [workerId],
+              {#workerMetadata: workerMetadata},
+            ),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )

@@ -1,11 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-
-// Export mocks for use in tests
-export 'firebase_mocks.mocks.dart';
 
 /// Mock classes for Firebase testing
 class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
@@ -63,6 +59,5 @@ MockQuerySnapshot createMockQuerySnapshot(List<MockQueryDocumentSnapshot> docs) 
   final snapshot = MockQuerySnapshot();
   when(snapshot.docs).thenReturn(docs);
   when(snapshot.size).thenReturn(docs.length);
-  when(snapshot.empty).thenReturn(docs.isEmpty);
   return snapshot;
 }

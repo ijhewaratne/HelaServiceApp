@@ -3,23 +3,50 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:home_service_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:home_service_app/features/auth/domain/repositories/auth_repository.dart';
-import 'package:home_service_app/features/auth/domain/entities/user_entity.dart';
+import 'package:home_service_app/features/auth/domain/entities/user.dart' as app;
 import 'package:home_service_app/core/errors/failures.dart';
+import 'package:home_service_app/core/services/analytics_service.dart';
+import 'package:home_service_app/core/monitoring/crash_reporting.dart';
 
-@GenerateMocks([AuthRepository])
+@GenerateMocks([AuthRepository, AnalyticsService, CrashReportingService])
 import 'auth_bloc_test.mocks.dart';
 
 void main() {
   late MockAuthRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
+  late MockCrashReportingService mockCrashReporting;
   late AuthBloc authBloc;
 
   setUp(() {
     mockRepository = MockAuthRepository();
-    authBloc = AuthBloc(authRepository: mockRepository);
+    mockAnalytics = MockAnalyticsService();
+    mockCrashReporting = MockCrashReportingService();
+
+    // Stub AuthBloc startup dependencies.
+    when(mockRepository.authStateChanges)
+        .thenAnswer((_) => const Stream.empty());
+
+    // Stub analytics calls used in OTP/login flows.
+    when(mockAnalytics.logLogin(
+            method: anyNamed('method'), userType: anyNamed('userType')))
+        .thenAnswer((_) async {});
+    when(mockAnalytics.logSignUp(
+            method: anyNamed('method'), userType: anyNamed('userType')))
+        .thenAnswer((_) async {});
+    when(mockAnalytics.logError(
+            error: anyNamed('error'), context: anyNamed('context')))
+        .thenAnswer((_) async {});
+    when(mockAnalytics.setUserProperties(userId: anyNamed('userId')))
+        .thenAnswer((_) async {});
+    when(mockAnalytics.logLogout()).thenAnswer((_) async {});
+
+    authBloc = AuthBloc(
+      authRepository: mockRepository,
+      analytics: mockAnalytics,
+      crashReporting: mockCrashReporting,
+    );
   });
 
   tearDown(() {
@@ -31,10 +58,10 @@ void main() {
     const testVerificationId = 'verification_123';
     const testSmsCode = '123456';
 
-    final testUser = UserEntity(
-      id: 'user_123',
+    final testUser = app.User(
+      uid: 'user_123',
       phoneNumber: testPhoneNumber,
-      userType: 'customer',
+      userType: app.UserType.customer,
       isOnboarded: true,
     );
 
@@ -63,15 +90,30 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthAuthenticated] when OTP is verified successfully',
       build: () {
+        when(mockRepository.verifyPhone(
+          phoneNumber: anyNamed('phoneNumber'),
+          onCodeSent: anyNamed('onCodeSent'),
+          onVerificationCompleted: anyNamed('onVerificationCompleted'),
+          onVerificationFailed: anyNamed('onVerificationFailed'),
+        )).thenAnswer((inv) async {
+          final cb = inv.namedArguments[#onCodeSent] as Function(String);
+          cb(testVerificationId);
+          return const Right(null);
+        });
         when(mockRepository.verifyOTP(
-          verificationId: anyNamed('verificationId'),
-          smsCode: anyNamed('smsCode'),
+          verificationId: testVerificationId,
+          smsCode: testSmsCode,
         )).thenAnswer((_) async => Right(testUser));
         return authBloc;
       },
-      seed: () => AuthOtpSent(phoneNumber: testPhoneNumber),
-      act: (bloc) => bloc.add(OtpSubmitted(otpCode: testSmsCode)),
+      act: (bloc) async {
+        bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(OtpSubmitted(otpCode: testSmsCode));
+      },
       expect: () => [
+        AuthLoading(),
+        AuthOtpSent(phoneNumber: testPhoneNumber),
         AuthLoading(),
         isA<AuthAuthenticated>(),
       ],
@@ -80,15 +122,30 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthError] when OTP verification fails',
       build: () {
+        when(mockRepository.verifyPhone(
+          phoneNumber: anyNamed('phoneNumber'),
+          onCodeSent: anyNamed('onCodeSent'),
+          onVerificationCompleted: anyNamed('onVerificationCompleted'),
+          onVerificationFailed: anyNamed('onVerificationFailed'),
+        )).thenAnswer((inv) async {
+          final cb = inv.namedArguments[#onCodeSent] as Function(String);
+          cb(testVerificationId);
+          return const Right(null);
+        });
         when(mockRepository.verifyOTP(
-          verificationId: anyNamed('verificationId'),
-          smsCode: anyNamed('smsCode'),
+          verificationId: testVerificationId,
+          smsCode: 'wrong_code',
         )).thenAnswer((_) async => Left(AuthFailure('Invalid OTP')));
         return authBloc;
       },
-      seed: () => AuthOtpSent(phoneNumber: testPhoneNumber),
-      act: (bloc) => bloc.add(OtpSubmitted(otpCode: 'wrong_code')),
+      act: (bloc) async {
+        bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(OtpSubmitted(otpCode: 'wrong_code'));
+      },
       expect: () => [
+        AuthLoading(),
+        AuthOtpSent(phoneNumber: testPhoneNumber),
         AuthLoading(),
         AuthError(message: 'Invalid OTP'),
       ],
@@ -109,23 +166,38 @@ void main() {
     );
 
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthNeedsOnboarding] for new user',
+      'emits [AuthNeedsOnboarding] for new user (not onboarded)',
       build: () {
-        final newUser = UserEntity(
-          id: 'user_123',
+        final newUser = app.User(
+          uid: 'user_123',
           phoneNumber: testPhoneNumber,
-          userType: 'unknown',
+          userType: app.UserType.unknown,
           isOnboarded: false,
         );
+        when(mockRepository.verifyPhone(
+          phoneNumber: anyNamed('phoneNumber'),
+          onCodeSent: anyNamed('onCodeSent'),
+          onVerificationCompleted: anyNamed('onVerificationCompleted'),
+          onVerificationFailed: anyNamed('onVerificationFailed'),
+        )).thenAnswer((inv) async {
+          final cb = inv.namedArguments[#onCodeSent] as Function(String);
+          cb(testVerificationId);
+          return const Right(null);
+        });
         when(mockRepository.verifyOTP(
-          verificationId: anyNamed('verificationId'),
-          smsCode: anyNamed('smsCode'),
+          verificationId: testVerificationId,
+          smsCode: testSmsCode,
         )).thenAnswer((_) async => Right(newUser));
         return authBloc;
       },
-      seed: () => AuthOtpSent(phoneNumber: testPhoneNumber),
-      act: (bloc) => bloc.add(OtpSubmitted(otpCode: testSmsCode)),
+      act: (bloc) async {
+        bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(OtpSubmitted(otpCode: testSmsCode));
+      },
       expect: () => [
+        AuthLoading(),
+        AuthOtpSent(phoneNumber: testPhoneNumber),
         AuthLoading(),
         isA<AuthNeedsOnboarding>(),
       ],

@@ -30,6 +30,22 @@ class BookingRepositoryImpl implements BookingRepository {
       );
 
       await docRef.set(bookingData.toJson());
+
+      // Mirror as a job_request so the Cloud Function dispatch trigger fires.
+      final addr = bookingData.address;
+      await _firestore.collection('job_requests').doc(docRef.id).set({
+        'jobId': docRef.id,
+        'bookingId': docRef.id,
+        'customerId': currentUser.uid,
+        'serviceType': bookingData.serviceType.name,
+        'zoneId': addr.zoneId,
+        'location': GeoPoint(addr.latitude, addr.longitude),
+        'houseNumber': addr.houseNumber,
+        'estimatedEarnings': bookingData.estimatedPrice * 0.8, // 80% to worker
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'searching',
+      });
+
       return Right(bookingData);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));

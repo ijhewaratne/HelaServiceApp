@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../viewmodels/admin_dashboard_viewmodel.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
+import '../../../../injection_container.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminBookingsScreen extends StatefulWidget {
   const AdminBookingsScreen({super.key});
@@ -19,6 +21,46 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminViewModel>().fetchDashboardData();
     });
+  }
+
+  Future<void> _showWorkerPicker(
+      BuildContext context, String bookingId, String serviceType) async {
+    final snap = await sl<FirebaseFirestore>()
+        .collection('workers')
+        .where('isOnline', isEqualTo: true)
+        .where('verificationStatus', isEqualTo: 'approved')
+        .limit(20)
+        .get();
+
+    if (!mounted) return;
+
+    final workers = snap.docs.map((d) {
+      final data = d.data();
+      return _WorkerOption(
+        uid: d.id,
+        name: data['fullName'] as String? ?? 'Worker',
+        phone: data['mobileNumber'] as String? ?? '',
+        tier: data['verificationTier'] as String? ?? 'green',
+      );
+    }).toList();
+
+    if (workers.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No online verified workers available.')),
+      );
+      return;
+    }
+
+    final selected = await showModalBottomSheet<_WorkerOption>(
+      context: context,
+      builder: (ctx) => _WorkerPickerSheet(workers: workers),
+    );
+
+    if (selected != null && mounted) {
+      await context
+          .read<AdminViewModel>()
+          .manuallyAssignWorker(bookingId, selected.uid);
+    }
   }
 
   @override
@@ -72,14 +114,9 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                       const Divider(height: 30),
                       if (booking.workerId == null)
                         OutlinedButton.icon(
-                          onPressed: () async {
-                            final confirm = await showConfirmDialog(context, title: 'Assign Worker', message: 'Assign mock worker to this job?');
-                            if (confirm && context.mounted) {
-                              await context.read<AdminViewModel>().manuallyAssignWorker(booking.bookingId, 'mock_worker_890');
-                            }
-                          },
+                          onPressed: () => _showWorkerPicker(context, booking.bookingId, booking.serviceType),
                           icon: const Icon(Icons.assignment_ind),
-                          label: const Text('Assign Worker Now'),
+                          label: const Text('Assign Worker'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Theme.of(context).colorScheme.primary,
                             side: BorderSide(color: Theme.of(context).colorScheme.primary),
@@ -98,6 +135,77 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                 ).animate().fadeIn(delay: Duration(milliseconds: 100 * index)).slideY(begin: 0.1);
               },
             ),
+    );
+  }
+}
+
+class _WorkerOption {
+  final String uid;
+  final String name;
+  final String phone;
+  final String tier;
+  const _WorkerOption(
+      {required this.uid, required this.name, required this.phone, required this.tier});
+}
+
+class _WorkerPickerSheet extends StatelessWidget {
+  final List<_WorkerOption> workers;
+  const _WorkerPickerSheet({required this.workers});
+
+  Color _tierColor(String t) {
+    switch (t) {
+      case 'blue':    return const Color(0xFF3B82F6);
+      case 'gold':    return const Color(0xFFF59E0B);
+      case 'partner': return const Color(0xFF8B5CF6);
+      default:        return const Color(0xFF22C55E);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          child: Row(children: [
+            Text('Select Worker', style: Theme.of(context).textTheme.titleMedium),
+            const Spacer(),
+            Text('${workers.length} online', style: Theme.of(context).textTheme.bodySmall),
+          ]),
+        ),
+        const Divider(height: 1),
+        Flexible(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: workers.length,
+            itemBuilder: (ctx, i) {
+              final w = workers[i];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: _tierColor(w.tier).withValues(alpha: 0.12),
+                  child: Text(
+                    w.name.isNotEmpty ? w.name[0].toUpperCase() : 'W',
+                    style: TextStyle(color: _tierColor(w.tier), fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(w.name),
+                subtitle: Text(w.phone),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _tierColor(w.tier).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(w.tier.toUpperCase(),
+                      style: TextStyle(
+                          fontSize: 9, fontWeight: FontWeight.bold, color: _tierColor(w.tier))),
+                ),
+                onTap: () => Navigator.pop(ctx, w),
+              );
+            },
+          ),
+        ),
+      ]),
     );
   }
 }

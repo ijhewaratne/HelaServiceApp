@@ -472,6 +472,15 @@ class _EarningsTab extends StatelessWidget {
                 onPressed: () => context.push('/worker/bank-account'),
               ),
             ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.workspace_premium, size: 16),
+                label: const Text('Gold Tier Training'),
+                onPressed: () => context.push('/worker/training'),
+              ),
+            ),
           ]),
         );
       },

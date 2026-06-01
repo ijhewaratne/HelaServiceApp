@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -23,7 +24,11 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
     try {
       if (!_isOnline) {
         // Going online - start location tracking
-        await _locationService.startTracking('current_worker_id');
+        String uid = '';
+        try {
+          uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+        } catch (_) {}
+        await _locationService.startTracking(uid);
         setState(() => _isOnline = true);
       } else {
         // Going offline - stop location tracking

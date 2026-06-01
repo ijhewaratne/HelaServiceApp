@@ -232,4 +232,126 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get sinhala => 'සිංහල';
+
+  @override
+  String get tamil => 'தமிழ்';
+
+  @override
+  String get walletBalance => 'පසුම්බිය';
+
+  @override
+  String get topUp => 'මුදල් ඇතුළත් කරන්න';
+
+  @override
+  String get topUpWallet => 'පසුම්බියට මුදල් ඇතුළත් කිරීම';
+
+  @override
+  String get insufficientBalance => 'ශේෂ ප්‍රමාණවත් නොවේ';
+
+  @override
+  String get topUpNow => 'දැනම ඇතුළත් කරන්න';
+
+  @override
+  String get recurringBooking => 'නැවත නැවත වෙන්කරවීම';
+
+  @override
+  String get repeatBooking => 'මෙම වෙන්කරවීම නැවත කරන්න';
+
+  @override
+  String get weekly => 'සෑම සතියකම';
+
+  @override
+  String get biweekly => 'සෑම සති දෙකකට වරක්';
+
+  @override
+  String get setEndDate => 'අවසාන දිනය සකසන්න';
+
+  @override
+  String get lastBookingDate => 'අවසාන වෙන්කරවීම් දිනය';
+
+  @override
+  String get specialInstructions => 'විශේෂ උපදෙස්';
+
+  @override
+  String get specialInstructionsHint =>
+      'උදා: දෙවරක් සීනුව 누르න්න. බල්ලා හොඳ ළදරුවෙකු.';
+
+  @override
+  String get howLong => 'කොපමණ කාලයක්?';
+
+  @override
+  String get whenDoYouNeedIt => 'කවදා අවශ්‍යද?';
+
+  @override
+  String get where => 'කොතැනද?';
+
+  @override
+  String get reviewBooking => 'වෙන්කරවීම සමීක්ෂා කරන්න';
+
+  @override
+  String get perHour => 'පැයකට';
+
+  @override
+  String get myAvailability => 'මගේ ලැබිය හැකිකම';
+
+  @override
+  String get weeklySchedule => 'සාප්තාහික කාලසටහන';
+
+  @override
+  String get blockedDates => 'අවහිර දිනයන්';
+
+  @override
+  String get blockDate => 'දිනයක් අවහිර කරන්න';
+
+  @override
+  String get addSlot => 'කාලය එකතු කරන්න';
+
+  @override
+  String get notAvailable => 'ලැබිය නොහැකිය';
+
+  @override
+  String get saveAvailability => 'ලැබිය හැකිකම සුරකින්න';
+
+  @override
+  String get availabilitySaved => 'ලැබිය හැකිකම සුරකිනු ලැබිණ';
+
+  @override
+  String get sosAlert => 'SOS අනතුරු ඇඟවීම';
+
+  @override
+  String get confirmSos => 'SOS යවන්නද?';
+
+  @override
+  String get sosConfirmBody =>
+      'මෙය HelaService ආරක්ෂාව කණ්ඩායමට ඔබේ ස්ථානය දැනුම් දෙනු ඇත.';
+
+  @override
+  String get sendSos => 'SOS යවන්න';
+
+  @override
+  String get elderCompanionship => 'වැඩිහිටි සහකාරිත්වය';
+
+  @override
+  String get nonMedicalCare => 'අශක්ත රෝගී සත්කාර';
+
+  @override
+  String get homeworkSupport => 'ගෙදර පාඩම් සහාය';
+
+  @override
+  String get kitchenHelper => 'කුස්සිය සහායක';
+
+  @override
+  String get laundryHelper => 'රෙදි සෝදන සේවය';
+
+  @override
+  String get groceryHelper => 'කඩේ ගිහිල්ල ගෙනෙන සේවය';
+
+  @override
+  String get houseSitting => 'ගෙදර රැකවල් සේවය';
+
+  @override
+  String get petSitting => 'සත්ව රැකවරණය';
+
+  @override
+  String get hourlyHouseholdSupport => 'පැයකාලීන ගෘහ සේවය';
 }

@@ -1,6 +1,6 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:mockito/mockito.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Test Helpers for Firebase mocking
 /// 
@@ -159,22 +159,25 @@ class TestFixtures {
 class CustomMatchers {
   /// Matcher for Either Right values
   static Matcher isRight() => predicate<dynamic>(
-        (value) => value.isRight(),
+        (value) => ((value as dynamic).isRight() as bool?) ?? false,
         'is Right',
       );
 
   /// Matcher for Either Left values
   static Matcher isLeft() => predicate<dynamic>(
-        (value) => value.isLeft(),
+        (value) => ((value as dynamic).isLeft() as bool?) ?? false,
         'is Left',
       );
 
   /// Matcher for specific failure type
   static Matcher isFailure<T>() => predicate<dynamic>(
-        (value) => value.isLeft() && value.fold(
-          (failure) => failure is T,
-          (_) => false,
-        ),
+        (value) =>
+            ((((value as dynamic).isLeft() as bool?) ?? false) &&
+                (((value as dynamic).fold(
+                      (failure) => failure is T,
+                      (_) => false,
+                    ) as bool?) ??
+                    false)),
         'is $T',
       );
 }

@@ -125,14 +125,16 @@ void main() {
 
     testWidgets('initiates payment when button pressed', (tester) async {
       when(mockRepository.processPayment(
-        bookingId: anyNamed('bookingId'),
-        amount: anyNamed('amount'),
-        customerName: anyNamed('customerName'),
-        customerPhone: anyNamed('customerPhone'),
-        customerEmail: anyNamed('customerEmail'),
-      )).thenAnswer((_) async => Right(PaymentResult.success(
+        bookingId: 'booking_123',
+        amount: 150000,
+        customerName: '',
+        customerPhone: '',
+        customerEmail: '',
+      )).thenAnswer((_) async => Right(PaymentResult(
+        success: true,
         paymentId: 'pay_123',
         orderId: 'booking_123',
+        status: PaymentStatus.completed,
       )));
 
       await tester.pumpWidget(createTestableWidget());

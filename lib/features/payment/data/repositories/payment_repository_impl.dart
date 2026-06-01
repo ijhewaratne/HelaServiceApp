@@ -1,5 +1,5 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dartz/dartz.dart';
-// import 'package:flutter_payhere/flutter_payhere.dart';  // Temporarily disabled
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -77,24 +77,62 @@ class PaymentRepositoryImpl implements PaymentRepository {
       // Format phone number
       final formattedPhone = _formatPhoneNumber(customerPhone);
 
-      // TODO: Implement PayHere payment
-      // Stub implementation for demo
-      await Future.delayed(const Duration(seconds: 2));
-      
+      // Call the server-side generatePayHereUrl callable so the merchant
+      // secret is never exposed to the client.
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('generatePayHereUrl');
+      final result = await callable.call({
+        'type': 'booking',
+        'bookingId': bookingId,
+        'amount': amount / 100.0, // callable expects LKR, not cents
+        'customerName': customerName,
+        'customerPhone': formattedPhone,
+        if (customerEmail?.isNotEmpty == true) 'customerEmail': customerEmail,
+      });
+
+      final data = result.data as Map<String, dynamic>;
+      final checkoutUrl = data['url'] as String?;
+      final orderId = data['orderId'] as String? ?? bookingId;
+
+      if (checkoutUrl == null || checkoutUrl.isEmpty) {
+        return const Left(PaymentFailure(
+          'Could not generate checkout URL from server.',
+          type: PaymentFailureType.initialization,
+        ));
+      }
+
+      // Write a pending payment record. The actual confirmation will come
+      // via the payhereNotify webhook Cloud Function.
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      await _firestore.collection('payments').doc(orderId).set({
+        'orderId': orderId,
+        'bookingId': bookingId,
+        'customerId': userId,
+        'amount': amount / 100.0,
+        'currency': 'LKR',
+        'status': PaymentStatus.pending.name,
+        'checkoutUrl': checkoutUrl,
+        'createdAt': FieldValue.serverTimestamp(),
+        'method': 'payhere',
+      });
+
+      // Mark the booking as awaiting payment confirmation.
+      await _firestore.collection('bookings').doc(bookingId).update({
+        'paymentId': orderId,
+        'paymentStatus': 'pending',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
       final paymentResult = PaymentResult(
         success: true,
-        paymentId: 'PAY_${DateTime.now().millisecondsSinceEpoch}',
-        orderId: bookingId,
+        paymentId: orderId,
+        orderId: orderId,
         amount: amount / 100.0,
         currency: 'LKR',
-        status: PaymentStatus.completed,
+        status: PaymentStatus.pending,
         processedAt: DateTime.now(),
+        checkoutUrl: checkoutUrl,
       );
-
-      // Save to Firestore if successful
-      if (paymentResult.success && paymentResult.paymentId != null) {
-        await _savePaymentToFirestore(paymentResult, bookingId);
-      }
 
       return Right(paymentResult);
     } catch (e) {

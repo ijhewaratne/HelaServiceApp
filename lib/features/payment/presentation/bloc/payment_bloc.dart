@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../../../core/services/analytics_service.dart';
 import '../../domain/entities/payment_result.dart';
@@ -30,16 +30,19 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   ) async {
     emit(PaymentProcessing());
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      emit(PaymentError(message: 'User not authenticated'));
-      return;
+    firebase_auth.User? currentUser;
+    try {
+      currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
+    } catch (_) {
+      // FirebaseAuth not initialized (e.g., in tests) — use event fields directly.
     }
 
-    // Get user details for payment
-    final customerName = event.customerName ?? user.displayName ?? 'HelaService Customer';
-    final customerPhone = event.customerPhone ?? user.phoneNumber ?? '';
-    final customerEmail = event.customerEmail ?? user.email ?? '${user.uid}@helaservice.lk';
+    // Get user details for payment, falling back to Firebase user fields.
+    final customerName =
+        event.customerName ?? currentUser?.displayName ?? 'HelaService Customer';
+    final customerPhone = event.customerPhone ?? currentUser?.phoneNumber ?? '';
+    final customerEmail =
+        event.customerEmail ?? currentUser?.email ?? '';
 
     final result = await _paymentRepository.processPayment(
       bookingId: event.bookingId,
@@ -52,41 +55,49 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       description: event.description,
     );
 
-    result.fold(
-      (failure) {
-        // Track payment failure
-        _analytics.logPaymentFailed(
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (_) => throw StateError(''));
+      await _analytics.logPaymentFailed(
+        bookingId: event.bookingId,
+        amount: event.amount / 100,
+        reason: failure.message,
+      );
+      emit(PaymentError(message: failure.message));
+      return;
+    }
+
+    final paymentResult = result.getOrElse(() => throw StateError(''));
+
+    if (paymentResult.success) {
+      if (paymentResult.status == PaymentStatus.pending &&
+          paymentResult.checkoutUrl != null) {
+        emit(PaymentInitiated(
+          checkoutUrl: paymentResult.checkoutUrl!,
+          orderId: paymentResult.orderId ?? event.bookingId,
+        ));
+      } else {
+        await _analytics.logPaymentSuccess(
+          paymentId: paymentResult.paymentId ?? 'unknown',
           bookingId: event.bookingId,
-          amount: event.amount / 100, // Convert cents to rupees
-          reason: failure.message,
+          amount: event.amount / 100,
+          method: paymentResult.currency ?? 'unknown',
         );
-        emit(PaymentError(message: failure.message));
-      },
-      (paymentResult) async {
-        if (paymentResult.success) {
-          // Track successful payment
-          await _analytics.logPaymentSuccess(
-            paymentId: paymentResult.paymentId ?? 'unknown',
-            bookingId: event.bookingId,
-            amount: event.amount / 100, // Convert cents to rupees
-            method: paymentResult.currency ?? 'unknown',
-          );
-          emit(PaymentSuccess(payment: paymentResult));
-        } else {
-          // Track payment failure
-          await _analytics.logPaymentFailed(
-            bookingId: event.bookingId,
-            amount: event.amount / 100,
-            reason: paymentResult.message ?? 'Payment failed',
-            errorCode: paymentResult.status.toString(),
-          );
-          emit(PaymentFailed(
-            message: paymentResult.message ?? 'Payment failed',
-            status: paymentResult.status,
-          ));
-        }
-      },
-    );
+        if (!emit.isDone) emit(PaymentSuccess(payment: paymentResult));
+      }
+    } else {
+      await _analytics.logPaymentFailed(
+        bookingId: event.bookingId,
+        amount: event.amount / 100,
+        reason: paymentResult.message ?? 'Payment failed',
+        errorCode: paymentResult.status.toString(),
+      );
+      if (!emit.isDone) {
+        emit(PaymentFailed(
+          message: paymentResult.message ?? 'Payment failed',
+          status: paymentResult.status,
+        ));
+      }
+    }
   }
 
   Future<void> _onCheckPaymentStatus(
@@ -239,6 +250,18 @@ class PaymentLoading extends PaymentState {}
 
 /// Payment is being processed (PayHere UI shown)
 class PaymentProcessing extends PaymentState {}
+
+/// Payment initiated — checkout URL generated, awaiting PayHere webhook.
+/// The UI should launch [checkoutUrl] and then poll for status.
+class PaymentInitiated extends PaymentState {
+  final String checkoutUrl;
+  final String orderId;
+
+  PaymentInitiated({required this.checkoutUrl, required this.orderId});
+
+  @override
+  List<Object?> get props => [checkoutUrl, orderId];
+}
 
 /// Payment completed successfully
 class PaymentSuccess extends PaymentState {

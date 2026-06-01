@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/safety_alert.dart';
@@ -100,10 +101,96 @@ class SafetyRepositoryImpl implements SafetyRepository {
   @override
   Future<Either<Failure, void>> escalateAlert(String alertId) async {
     try {
-      await _col.doc(alertId).update({'status': 'escalated'});
+      final alertDoc = await _col.doc(alertId).get();
+      if (!alertDoc.exists) {
+        return Left(ServerFailure('Alert $alertId not found'));
+      }
+      final alertData = alertDoc.data()!;
+      final workerId = alertData['workerId'] as String? ?? '';
+      final customerId = alertData['customerId'] as String? ?? '';
+
+      // Collect emergency contacts from the worker and customer documents.
+      final contacts = <Map<String, String>>[];
+      if (workerId.isNotEmpty) {
+        final workerDoc =
+            await _db.collection('workers').doc(workerId).get();
+        if (workerDoc.exists) {
+          final d = workerDoc.data()!;
+          final name = d['emergencyContactName'] as String? ?? '';
+          final phone = d['emergencyContactPhone'] as String? ?? '';
+          if (phone.isNotEmpty) {
+            contacts.add({'name': name, 'phone': phone, 'role': 'workerEmergency'});
+          }
+        }
+      }
+      if (customerId.isNotEmpty) {
+        final custDoc =
+            await _db.collection('customer_profiles').doc(customerId).get();
+        if (custDoc.exists) {
+          final d = custDoc.data()!;
+          final name = d['emergencyContactName'] as String? ?? '';
+          final phone = d['emergencyContactPhone'] as String? ?? '';
+          if (phone.isNotEmpty) {
+            contacts.add({'name': name, 'phone': phone, 'role': 'customerEmergency'});
+          }
+        }
+      }
+
+      await _col.doc(alertId).update({
+        'status': 'escalated',
+        'escalatedAt': FieldValue.serverTimestamp(),
+        'escalationContacts': contacts,
+        'escalationAttempts': FieldValue.arrayUnion([
+          {
+            'method': 'push',
+            'initiatedAt': DateTime.now().toIso8601String(),
+            'contacts': contacts.length,
+          }
+        ]),
+      });
+
+      // Invoke Cloud Function to trigger push + SMS escalation.
+      try {
+        await FirebaseFunctions.instance
+            .httpsCallable('escalateSafetyAlert')
+            .call({
+          'alertId': alertId,
+          'workerId': workerId,
+          'customerId': customerId,
+          'contacts': contacts,
+        });
+      } catch (_) {
+        // Best-effort — don't fail the escalation if the Function is not yet
+        // deployed. The status is already set to 'escalated' above.
+      }
+
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure('Failed to escalate alert: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logManualContact({
+    required String alertId,
+    required String adminId,
+    required String contactType,
+    required String notes,
+  }) async {
+    try {
+      await _col.doc(alertId).update({
+        'escalationAttempts': FieldValue.arrayUnion([
+          {
+            'method': contactType,
+            'calledBy': adminId,
+            'calledAt': DateTime.now().toIso8601String(),
+            'notes': notes,
+          }
+        ]),
+      });
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Failed to log manual contact: $e'));
     }
   }
 

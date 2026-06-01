@@ -8,7 +8,8 @@ class LocationService {
   StreamSubscription<Position>? _positionStream;
   String? _workerId;
   bool _isTracking = false;
-  
+  Map<String, dynamic>? _workerMetadata;
+
   // Battery-optimized settings for Sri Lankan phones
   static const LocationSettings _locationSettings = LocationSettings(
     accuracy: LocationAccuracy.medium,
@@ -17,10 +18,14 @@ class LocationService {
 
   LocationService(this._firestore);
 
-  Future<void> startTracking(String workerId) async {
+  /// [workerMetadata] is merged into every worker_locations write so the
+  /// dispatch function can read skills/isVerified/homeLocation without an
+  /// extra Firestore read.
+  Future<void> startTracking(String workerId, {Map<String, dynamic>? workerMetadata}) async {
     if (_isTracking) return;
-    
+
     _workerId = workerId;
+    _workerMetadata = workerMetadata;
     
     // Check permissions
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -72,6 +77,7 @@ class LocationService {
       'updatedAt': FieldValue.serverTimestamp(),
       'status': 'online',
       'accuracy': position.accuracy,
+      if (_workerMetadata != null) ..._workerMetadata!,
     }, SetOptions(merge: true));
   }
 
@@ -79,7 +85,8 @@ class LocationService {
     await _positionStream?.cancel();
     _positionStream = null;
     _isTracking = false;
-    
+    _workerMetadata = null;
+
     if (_workerId != null) {
       await _firestore.collection('worker_locations').doc(_workerId).update({
         'status': 'offline',

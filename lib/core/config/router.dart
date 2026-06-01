@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
+import '../../injection_container.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/phone_auth_page.dart';
 
 // Worker imports
+import '../../features/worker/presentation/pages/gold_tier_training_page.dart';
 import '../../features/worker/presentation/pages/nic_input_page.dart';
 import '../../features/worker/presentation/pages/document_upload_page.dart';
 import '../../features/worker/presentation/pages/verification_pending_page.dart';
@@ -22,11 +25,16 @@ import '../../features/customer/presentation/screens/customer_home_screen.dart';
 import '../../features/customer/presentation/screens/booking_form_screen.dart';
 import '../../features/customer/presentation/screens/live_tracking_page.dart';
 import '../../features/booking/presentation/pages/booking_flow_screen.dart';
+import '../../features/booking/presentation/pages/booking_confirmation_page.dart';
+import '../../features/booking/domain/entities/booking.dart' as booking_entity;
 
 // Admin imports
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_bookings_screen.dart';
+import '../../features/admin/presentation/screens/admin_incidents_screen.dart';
 import '../../features/admin/presentation/screens/admin_workers_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
+import '../../features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart';
 
 // Payment / Wallet
 import '../../features/payment/presentation/pages/payment_page.dart';
@@ -36,8 +44,18 @@ import '../../features/wallet/presentation/pages/wallet_topup_page.dart';
 // Shared
 import '../../features/incident/presentation/pages/incident_report_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
+import '../../features/support/presentation/pages/support_ticket_page.dart';
+import '../../features/support/presentation/pages/admin_support_screen.dart';
+import '../../features/admin/presentation/screens/admin_revenue_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+Widget _withAdminViewModel(Widget child) {
+  return ChangeNotifierProvider(
+    create: (_) => sl<AdminViewModel>(),
+    child: child,
+  );
+}
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -122,6 +140,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const BankAccountPage(),
     ),
     GoRoute(
+      path: '/worker/training',
+      builder: (context, state) => const GoldTierTrainingPage(),
+    ),
+    GoRoute(
       path: '/worker/blue-tier',
       builder: (context, state) => const BlueTierUpgradePage(),
     ),
@@ -144,6 +166,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/customer/book',
       builder: (context, state) => const BookingFlowScreen(),
+    ),
+    GoRoute(
+      path: '/customer/booking-confirm',
+      builder: (context, state) {
+        final booking = state.extra as booking_entity.Booking;
+        return BookingConfirmationPage(booking: booking);
+      },
     ),
     GoRoute(
       path: '/customer/book/legacy',
@@ -172,12 +201,36 @@ final appRouter = GoRouter(
       builder: (context, state) => const AdminDashboardScreen(),
     ),
     GoRoute(
+      path: '/admin/workers',
+      builder: (context, state) => _withAdminViewModel(
+        const AdminWorkersScreen(),
+      ),
+    ),
+    GoRoute(
       path: '/admin/verify/:workerId',
-      builder: (context, state) => const AdminWorkersScreen(),
+      builder: (context, state) => _withAdminViewModel(
+        const AdminWorkersScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin/bookings',
+      builder: (context, state) => _withAdminViewModel(
+        const AdminBookingsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin/incidents',
+      builder: (context, state) => _withAdminViewModel(
+        const AdminIncidentsScreen(),
+      ),
     ),
     GoRoute(
       path: '/admin/dispatch',
       builder: (context, state) => const EmergencyDashboard(),
+    ),
+    GoRoute(
+      path: '/admin/revenue',
+      builder: (context, state) => const AdminRevenueScreen(),
     ),
 
     // ── Shared Routes ────────────────────────────────────────────────────────
@@ -198,6 +251,14 @@ final appRouter = GoRouter(
           jobId: params?['jobId'] as String?,
         );
       },
+    ),
+    GoRoute(
+      path: '/support',
+      builder: (context, state) => const SupportTicketPage(),
+    ),
+    GoRoute(
+      path: '/admin/support',
+      builder: (context, state) => const AdminSupportScreen(),
     ),
   ],
 

@@ -1,4 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +116,7 @@ class TestGoldenFileComparator extends LocalFileComparator {
     
     if (!result) {
       // Generate diff image for debugging
-      print('Golden file mismatch: $golden');
+      debugPrint('Golden file mismatch: $golden');
     }
     
     return result;
@@ -188,10 +190,4 @@ class TestDataBuilders {
       'createdAt': DateTime.now().toIso8601String(),
     };
   }
-}
-
-// Note: Uint8List would need dart:typed_data import in real implementation
-class Uint8List {
-  final List<int> bytes;
-  Uint8List(this.bytes);
 }

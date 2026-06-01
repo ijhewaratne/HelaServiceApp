@@ -10,6 +10,9 @@ class PaymentResult extends Equatable {
   final double? amount;
   final String? currency;
   final DateTime? processedAt;
+  /// PayHere checkout URL returned when a payment is initiated but not yet
+  /// confirmed. The UI should launch this URL and then poll for status.
+  final String? checkoutUrl;
 
   const PaymentResult({
     required this.success,
@@ -20,6 +23,7 @@ class PaymentResult extends Equatable {
     this.amount,
     this.currency,
     this.processedAt,
+    this.checkoutUrl,
   });
 
   /// Create from PayHere success response
@@ -64,6 +68,7 @@ class PaymentResult extends Equatable {
     double? amount,
     String? currency,
     DateTime? processedAt,
+    String? checkoutUrl,
   }) {
     return PaymentResult(
       success: success ?? this.success,
@@ -74,6 +79,7 @@ class PaymentResult extends Equatable {
       amount: amount ?? this.amount,
       currency: currency ?? this.currency,
       processedAt: processedAt ?? this.processedAt,
+      checkoutUrl: checkoutUrl ?? this.checkoutUrl,
     );
   }
 
@@ -118,6 +124,7 @@ class PaymentResult extends Equatable {
         amount,
         currency,
         processedAt,
+        checkoutUrl,
       ];
 }
 

@@ -8,7 +8,9 @@ import 'dart:async' as _i4;
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:firebase_auth/firebase_auth.dart' as _i7;
 import 'package:home_service_app/core/errors/failures.dart' as _i6;
-import 'package:home_service_app/features/auth/domain/entities/user_entity.dart'
+import 'package:home_service_app/core/monitoring/crash_reporting.dart' as _i9;
+import 'package:home_service_app/core/services/analytics_service.dart' as _i8;
+import 'package:home_service_app/features/auth/domain/entities/user.dart'
     as _i5;
 import 'package:home_service_app/features/auth/domain/repositories/auth_repository.dart'
     as _i3;
@@ -43,12 +45,12 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
   }
 
   @override
-  _i4.Stream<_i5.UserEntity?> get authStateChanges =>
+  _i4.Stream<_i5.User?> get authStateChanges =>
       (super.noSuchMethod(
             Invocation.getter(#authStateChanges),
-            returnValue: _i4.Stream<_i5.UserEntity?>.empty(),
+            returnValue: _i4.Stream<_i5.User?>.empty(),
           )
-          as _i4.Stream<_i5.UserEntity?>);
+          as _i4.Stream<_i5.User?>);
 
   @override
   _i4.Future<_i2.Either<_i6.Failure, void>> verifyPhone({
@@ -79,7 +81,7 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           as _i4.Future<_i2.Either<_i6.Failure, void>>);
 
   @override
-  _i4.Future<_i2.Either<_i6.Failure, _i5.UserEntity>> verifyOTP({
+  _i4.Future<_i2.Either<_i6.Failure, _i5.User>> verifyOTP({
     required String? verificationId,
     required String? smsCode,
   }) =>
@@ -88,23 +90,565 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
               #verificationId: verificationId,
               #smsCode: smsCode,
             }),
-            returnValue:
-                _i4.Future<_i2.Either<_i6.Failure, _i5.UserEntity>>.value(
-                  _FakeEither_0<_i6.Failure, _i5.UserEntity>(
-                    this,
-                    Invocation.method(#verifyOTP, [], {
-                      #verificationId: verificationId,
-                      #smsCode: smsCode,
-                    }),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i6.Failure, _i5.User>>.value(
+              _FakeEither_0<_i6.Failure, _i5.User>(
+                this,
+                Invocation.method(#verifyOTP, [], {
+                  #verificationId: verificationId,
+                  #smsCode: smsCode,
+                }),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i6.Failure, _i5.UserEntity>>);
+          as _i4.Future<_i2.Either<_i6.Failure, _i5.User>>);
 
   @override
   _i4.Future<void> signOut() =>
       (super.noSuchMethod(
             Invocation.method(#signOut, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<_i5.User?> getCurrentUser() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCurrentUser, []),
+            returnValue: _i4.Future<_i5.User?>.value(),
+          )
+          as _i4.Future<_i5.User?>);
+
+  @override
+  _i4.Future<_i2.Either<_i6.Failure, _i5.User>> updateUserType(
+    String? userId,
+    _i5.UserType? userType,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateUserType, [userId, userType]),
+            returnValue: _i4.Future<_i2.Either<_i6.Failure, _i5.User>>.value(
+              _FakeEither_0<_i6.Failure, _i5.User>(
+                this,
+                Invocation.method(#updateUserType, [userId, userType]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i6.Failure, _i5.User>>);
+
+  @override
+  _i4.Future<_i2.Either<_i6.Failure, _i5.User>> markUserOnboarded(
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#markUserOnboarded, [userId]),
+            returnValue: _i4.Future<_i2.Either<_i6.Failure, _i5.User>>.value(
+              _FakeEither_0<_i6.Failure, _i5.User>(
+                this,
+                Invocation.method(#markUserOnboarded, [userId]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i6.Failure, _i5.User>>);
+}
+
+/// A class which mocks [AnalyticsService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAnalyticsService extends _i1.Mock implements _i8.AnalyticsService {
+  MockAnalyticsService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<void> initialize() =>
+      (super.noSuchMethod(
+            Invocation.method(#initialize, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logSignUp({required String? method, String? userType}) =>
+      (super.noSuchMethod(
+            Invocation.method(#logSignUp, [], {
+              #method: method,
+              #userType: userType,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logLogin({required String? method, String? userType}) =>
+      (super.noSuchMethod(
+            Invocation.method(#logLogin, [], {
+              #method: method,
+              #userType: userType,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logLogout() =>
+      (super.noSuchMethod(
+            Invocation.method(#logLogout, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setUserProperties({
+    required String? userId,
+    String? userType,
+    String? zone,
+    String? membershipLevel,
+    int? totalBookings,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#setUserProperties, [], {
+              #userId: userId,
+              #userType: userType,
+              #zone: zone,
+              #membershipLevel: membershipLevel,
+              #totalBookings: totalBookings,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logScreenView({
+    required String? screenName,
+    String? screenClass,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logScreenView, [], {
+              #screenName: screenName,
+              #screenClass: screenClass,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logBookingCreated({
+    required String? bookingId,
+    required String? serviceType,
+    required double? estimatedPrice,
+    String? zone,
+    DateTime? scheduledDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logBookingCreated, [], {
+              #bookingId: bookingId,
+              #serviceType: serviceType,
+              #estimatedPrice: estimatedPrice,
+              #zone: zone,
+              #scheduledDate: scheduledDate,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logBookingCancelled({
+    required String? bookingId,
+    String? reason,
+    int? hoursBeforeService,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logBookingCancelled, [], {
+              #bookingId: bookingId,
+              #reason: reason,
+              #hoursBeforeService: hoursBeforeService,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logJobCompleted({
+    required String? jobId,
+    required String? workerId,
+    required String? serviceType,
+    required int? durationMinutes,
+    required double? finalPrice,
+    double? workerRating,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logJobCompleted, [], {
+              #jobId: jobId,
+              #workerId: workerId,
+              #serviceType: serviceType,
+              #durationMinutes: durationMinutes,
+              #finalPrice: finalPrice,
+              #workerRating: workerRating,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logPaymentSuccess({
+    required String? paymentId,
+    required String? bookingId,
+    required double? amount,
+    required String? method,
+    String? couponCode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logPaymentSuccess, [], {
+              #paymentId: paymentId,
+              #bookingId: bookingId,
+              #amount: amount,
+              #method: method,
+              #couponCode: couponCode,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logPaymentFailed({
+    required String? bookingId,
+    required double? amount,
+    required String? reason,
+    String? errorCode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logPaymentFailed, [], {
+              #bookingId: bookingId,
+              #amount: amount,
+              #reason: reason,
+              #errorCode: errorCode,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logWorkerOnline({
+    required String? workerId,
+    required bool? isOnline,
+    String? zone,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logWorkerOnline, [], {
+              #workerId: workerId,
+              #isOnline: isOnline,
+              #zone: zone,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logJobOfferReceived({
+    required String? workerId,
+    required String? jobId,
+    required String? serviceType,
+    required double? estimatedEarnings,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logJobOfferReceived, [], {
+              #workerId: workerId,
+              #jobId: jobId,
+              #serviceType: serviceType,
+              #estimatedEarnings: estimatedEarnings,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logJobOfferResponse({
+    required String? workerId,
+    required String? jobId,
+    required bool? accepted,
+    int? responseTimeSeconds,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logJobOfferResponse, [], {
+              #workerId: workerId,
+              #jobId: jobId,
+              #accepted: accepted,
+              #responseTimeSeconds: responseTimeSeconds,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logWorkerRegistration({
+    required String? workerId,
+    required String? nic,
+    required List<String>? services,
+    int? onboardingTimeMinutes,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logWorkerRegistration, [], {
+              #workerId: workerId,
+              #nic: nic,
+              #services: services,
+              #onboardingTimeMinutes: onboardingTimeMinutes,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logWorkerVerification({
+    required String? workerId,
+    required String? status,
+    String? rejectionReason,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logWorkerVerification, [], {
+              #workerId: workerId,
+              #status: status,
+              #rejectionReason: rejectionReason,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logServiceSelected({
+    required String? serviceType,
+    String? source,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logServiceSelected, [], {
+              #serviceType: serviceType,
+              #source: source,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logSearch({required String? query, int? resultsCount}) =>
+      (super.noSuchMethod(
+            Invocation.method(#logSearch, [], {
+              #query: query,
+              #resultsCount: resultsCount,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logChatMessage({
+    required String? chatId,
+    required String? senderType,
+    required bool? hasAttachment,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logChatMessage, [], {
+              #chatId: chatId,
+              #senderType: senderType,
+              #hasAttachment: hasAttachment,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logNotificationReceived({
+    required String? type,
+    required String? userId,
+    bool? opened,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logNotificationReceived, [], {
+              #type: type,
+              #userId: userId,
+              #opened: opened,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logError({
+    required String? error,
+    String? context,
+    String? stackTrace,
+    bool? isFatal,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logError, [], {
+              #error: error,
+              #context: context,
+              #stackTrace: stackTrace,
+              #isFatal: isFatal,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logApiError({
+    required String? endpoint,
+    required int? statusCode,
+    String? errorMessage,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logApiError, [], {
+              #endpoint: endpoint,
+              #statusCode: statusCode,
+              #errorMessage: errorMessage,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logAppStartup({
+    required int? startupTimeMs,
+    bool? fromBackground,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logAppStartup, [], {
+              #startupTimeMs: startupTimeMs,
+              #fromBackground: fromBackground,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logScreenLoadTime({
+    required String? screenName,
+    required int? loadTimeMs,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logScreenLoadTime, [], {
+              #screenName: screenName,
+              #loadTimeMs: loadTimeMs,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logAddToCart({
+    required String? serviceType,
+    required double? price,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logAddToCart, [], {
+              #serviceType: serviceType,
+              #price: price,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logPurchase({
+    required String? bookingId,
+    required double? value,
+    required String? serviceType,
+    String? coupon,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logPurchase, [], {
+              #bookingId: bookingId,
+              #value: value,
+              #serviceType: serviceType,
+              #coupon: coupon,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+}
+
+/// A class which mocks [CrashReportingService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCrashReportingService extends _i1.Mock
+    implements _i9.CrashReportingService {
+  MockCrashReportingService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<void> initialize() =>
+      (super.noSuchMethod(
+            Invocation.method(#initialize, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setUserIdentifier(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#setUserIdentifier, [userId]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setCustomKeys(Map<String, dynamic>? keys) =>
+      (super.noSuchMethod(
+            Invocation.method(#setCustomKeys, [keys]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> logError(
+    dynamic exception,
+    StackTrace? stack, {
+    String? reason,
+    bool? fatal = false,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #logError,
+              [exception, stack],
+              {#reason: reason, #fatal: fatal},
+            ),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> log(String? message) =>
+      (super.noSuchMethod(
+            Invocation.method(#log, [message]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

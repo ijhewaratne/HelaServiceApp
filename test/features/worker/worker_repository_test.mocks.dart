@@ -12,6 +12,10 @@ import 'package:home_service_app/features/worker/domain/entities/worker.dart'
     as _i6;
 import 'package:home_service_app/features/worker/domain/entities/worker_application.dart'
     as _i8;
+import 'package:home_service_app/features/worker/domain/entities/worker_document.dart'
+    as _i10;
+import 'package:home_service_app/features/worker/domain/entities/worker_profile.dart'
+    as _i9;
 import 'package:home_service_app/features/worker/domain/repositories/worker_repository.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
@@ -247,4 +251,51 @@ class MockWorkerRepository extends _i1.Mock implements _i3.WorkerRepository {
             ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, void>>);
+
+  @override
+  _i4.Future<_i9.WorkerProfile?> getWorkerProfile(String? workerId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getWorkerProfile, [workerId]),
+            returnValue: _i4.Future<_i9.WorkerProfile?>.value(),
+          )
+          as _i4.Future<_i9.WorkerProfile?>);
+
+  @override
+  _i4.Future<_i10.WorkerDocument?> getWorkerDocuments(String? workerId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getWorkerDocuments, [workerId]),
+            returnValue: _i4.Future<_i10.WorkerDocument?>.value(),
+          )
+          as _i4.Future<_i10.WorkerDocument?>);
+
+  @override
+  _i4.Future<void> updateWorkerProfile(_i9.WorkerProfile? profile) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateWorkerProfile, [profile]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> uploadDocument(
+    String? workerId,
+    String? docType,
+    String? filePath,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#uploadDocument, [workerId, docType, filePath]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateAvailability(String? workerId, bool? isAvailable) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateAvailability, [workerId, isAvailable]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }

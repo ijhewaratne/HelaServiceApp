@@ -232,4 +232,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sinhala => 'Sinhala';
+
+  @override
+  String get tamil => 'Tamil';
+
+  @override
+  String get walletBalance => 'Wallet Balance';
+
+  @override
+  String get topUp => 'Top Up';
+
+  @override
+  String get topUpWallet => 'Top Up Wallet';
+
+  @override
+  String get insufficientBalance => 'Insufficient Balance';
+
+  @override
+  String get topUpNow => 'Top Up Now';
+
+  @override
+  String get recurringBooking => 'Recurring Booking';
+
+  @override
+  String get repeatBooking => 'Repeat this booking';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get biweekly => 'Biweekly';
+
+  @override
+  String get setEndDate => 'Set end date';
+
+  @override
+  String get lastBookingDate => 'Last booking date';
+
+  @override
+  String get specialInstructions => 'Special Instructions';
+
+  @override
+  String get specialInstructionsHint =>
+      'e.g., Ring the bell twice. Dog is friendly.';
+
+  @override
+  String get howLong => 'How long?';
+
+  @override
+  String get whenDoYouNeedIt => 'When do you need it?';
+
+  @override
+  String get where => 'Where?';
+
+  @override
+  String get reviewBooking => 'Review Booking';
+
+  @override
+  String get perHour => 'per hour';
+
+  @override
+  String get myAvailability => 'My Availability';
+
+  @override
+  String get weeklySchedule => 'Weekly Schedule';
+
+  @override
+  String get blockedDates => 'Blocked Dates';
+
+  @override
+  String get blockDate => 'Block a date';
+
+  @override
+  String get addSlot => 'Add slot';
+
+  @override
+  String get notAvailable => 'Not available';
+
+  @override
+  String get saveAvailability => 'Save Availability';
+
+  @override
+  String get availabilitySaved => 'Availability saved';
+
+  @override
+  String get sosAlert => 'SOS Alert';
+
+  @override
+  String get confirmSos => 'Send SOS Alert?';
+
+  @override
+  String get sosConfirmBody =>
+      'This will immediately alert the HelaService safety team and share your location.';
+
+  @override
+  String get sendSos => 'Send SOS';
+
+  @override
+  String get elderCompanionship => 'Elder Companionship';
+
+  @override
+  String get nonMedicalCare => 'Non-Medical Immobilized Care';
+
+  @override
+  String get homeworkSupport => 'Homework Support';
+
+  @override
+  String get kitchenHelper => 'Kitchen Helper';
+
+  @override
+  String get laundryHelper => 'Laundry Helper';
+
+  @override
+  String get groceryHelper => 'Grocery Helper';
+
+  @override
+  String get houseSitting => 'House Sitting';
+
+  @override
+  String get petSitting => 'Pet Sitting';
+
+  @override
+  String get hourlyHouseholdSupport => 'Hourly Household Support';
 }

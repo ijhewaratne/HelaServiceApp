@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/features/booking/domain/repositories/booking_repository.dart';
 import 'package:home_service_app/features/booking/presentation/bloc/booking_bloc.dart';
-import 'package:home_service_app/features/booking/presentation/pages/service_booking_page.dart';
+import 'package:home_service_app/features/booking/presentation/pages/booking_flow_screen.dart';
 import 'package:home_service_app/features/matching/domain/usecases/find_nearest_worker.dart';
 import 'package:mockito/annotations.dart';
 
@@ -26,12 +26,12 @@ void main() {
           bookingRepository: mockRepository,
           findNearestWorker: mockFindNearestWorker,
         ),
-        child: const ServiceBookingPage(),
+        child: const BookingFlowScreen(),
       ),
     );
   }
 
-  group('ServiceBookingPage', () {
+  group('BookingFlowScreen', () {
     testWidgets('renders correctly with service selection', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();

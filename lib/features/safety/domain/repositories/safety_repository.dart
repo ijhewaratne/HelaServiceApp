@@ -23,8 +23,18 @@ abstract class SafetyRepository {
     required String notes,
   });
 
-  /// Escalate an alert
+  /// Escalate an alert — fetches emergency contacts and triggers secondary
+  /// notifications (push + Firebase Callable for SMS/call).
   Future<Either<Failure, void>> escalateAlert(String alertId);
+
+  /// Log a manual contact attempt made by an admin (e.g. phoned the worker's
+  /// emergency contact).
+  Future<Either<Failure, void>> logManualContact({
+    required String alertId,
+    required String adminId,
+    required String contactType, // 'phone' | 'sms' | 'police'
+    required String notes,
+  });
 
   /// Live stream of open alerts for admin dashboard
   Stream<List<SafetyAlert>> watchOpenAlerts();

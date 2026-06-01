@@ -1,9 +1,13 @@
 # HelaService App Status
 
-## Current Status: Compilable — Architecture Complete ✅
+## Current Status: Runtime Wiring Improved — Repository Still Needs Hardening
 
-All `lib/` compilation errors are resolved. The app compiles cleanly.
-Remaining analyzer output is warnings/infos in test files (pre-existing mock infrastructure).
+The app bootstrap, dependency injection, and admin route wiring have been corrected for the core runtime path.
+
+The repository is not yet in a clean release-ready state:
+- `lib/` still has analyzer warnings and infos
+- whole-repo analysis and tests are not green
+- some runtime/data-contract issues outside the app shell remain, especially booking/rules alignment and dispatch/location contracts
 
 ---
 

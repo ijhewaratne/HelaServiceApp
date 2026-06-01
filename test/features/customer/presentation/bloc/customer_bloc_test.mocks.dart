@@ -7,6 +7,8 @@ import 'dart:async' as _i4;
 
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:home_service_app/core/errors/failures.dart' as _i5;
+import 'package:home_service_app/features/customer/domain/entities/address.dart'
+    as _i6;
 import 'package:home_service_app/features/customer/domain/repositories/customer_repository.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
@@ -125,44 +127,42 @@ class MockCustomerRepository extends _i1.Mock
           as _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>
-  getSavedAddresses(String? customerId) =>
+  _i4.Future<_i2.Either<_i5.Failure, List<_i6.Address>>> getSavedAddresses(
+    String? customerId,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#getSavedAddresses, [customerId]),
             returnValue:
-                _i4.Future<
-                  _i2.Either<_i5.Failure, List<Map<String, dynamic>>>
-                >.value(
-                  _FakeEither_0<_i5.Failure, List<Map<String, dynamic>>>(
+                _i4.Future<_i2.Either<_i5.Failure, List<_i6.Address>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i6.Address>>(
                     this,
                     Invocation.method(#getSavedAddresses, [customerId]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i6.Address>>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> addSavedAddress(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Address>> addSavedAddress(
     String? customerId,
-    Map<String, dynamic>? address,
+    _i6.Address? address,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#addSavedAddress, [customerId, address]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#addSavedAddress, [customerId, address]),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Address>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Address>(
+                this,
+                Invocation.method(#addSavedAddress, [customerId, address]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Address>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> updateSavedAddress(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Address>> updateSavedAddress(
     String? customerId,
     String? addressId,
-    Map<String, dynamic>? address,
+    _i6.Address? address,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateSavedAddress, [
@@ -170,19 +170,18 @@ class MockCustomerRepository extends _i1.Mock
               addressId,
               address,
             ]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#updateSavedAddress, [
-                      customerId,
-                      addressId,
-                      address,
-                    ]),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Address>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Address>(
+                this,
+                Invocation.method(#updateSavedAddress, [
+                  customerId,
+                  addressId,
+                  address,
+                ]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Address>>);
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, void>> deleteSavedAddress(

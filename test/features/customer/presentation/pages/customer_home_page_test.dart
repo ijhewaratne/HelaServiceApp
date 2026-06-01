@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_service_app/features/customer/domain/repositories/customer_repository.dart';
 import 'package:home_service_app/features/customer/presentation/bloc/customer_bloc.dart';
-import 'package:home_service_app/features/customer/presentation/pages/customer_home_page.dart';
+import 'package:home_service_app/features/customer/presentation/screens/customer_home_screen.dart';
 import 'package:mockito/annotations.dart';
 
 import 'customer_home_page_test.mocks.dart';
@@ -20,7 +20,7 @@ void main() {
     return MaterialApp(
       home: BlocProvider(
         create: (_) => CustomerBloc(customerRepository: mockRepository),
-        child: const CustomerHomePage(),
+        child: const CustomerHomeScreen(),
       ),
     );
   }

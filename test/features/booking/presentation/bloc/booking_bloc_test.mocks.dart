@@ -7,12 +7,14 @@ import 'dart:async' as _i4;
 
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:home_service_app/core/errors/failures.dart' as _i5;
+import 'package:home_service_app/features/booking/domain/entities/booking.dart'
+    as _i6;
 import 'package:home_service_app/features/booking/domain/repositories/booking_repository.dart'
     as _i3;
 import 'package:home_service_app/features/matching/domain/usecases/find_nearest_worker.dart'
-    as _i6;
-import 'package:home_service_app/features/worker/domain/entities/worker.dart'
     as _i7;
+import 'package:home_service_app/features/worker/domain/entities/worker.dart'
+    as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -44,53 +46,50 @@ class MockBookingRepository extends _i1.Mock implements _i3.BookingRepository {
   }
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> createBooking(
-    Map<String, dynamic>? bookingData,
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>> createBooking(
+    _i6.Booking? booking,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#createBooking, [bookingData]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#createBooking, [bookingData]),
-                  ),
-                ),
+            Invocation.method(#createBooking, [booking]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Booking>(
+                this,
+                Invocation.method(#createBooking, [booking]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> getBooking(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>> getBooking(
     String? bookingId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getBooking, [bookingId]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#getBooking, [bookingId]),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Booking>(
+                this,
+                Invocation.method(#getBooking, [bookingId]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> updateBooking(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>> updateBooking(
     String? bookingId,
     Map<String, dynamic>? data,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateBooking, [bookingId, data]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#updateBooking, [bookingId, data]),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Booking>(
+                this,
+                Invocation.method(#updateBooking, [bookingId, data]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>);
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, void>> cancelBooking(
@@ -113,49 +112,46 @@ class MockBookingRepository extends _i1.Mock implements _i3.BookingRepository {
           as _i4.Future<_i2.Either<_i5.Failure, void>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>
-  getCustomerBookings(String? customerId) =>
+  _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>> getCustomerBookings(
+    String? customerId,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#getCustomerBookings, [customerId]),
             returnValue:
-                _i4.Future<
-                  _i2.Either<_i5.Failure, List<Map<String, dynamic>>>
-                >.value(
-                  _FakeEither_0<_i5.Failure, List<Map<String, dynamic>>>(
+                _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i6.Booking>>(
                     this,
                     Invocation.method(#getCustomerBookings, [customerId]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>
-  getWorkerBookings(String? workerId) =>
+  _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>> getWorkerBookings(
+    String? workerId,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#getWorkerBookings, [workerId]),
             returnValue:
-                _i4.Future<
-                  _i2.Either<_i5.Failure, List<Map<String, dynamic>>>
-                >.value(
-                  _FakeEither_0<_i5.Failure, List<Map<String, dynamic>>>(
+                _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i6.Booking>>(
                     this,
                     Invocation.method(#getWorkerBookings, [workerId]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i6.Booking>>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>?>>
-  getActiveBookingForCustomer(String? customerId) =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>> getActiveBookingForCustomer(
+    String? customerId,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#getActiveBookingForCustomer, [customerId]),
             returnValue:
-                _i4.Future<
-                  _i2.Either<_i5.Failure, Map<String, dynamic>?>
-                >.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>?>(
+                _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.Booking?>(
                     this,
                     Invocation.method(#getActiveBookingForCustomer, [
                       customerId,
@@ -163,46 +159,44 @@ class MockBookingRepository extends _i1.Mock implements _i3.BookingRepository {
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>?>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>?>>
-  getActiveBookingForWorker(String? workerId) =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>> getActiveBookingForWorker(
+    String? workerId,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#getActiveBookingForWorker, [workerId]),
             returnValue:
-                _i4.Future<
-                  _i2.Either<_i5.Failure, Map<String, dynamic>?>
-                >.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>?>(
+                _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.Booking?>(
                     this,
                     Invocation.method(#getActiveBookingForWorker, [workerId]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>?>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking?>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> assignWorker(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>> assignWorker(
     String? bookingId,
     String? workerId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#assignWorker, [bookingId, workerId]),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(#assignWorker, [bookingId, workerId]),
-                  ),
-                ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Booking>(
+                this,
+                Invocation.method(#assignWorker, [bookingId, workerId]),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>> updateBookingStatus(
+  _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>> updateBookingStatus(
     String? bookingId,
-    String? status, {
+    _i6.BookingStatus? status, {
     Map<String, dynamic>? additionalData,
   }) =>
       (super.noSuchMethod(
@@ -211,77 +205,52 @@ class MockBookingRepository extends _i1.Mock implements _i3.BookingRepository {
               [bookingId, status],
               {#additionalData: additionalData},
             ),
-            returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>.value(
-                  _FakeEither_0<_i5.Failure, Map<String, dynamic>>(
-                    this,
-                    Invocation.method(
-                      #updateBookingStatus,
-                      [bookingId, status],
-                      {#additionalData: additionalData},
-                    ),
-                  ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i6.Booking>(
+                this,
+                Invocation.method(
+                  #updateBookingStatus,
+                  [bookingId, status],
+                  {#additionalData: additionalData},
                 ),
+              ),
+            ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.Booking>>);
 
   @override
-  _i4.Stream<_i2.Either<_i5.Failure, Map<String, dynamic>>> watchBooking(
+  _i4.Stream<_i2.Either<_i5.Failure, _i6.Booking>> watchBooking(
     String? bookingId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#watchBooking, [bookingId]),
             returnValue:
-                _i4.Stream<
-                  _i2.Either<_i5.Failure, Map<String, dynamic>>
-                >.empty(),
+                _i4.Stream<_i2.Either<_i5.Failure, _i6.Booking>>.empty(),
           )
-          as _i4.Stream<_i2.Either<_i5.Failure, Map<String, dynamic>>>);
+          as _i4.Stream<_i2.Either<_i5.Failure, _i6.Booking>>);
 }
 
 /// A class which mocks [FindNearestWorker].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFindNearestWorker extends _i1.Mock implements _i6.FindNearestWorker {
+class MockFindNearestWorker extends _i1.Mock implements _i7.FindNearestWorker {
   MockFindNearestWorker() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, List<_i7.Worker>>> call(
-    _i6.FindNearestWorkerParams? params,
+  _i4.Future<_i2.Either<_i5.Failure, List<_i8.Worker>>> call(
+    _i7.FindNearestWorkerParams? params,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#call, [params]),
             returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, List<_i7.Worker>>>.value(
-                  _FakeEither_0<_i5.Failure, List<_i7.Worker>>(
+                _i4.Future<_i2.Either<_i5.Failure, List<_i8.Worker>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i8.Worker>>(
                     this,
                     Invocation.method(#call, [params]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, List<_i7.Worker>>>);
-
-  @override
-  _i4.Future<List<_i7.Worker>> execute({
-    required double? customerLat,
-    required double? customerLng,
-    required dynamic serviceType,
-    required String? zoneId,
-    double? maxRadiusKm = 5.0,
-    int? topN = 3,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#execute, [], {
-              #customerLat: customerLat,
-              #customerLng: customerLng,
-              #serviceType: serviceType,
-              #zoneId: zoneId,
-              #maxRadiusKm: maxRadiusKm,
-              #topN: topN,
-            }),
-            returnValue: _i4.Future<List<_i7.Worker>>.value(<_i7.Worker>[]),
-          )
-          as _i4.Future<List<_i7.Worker>>);
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i8.Worker>>>);
 }

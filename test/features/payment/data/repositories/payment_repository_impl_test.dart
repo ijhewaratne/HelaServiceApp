@@ -115,7 +115,8 @@ void main() {
       // Arrange
       final mockDocRef = MockDocumentReference();
       when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
-      when(mockDocRef.update(any)).thenAnswer((_) async {});
+      when(mockDocRef.update({'status': anyOf(isA<String>())}))
+          .thenAnswer((_) async {});
 
       // Act
       final result = await repository.refundPayment(
