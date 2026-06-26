@@ -107,26 +107,30 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
     final adminId = FirebaseAuth.instance.currentUser?.uid ?? '';
     setState(() => _busy = true);
     try {
+      final fs = FirebaseFirestore.instance;
       final updates = <String, dynamic>{
         'moderationStatus': newStatus,
         'moderatedAt': FieldValue.serverTimestamp(),
       };
       if (note != null) updates['adminNote'] = note;
 
-      await FirebaseFirestore.instance
-          .collection('reviews')
-          .doc(widget.review.id)
-          .update(updates);
-
-      await FirebaseFirestore.instance.collection('audit_logs').add({
+      // Batch: review update + audit log are atomic
+      final batch = fs.batch();
+      batch.update(fs.collection('reviews').doc(widget.review.id), updates);
+      batch.set(fs.collection('audit_logs').doc(), {
         'adminUserId': adminId,
         'actionType': '${newStatus}_review',
         'entityType': 'reviews',
         'entityId': widget.review.id,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      await batch.commit();
 
-      if (newStatus == 'approved') {
+      // Recalculate rating any time the approved-review set changes
+      final prevStatus = widget.review.moderationStatus;
+      final affectsRating = newStatus == 'approved' ||
+          prevStatus == ReviewModerationStatus.approved;
+      if (affectsRating) {
         await _updateProviderRating(widget.review.providerId);
       }
     } catch (e) {
@@ -145,16 +149,18 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
         .where('providerId', isEqualTo: providerId)
         .where('moderationStatus', isEqualTo: 'approved')
         .get();
-    if (snap.docs.isEmpty) return;
     final ratings = snap.docs
         .map((d) =>
             (d.data() as Map<String, dynamic>)['rating'] as int? ?? 0)
+        .where((r) => r > 0)
         .toList();
-    final avg = ratings.reduce((a, b) => a + b) / ratings.length;
+    final avg = ratings.isEmpty
+        ? 0.0
+        : ratings.reduce((a, b) => a + b) / ratings.length;
     await FirebaseFirestore.instance
         .collection('workers')
         .doc(providerId)
-        .update({'rating': avg});
+        .update({'rating': avg, 'reviewCount': ratings.length});
   }
 
   Future<void> _hideWithNote() async {

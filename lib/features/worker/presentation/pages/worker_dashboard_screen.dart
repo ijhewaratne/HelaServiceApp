@@ -129,8 +129,8 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
                       context.push('/support');
                       break;
                     case 'logout':
-                      FirebaseAuth.instance.signOut();
-                      context.go('/auth');
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) context.go('/auth');
                       break;
                   }
                 },

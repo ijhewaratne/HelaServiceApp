@@ -66,6 +66,7 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
 
       if (existing.docs.isNotEmpty) {
         if (mounted) {
+          setState(() => _loading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text('You have already reviewed this booking')),

@@ -57,7 +57,17 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
           }
           
           if (state is AuthNeedsOnboarding) {
-            context.go('/auth/role-select');
+            // Route based on existing role — only send to role-select when
+            // no role has been chosen yet. Workers already have a role but
+            // isOnboarded stays false until admin approval.
+            switch (state.user.userType) {
+              case UserType.worker:
+                context.go('/worker/onboard/nic');
+                break;
+              case UserType.unknown:
+              default:
+                context.go('/auth/role-select');
+            }
           }
         },
         builder: (context, state) {

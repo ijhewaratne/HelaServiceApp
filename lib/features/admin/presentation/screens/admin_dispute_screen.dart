@@ -171,12 +171,10 @@ class _DisputeCardState extends State<_DisputeCard> {
           newStatus == DisputeStatus.closed) {
         updates['resolvedAt'] = FieldValue.serverTimestamp();
       }
-      await FirebaseFirestore.instance
-          .collection('disputes')
-          .doc(widget.dispute.id)
-          .update(updates);
-
-      await FirebaseFirestore.instance.collection('audit_logs').add({
+      final fs = FirebaseFirestore.instance;
+      final batch = fs.batch();
+      batch.update(fs.collection('disputes').doc(widget.dispute.id), updates);
+      batch.set(fs.collection('audit_logs').doc(), {
         'adminUserId': adminId,
         'actionType': 'update_dispute_status',
         'entityType': 'disputes',
@@ -184,6 +182,7 @@ class _DisputeCardState extends State<_DisputeCard> {
         'newValue': newStatus.name,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      await batch.commit();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)

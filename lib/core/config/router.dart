@@ -91,22 +91,25 @@ final appRouter = GoRouter(
 
     if (user == null) return '/auth';
 
-    // Check if user has selected a role yet
+    // Redirect to role-select only when the user has not chosen a role yet.
+    // Workers have isOnboarded=false throughout their KYC process, so we
+    // must not use isOnboarded as the gate for them — only userType matters.
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
       final userType = doc.data()?['userType'] as String? ?? 'unknown';
-      final isOnboarded = doc.data()?['isOnboarded'] as bool? ?? false;
-      if (userType == 'unknown' || !isOnboarded) {
-        // Only redirect to role-select if not already going to a worker onboard path
+      if (userType == 'unknown') {
         if (!currentPath.startsWith('/worker/onboard') &&
             !currentPath.startsWith('/auth')) {
           return '/auth/role-select';
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // Firestore unavailable — force re-auth rather than granting silent access
+      return '/auth';
+    }
 
     return null;
   },

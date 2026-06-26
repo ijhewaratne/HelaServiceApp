@@ -79,9 +79,17 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
   }
 }
 
-class _CustomerTile extends StatelessWidget {
+class _CustomerTile extends StatefulWidget {
   final CustomerProfile profile;
   const _CustomerTile({required this.profile});
+
+  @override
+  State<_CustomerTile> createState() => _CustomerTileState();
+}
+
+class _CustomerTileState extends State<_CustomerTile> {
+  // Cached future so FutureBuilder doesn't re-fire on every parent rebuild
+  late final Future<String?> _statusFuture = _getStatus(widget.profile.userId);
 
   Future<String?> _getStatus(String userId) async {
     final doc = await FirebaseFirestore.instance
@@ -136,7 +144,7 @@ class _CustomerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-      future: _getStatus(profile.userId),
+      future: _statusFuture,
       builder: (context, snap) {
         final status = snap.data;
         final isSuspended = status == 'suspended';
@@ -150,8 +158,8 @@ class _CustomerTile extends StatelessWidget {
                   ? Colors.red[100]
                   : const Color(0xFFE8F5E9),
               child: Text(
-                profile.fullName.isNotEmpty
-                    ? profile.fullName[0].toUpperCase()
+                widget.profile.fullName.isNotEmpty
+                    ? widget.profile.fullName[0].toUpperCase()
                     : '?',
                 style: TextStyle(
                     color: isSuspended
@@ -160,12 +168,12 @@ class _CustomerTile extends StatelessWidget {
                     fontWeight: FontWeight.bold),
               ),
             ),
-            title: Text(profile.fullName,
+            title: Text(widget.profile.fullName,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile.mobileNumber),
+                Text(widget.profile.mobileNumber),
                 if (isSuspended)
                   const Text('SUSPENDED',
                       style: TextStyle(
@@ -177,7 +185,7 @@ class _CustomerTile extends StatelessWidget {
             trailing: PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'toggle') {
-                  _toggleStatus(context, profile.userId, status);
+                  _toggleStatus(context, widget.profile.userId, status);
                 }
               },
               itemBuilder: (_) => [

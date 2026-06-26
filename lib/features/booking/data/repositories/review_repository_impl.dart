@@ -17,8 +17,7 @@ class ReviewRepositoryImpl implements ReviewRepository {
       final docRef = _col.doc();
       final newReview = review.copyWith(id: docRef.id);
       await docRef.set(newReview.toJson());
-      // Update provider average rating
-      await _updateProviderRating(review.providerId);
+      // Rating is only recalculated after admin approval, not on submission
       return Right(newReview);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -89,12 +88,23 @@ class ReviewRepositoryImpl implements ReviewRepository {
   Future<Either<Failure, void>> approveReview(
       String reviewId, String adminId) async {
     try {
-      await _col.doc(reviewId).update({
+      final batch = _firestore.batch();
+      batch.update(_col.doc(reviewId), {
         'moderationStatus': 'approved',
         'moderatedAt': FieldValue.serverTimestamp(),
       });
-      // Log admin action
-      await _logAdminAction(adminId, 'approve_review', 'reviews', reviewId);
+      batch.set(_firestore.collection('audit_logs').doc(), {
+        'adminUserId': adminId,
+        'actionType': 'approve_review',
+        'entityType': 'reviews',
+        'entityId': reviewId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      await batch.commit();
+      // Recalculate rating after approval changes the approved-review set
+      final doc = await _col.doc(reviewId).get();
+      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -105,12 +115,24 @@ class ReviewRepositoryImpl implements ReviewRepository {
   Future<Either<Failure, void>> hideReview(
       String reviewId, String adminId, String note) async {
     try {
-      await _col.doc(reviewId).update({
+      final batch = _firestore.batch();
+      batch.update(_col.doc(reviewId), {
         'moderationStatus': 'hidden',
         'adminNote': note,
         'moderatedAt': FieldValue.serverTimestamp(),
       });
-      await _logAdminAction(adminId, 'hide_review', 'reviews', reviewId);
+      batch.set(_firestore.collection('audit_logs').doc(), {
+        'adminUserId': adminId,
+        'actionType': 'hide_review',
+        'entityType': 'reviews',
+        'entityId': reviewId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      await batch.commit();
+      // Recalculate: a previously-approved review being hidden reduces the count
+      final doc = await _col.doc(reviewId).get();
+      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -121,11 +143,23 @@ class ReviewRepositoryImpl implements ReviewRepository {
   Future<Either<Failure, void>> flagReview(
       String reviewId, String adminId) async {
     try {
-      await _col.doc(reviewId).update({
+      final batch = _firestore.batch();
+      batch.update(_col.doc(reviewId), {
         'moderationStatus': 'flagged',
         'moderatedAt': FieldValue.serverTimestamp(),
       });
-      await _logAdminAction(adminId, 'flag_review', 'reviews', reviewId);
+      batch.set(_firestore.collection('audit_logs').doc(), {
+        'adminUserId': adminId,
+        'actionType': 'flag_review',
+        'entityType': 'reviews',
+        'entityId': reviewId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      await batch.commit();
+      // Recalculate: a previously-approved review being flagged reduces the count
+      final doc = await _col.doc(reviewId).get();
+      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -147,14 +181,4 @@ class ReviewRepositoryImpl implements ReviewRepository {
     });
   }
 
-  Future<void> _logAdminAction(
-      String adminId, String action, String entityType, String entityId) async {
-    await _firestore.collection('audit_logs').add({
-      'adminUserId': adminId,
-      'actionType': action,
-      'entityType': entityType,
-      'entityId': entityId,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  }
 }

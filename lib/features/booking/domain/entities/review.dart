@@ -99,7 +99,7 @@ class Review extends Equatable {
         requestId: json['requestId'] as String? ?? '',
         customerId: json['customerId'] as String? ?? '',
         providerId: json['providerId'] as String? ?? '',
-        rating: json['rating'] as int? ?? 5,
+        rating: json['rating'] as int? ?? 0,
         reviewText: json['reviewText'] as String?,
         punctualityRating: json['punctualityRating'] as int?,
         qualityRating: json['qualityRating'] as int?,

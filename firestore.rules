@@ -36,9 +36,12 @@ service cloud.firestore {
     // CUSTOMER PROFILES (PDPA — self-access only)
     // =========================================================================
     match /customer_profiles/{profileId} {
-      // Customers access their own profile (document keyed by userId field)
-      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Customers access their own profile (document keyed by userId field, not profileId)
+      allow read:   if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read, write: if isAdmin();
     }
 
     // =========================================================================
