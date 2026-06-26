@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../../injection_container.dart';
@@ -19,6 +20,9 @@ import '../../features/worker/presentation/pages/active_job_page.dart';
 import '../../features/worker/presentation/pages/worker_dashboard_screen.dart';
 import '../../features/worker/presentation/pages/bank_account_page.dart';
 import '../../features/worker/presentation/pages/blue_tier_upgrade_page.dart';
+
+// Auth screens
+import '../../features/auth/presentation/screens/role_select_screen.dart';
 
 // Customer imports
 import '../../features/customer/presentation/screens/customer_home_screen.dart';
@@ -81,8 +85,29 @@ final appRouter = GoRouter(
     final user = FirebaseAuth.instance.currentUser;
     final currentPath = state.uri.path;
 
-    if (currentPath == '/' || currentPath == '/auth') return null;
+    // Always allow splash and auth screens
+    if (currentPath == '/' || currentPath == '/auth' ||
+        currentPath == '/auth/role-select') return null;
+
     if (user == null) return '/auth';
+
+    // Check if user has selected a role yet
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final userType = doc.data()?['userType'] as String? ?? 'unknown';
+      final isOnboarded = doc.data()?['isOnboarded'] as bool? ?? false;
+      if (userType == 'unknown' || !isOnboarded) {
+        // Only redirect to role-select if not already going to a worker onboard path
+        if (!currentPath.startsWith('/worker/onboard') &&
+            !currentPath.startsWith('/auth')) {
+          return '/auth/role-select';
+        }
+      }
+    } catch (_) {}
+
     return null;
   },
 
@@ -95,6 +120,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/auth',
       builder: (context, state) => const PhoneAuthPage(),
+    ),
+    GoRoute(
+      path: '/auth/role-select',
+      builder: (context, state) => const RoleSelectScreen(),
     ),
 
     // ── Worker Routes ────────────────────────────────────────────────────────

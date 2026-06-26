@@ -19,48 +19,90 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _checkAuthAndRoute() async {
-    await Future.delayed(Duration(seconds: 2)); // Minimum splash time
-    
+    await Future.delayed(const Duration(seconds: 2));
+
     final user = FirebaseAuth.instance.currentUser;
-    
     if (user == null) {
-      // Not logged in -> Phone Auth
       if (mounted) context.go('/auth');
       return;
     }
-    
-    // Check if worker profile exists and status
+
     try {
-      final workerDoc = await FirebaseFirestore.instance
-          .collection('worker_applications')
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
           .doc(user.uid)
           .get();
-      
+
       if (!mounted) return;
-      
-      if (!workerDoc.exists) {
-        // New worker -> Start onboarding
-        context.go('/worker/onboard/nic');
-      } else {
-        final status = workerDoc.data()?['status'] as String?;
-        
-        switch (status) {
-          case 'approved':
-            context.go('/worker/dashboard');
-            break;
-          case 'underReview':
-          case 'trainingRequired':
-            context.go('/worker/onboard/pending', extra: user.uid);
-            break;
-          case 'pendingDocs':
-            context.go('/worker/onboard/documents', extra: user.uid);
-            break;
-          default:
-            context.go('/worker/onboard/nic');
-        }
+
+      final data = userDoc.data();
+      final userType = data?['userType'] as String? ?? 'unknown';
+      final isOnboarded = data?['isOnboarded'] as bool? ?? false;
+
+      // New user or unknown role — pick a role first
+      if (userType == 'unknown' || !isOnboarded) {
+        context.go('/auth/role-select');
+        return;
+      }
+
+      switch (userType) {
+        case 'customer':
+          context.go('/customer/home');
+          break;
+
+        case 'admin':
+        case 'superAdmin':
+        case 'super_admin':
+          context.go('/admin/dashboard');
+          break;
+
+        case 'worker':
+          await _routeWorker(user.uid);
+          break;
+
+        default:
+          context.go('/auth/role-select');
       }
     } catch (e) {
-      // Error checking status, assume onboarding
+      if (mounted) context.go('/auth');
+    }
+  }
+
+  Future<void> _routeWorker(String uid) async {
+    try {
+      final workerDoc = await FirebaseFirestore.instance
+          .collection('workers')
+          .doc(uid)
+          .get();
+
+      if (!mounted) return;
+
+      if (!workerDoc.exists) {
+        context.go('/worker/onboard/nic');
+        return;
+      }
+
+      final status = workerDoc.data()?['status'] as String? ?? 'pending';
+      switch (status) {
+        case 'approved':
+          context.go('/worker/dashboard');
+          break;
+        case 'pending':
+        case 'underReview':
+        case 'trainingRequired':
+          context.go('/worker/onboard/pending', extra: uid);
+          break;
+        case 'pendingDocs':
+        case 'documentsSubmitted':
+          context.go('/worker/onboard/documents', extra: uid);
+          break;
+        case 'contractPending':
+          context.go('/worker/onboard/contract');
+          break;
+        default:
+          context.go('/worker/onboard/nic');
+      }
+    } catch (e) {
       if (mounted) context.go('/worker/onboard/nic');
     }
   }

@@ -57,9 +57,16 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.book_online_outlined,
+                    color: Colors.white),
+                onPressed: () => context.push('/customer/bookings'),
+                tooltip: 'My Bookings',
+              ),
+              IconButton(
                 icon: const Icon(Icons.account_circle_outlined,
                     color: Colors.white),
-                onPressed: () => context.go('/auth'),
+                onPressed: () => context.push('/customer/profile'),
+                tooltip: 'Profile',
               ),
             ],
           ),
@@ -73,9 +80,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 const SizedBox(height: 20),
 
                 // ── Active bookings ───────────────────────────────────────
-                Text('Active Bookings',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Active Bookings',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    TextButton(
+                      onPressed: () => context.push('/customer/bookings'),
+                      child: const Text('See all',
+                          style: TextStyle(color: AppTheme.primaryColor)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 _ActiveBookingsList(uid: _uid),
               ]),
             ),

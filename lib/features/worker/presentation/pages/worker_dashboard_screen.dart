@@ -106,6 +106,43 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
               background: _Header(
                   isOnline: _isOnline, onToggle: _toggleOnline),
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.star_outline, color: Colors.white),
+                tooltip: 'My Reviews',
+                onPressed: () => context.push('/worker/reviews'),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (v) {
+                  switch (v) {
+                    case 'profile':
+                      context.push('/worker/profile/edit');
+                      break;
+                    case 'payouts':
+                      context.push('/worker/payouts');
+                      break;
+                    case 'bank':
+                      context.push('/worker/bank-account');
+                      break;
+                    case 'support':
+                      context.push('/support');
+                      break;
+                    case 'logout':
+                      FirebaseAuth.instance.signOut();
+                      context.go('/auth');
+                      break;
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'profile', child: Text('Edit Profile')),
+                  PopupMenuItem(value: 'payouts', child: Text('Payout History')),
+                  PopupMenuItem(value: 'bank', child: Text('Bank Account')),
+                  PopupMenuItem(value: 'support', child: Text('Support')),
+                  PopupMenuItem(value: 'logout', child: Text('Sign Out')),
+                ],
+              ),
+            ],
             bottom: TabBar(
               controller: _tabs,
               indicatorColor: Colors.white,
