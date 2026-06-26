@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 
 /// User type enumeration
-enum UserType { customer, worker, admin, unknown }
+enum UserType { customer, worker, admin, superAdmin, unknown }
 
 /// User account status
 enum UserStatus { active, inactive, suspended, pendingVerification }
@@ -64,8 +64,11 @@ class User extends Equatable {
   /// Check if user is a worker
   bool get isWorker => userType == UserType.worker;
 
-  /// Check if user is an admin
-  bool get isAdmin => userType == UserType.admin;
+  /// Check if user is an admin (includes super admin)
+  bool get isAdmin => userType == UserType.admin || userType == UserType.superAdmin;
+
+  /// Check if user is a super admin
+  bool get isSuperAdmin => userType == UserType.superAdmin;
 
   /// Check if user can access the app
   bool get canAccessApp => status == UserStatus.active && isOnboarded;
@@ -192,6 +195,9 @@ class User extends Equatable {
         return UserType.worker;
       case 'admin':
         return UserType.admin;
+      case 'superAdmin':
+      case 'super_admin':
+        return UserType.superAdmin;
       default:
         return UserType.unknown;
     }

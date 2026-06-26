@@ -11,7 +11,14 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.admin == true;
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.superAdmin == true
+      );
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.superAdmin == true;
     }
 
     function isWorkerInZone(workerId, zoneId) {
@@ -28,8 +35,13 @@ service cloud.firestore {
     // =========================================================================
     // CUSTOMER PROFILES (PDPA — self-access only)
     // =========================================================================
-    match /customer_profiles/{customerId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == customerId;
+    match /customer_profiles/{profileId} {
+      // Customers access their own profile (document keyed by userId field, not profileId)
+      allow read:   if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read, write: if isAdmin();
     }
 
     // =========================================================================
@@ -180,6 +192,61 @@ match /worker_locations/{workerId} {
   // Only Cloud Functions can read all (for matching)
   allow read: if false; // Deny direct reads, use Cloud Functions
 }
+
+    // =========================================================================
+    // REVIEWS (Moderation pipeline)
+    // =========================================================================
+    match /reviews/{reviewId} {
+      // Customers submit reviews for completed bookings they own
+      allow create: if isAuthenticated()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.moderationStatus == 'pending';
+
+      // Customers read their own reviews; anyone can read approved reviews
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.moderationStatus == 'approved'
+      );
+
+      // Only admins moderate (approve/hide/flag)
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasAny([
+            'moderationStatus', 'adminNote', 'moderatedAt'
+          ]);
+
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // DISPUTES (Trust & Safety)
+    // =========================================================================
+    match /disputes/{disputeId} {
+      // Parties involved in the booking can create a dispute
+      allow create: if isAuthenticated()
+        && request.resource.data.reportedByUserId == request.auth.uid;
+
+      // Disputants can read their own dispute
+      allow read: if isAuthenticated() && (
+        resource.data.reportedByUserId == request.auth.uid ||
+        resource.data.reportedUserId == request.auth.uid
+      );
+
+      // Only admins can update dispute status
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // SERVICE CATALOG (Read-public; write-admin)
+    // =========================================================================
+    match /service_catalog/{categoryId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // ADMIN OVERRIDE — Super Admin only for audit log reads (extra guard)
+    // =========================================================================
 
     // =========================================================================
     // SUPPORT TICKETS

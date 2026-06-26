@@ -57,7 +57,17 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
           }
           
           if (state is AuthNeedsOnboarding) {
-            context.go('/select-user-type');
+            // Route based on existing role — only send to role-select when
+            // no role has been chosen yet. Workers already have a role but
+            // isOnboarded stays false until admin approval.
+            switch (state.user.userType) {
+              case UserType.worker:
+                context.go('/worker/onboard/nic');
+                break;
+              case UserType.unknown:
+              default:
+                context.go('/auth/role-select');
+            }
           }
         },
         builder: (context, state) {
@@ -186,15 +196,19 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
   }
 
   void _navigateBasedOnUserType(User user) {
-    if (user.userType.name == 'worker') {
-      context.go('/worker/dashboard');
-    } else if (user.userType.name == 'customer') {
-      context.go('/customer/home');
-    } else if (user.userType.name == 'admin') {
-      context.go('/admin/dashboard');
-    } else {
-      // Unknown user type - go to selection
-      context.go('/select-user-type');
+    switch (user.userType) {
+      case UserType.worker:
+        context.go('/worker/dashboard');
+        break;
+      case UserType.customer:
+        context.go('/customer/home');
+        break;
+      case UserType.admin:
+      case UserType.superAdmin:
+        context.go('/admin/dashboard');
+        break;
+      default:
+        context.go('/auth/role-select');
     }
   }
 }

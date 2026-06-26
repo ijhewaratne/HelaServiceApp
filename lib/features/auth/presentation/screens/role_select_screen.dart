@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import '../../../../core/widgets/branded_widgets.dart';
 
 class RoleSelectScreen extends StatefulWidget {
   const RoleSelectScreen({super.key});
@@ -15,100 +13,223 @@ class RoleSelectScreen extends StatefulWidget {
 class _RoleSelectScreenState extends State<RoleSelectScreen> {
   String? _selectedRole;
   final _nameController = TextEditingController();
+  bool _loading = false;
 
-  void _handleComplete() async {
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleComplete() async {
     final name = _nameController.text.trim();
-    if (_selectedRole == null || name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter name and select a role')));
+    if (_selectedRole == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select how you will use Sevana')));
+      return;
+    }
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your name')));
       return;
     }
 
-    final vm = context.read<AuthViewModel>();
-    await vm.selectRoleAndComplete(_selectedRole!, name);
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      if (mounted) context.go('/auth');
+      return;
+    }
 
-    if (vm.errorMessage == null && context.mounted) {
+    setState(() => _loading = true);
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'userType': _selectedRole,
+        'fullName': name,
+        'isOnboarded': _selectedRole == 'customer',
+        'status': 'active',
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+
       if (_selectedRole == 'customer') {
-        context.go('/customer');
+        context.go('/customer/home');
       } else {
-        context.go('/worker');
+        context.go('/worker/onboard/nic');
       }
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.errorMessage!)));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AuthViewModel>();
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Complete Profile')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 10),
-            Text(
-              'How will you use Servix?',
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24),
-              textAlign: TextAlign.center,
-            ).animate().fadeIn(delay: 100.ms),
-            const SizedBox(height: 30),
-            
-            _buildRoleCard('Customer', 'I want to book services.', Icons.person, 'customer', 200),
-            _buildRoleCard('Provider', 'I want to offer my services.', Icons.handyman, 'worker', 300),
-            
-            const SizedBox(height: 40),
-            Text(
-              'What is your name?',
-              style: Theme.of(context).textTheme.titleLarge,
-            ).animate().fadeIn(delay: 400.ms),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                hintText: 'John Doe',
-                prefixIcon: Icon(Icons.badge_outlined),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'Welcome to Sevana',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-            ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.05),
-            
-            const SizedBox(height: 40),
-            vm.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : BrandedButton(
-                    label: 'Complete Setup',
-                    onPressed: _handleComplete,
-                  ).animate().fadeIn(delay: 600.ms).scale(begin: const Offset(0.9, 0.9)),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'How will you use the app?',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              _RoleCard(
+                title: 'Customer',
+                subtitle: 'I want to book home services',
+                icon: Icons.person_outline,
+                value: 'customer',
+                selected: _selectedRole == 'customer',
+                onTap: () => setState(() => _selectedRole = 'customer'),
+              ),
+              const SizedBox(height: 16),
+              _RoleCard(
+                title: 'Service Provider',
+                subtitle: 'I want to offer my skills and earn',
+                icon: Icons.handyman_outlined,
+                value: 'worker',
+                selected: _selectedRole == 'worker',
+                onTap: () => setState(() => _selectedRole = 'worker'),
+              ),
+              const SizedBox(height: 36),
+              Text(
+                'Your full name',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(
+                  hintText: 'e.g. Nimal Perera',
+                  prefixIcon: const Icon(Icons.badge_outlined),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF1B5E20)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _handleComplete,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1B5E20),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('Get Started',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildRoleCard(String title, String subtitle, IconData icon, String value, int delayMs) {
-    final isSelected = _selectedRole == value;
-    final colorScheme = Theme.of(context).colorScheme;
+class _RoleCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String value;
+  final bool selected;
+  final VoidCallback onTap;
 
-    return GlassCard(
-      onTap: () => setState(() => _selectedRole = value),
-      padding: const EdgeInsets.all(16),
-      child: Container(
+  const _RoleCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          border: isSelected ? Border.all(color: colorScheme.primary, width: 2) : Border.all(color: Colors.transparent, width: 2),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            backgroundColor: isSelected ? colorScheme.primary : colorScheme.primary.withOpacity(0.1),
-            child: Icon(icon, color: isSelected ? Colors.white : colorScheme.primary),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? const Color(0xFF1B5E20) : Colors.grey[300]!,
+            width: selected ? 2 : 1,
           ),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(subtitle),
-          trailing: isSelected ? Icon(Icons.check_circle, color: colorScheme.primary) : null,
+          color: selected
+              ? const Color(0xFF1B5E20).withOpacity(0.05)
+              : Colors.white,
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: selected
+                  ? const Color(0xFF1B5E20)
+                  : const Color(0xFFE8F5E9),
+              child: Icon(icon,
+                  color: selected ? Colors.white : const Color(0xFF1B5E20),
+                  size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: selected
+                              ? const Color(0xFF1B5E20)
+                              : Colors.black87)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: TextStyle(
+                          color: Colors.grey[600], fontSize: 13)),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(Icons.check_circle,
+                  color: Color(0xFF1B5E20), size: 22),
+          ],
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: delayMs)).slideY(begin: 0.2);
+    );
   }
 }

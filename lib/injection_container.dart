@@ -78,6 +78,15 @@ import 'features/safety/presentation/bloc/safety_bloc.dart';
 import 'features/support/data/repositories/support_repository_impl.dart';
 import 'features/support/domain/repositories/support_repository.dart';
 
+import 'features/customer/data/repositories/customer_profile_repository_impl.dart';
+import 'features/customer/domain/repositories/customer_profile_repository.dart';
+
+import 'features/booking/data/repositories/review_repository_impl.dart';
+import 'features/booking/domain/repositories/review_repository.dart';
+
+import 'features/safety/data/repositories/dispute_repository_impl.dart';
+import 'features/safety/domain/repositories/dispute_repository.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -217,6 +226,18 @@ Future<void> init() async {
   // Support
   sl.registerLazySingleton<SupportRepository>(
       () => SupportRepositoryImpl(firestore: sl()));
+
+  // Customer Profiles
+  sl.registerLazySingleton<CustomerProfileRepository>(
+      () => CustomerProfileRepositoryImpl(sl()));
+
+  // Reviews
+  sl.registerLazySingleton<ReviewRepository>(
+      () => ReviewRepositoryImpl(sl()));
+
+  // Disputes
+  sl.registerLazySingleton<DisputeRepository>(
+      () => DisputeRepositoryImpl(sl()));
 }
 
 /// Initialize services that need async setup
