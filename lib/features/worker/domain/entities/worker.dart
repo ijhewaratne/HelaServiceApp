@@ -27,6 +27,12 @@ class Worker extends Equatable {
   final DateTime? lastJobCompletedAt;
   final bool hasAcceptedContract;
   final VerificationTier verificationTier;
+  // Sevana marketplace fields
+  final String? businessName;
+  final String? bio;
+  final int? experienceYears;
+  final double serviceRadiusKm;
+  final String district;
 
   const Worker({
     required this.id,
@@ -53,6 +59,11 @@ class Worker extends Equatable {
     this.lastJobCompletedAt,
     this.hasAcceptedContract = false,
     this.verificationTier = VerificationTier.green,
+    this.businessName,
+    this.bio,
+    this.experienceYears,
+    this.serviceRadiusKm = 10.0,
+    this.district = '',
   });
 
   Worker copyWith({
@@ -80,6 +91,11 @@ class Worker extends Equatable {
     DateTime? lastJobCompletedAt,
     bool? hasAcceptedContract,
     VerificationTier? verificationTier,
+    String? businessName,
+    String? bio,
+    int? experienceYears,
+    double? serviceRadiusKm,
+    String? district,
   }) {
     return Worker(
       id: id ?? this.id,
@@ -106,6 +122,11 @@ class Worker extends Equatable {
       lastJobCompletedAt: lastJobCompletedAt ?? this.lastJobCompletedAt,
       hasAcceptedContract: hasAcceptedContract ?? this.hasAcceptedContract,
       verificationTier: verificationTier ?? this.verificationTier,
+      businessName: businessName ?? this.businessName,
+      bio: bio ?? this.bio,
+      experienceYears: experienceYears ?? this.experienceYears,
+      serviceRadiusKm: serviceRadiusKm ?? this.serviceRadiusKm,
+      district: district ?? this.district,
     );
   }
 
@@ -135,6 +156,11 @@ class Worker extends Equatable {
       'lastJobCompletedAt': lastJobCompletedAt?.toIso8601String(),
       'hasAcceptedContract': hasAcceptedContract,
       'verificationTier': verificationTier.name,
+      'businessName': businessName,
+      'bio': bio,
+      'experienceYears': experienceYears,
+      'serviceRadiusKm': serviceRadiusKm,
+      'district': district,
     };
   }
 
@@ -179,6 +205,11 @@ class Worker extends Equatable {
         (e) => e.name == (json['verificationTier'] as String?),
         orElse: () => VerificationTier.green,
       ),
+      businessName: json['businessName'] as String?,
+      bio: json['bio'] as String?,
+      experienceYears: json['experienceYears'] as int?,
+      serviceRadiusKm: (json['serviceRadiusKm'] as num?)?.toDouble() ?? 10.0,
+      district: json['district'] as String? ?? '',
     );
   }
 
@@ -208,6 +239,11 @@ class Worker extends Equatable {
         lastJobCompletedAt,
         hasAcceptedContract,
         verificationTier,
+        businessName,
+        bio,
+        experienceYears,
+        serviceRadiusKm,
+        district,
       ];
 }
 

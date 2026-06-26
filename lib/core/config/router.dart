@@ -24,6 +24,12 @@ import '../../features/worker/presentation/pages/blue_tier_upgrade_page.dart';
 import '../../features/customer/presentation/screens/customer_home_screen.dart';
 import '../../features/customer/presentation/screens/booking_form_screen.dart';
 import '../../features/customer/presentation/screens/live_tracking_page.dart';
+import '../../features/customer/presentation/screens/location_permission_screen.dart';
+import '../../features/customer/presentation/screens/provider_profile_screen.dart';
+import '../../features/customer/presentation/screens/my_bookings_screen.dart';
+import '../../features/customer/presentation/screens/booking_detail_screen.dart';
+import '../../features/customer/presentation/screens/review_provider_screen.dart';
+import '../../features/customer/presentation/screens/customer_profile_screen.dart';
 import '../../features/booking/presentation/pages/booking_flow_screen.dart';
 import '../../features/booking/presentation/pages/booking_confirmation_page.dart';
 import '../../features/booking/domain/entities/booking.dart' as booking_entity;
@@ -33,8 +39,18 @@ import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_bookings_screen.dart';
 import '../../features/admin/presentation/screens/admin_incidents_screen.dart';
 import '../../features/admin/presentation/screens/admin_workers_screen.dart';
+import '../../features/admin/presentation/screens/admin_customers_screen.dart';
+import '../../features/admin/presentation/screens/admin_review_moderation_screen.dart';
+import '../../features/admin/presentation/screens/admin_dispute_screen.dart';
+import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
+import '../../features/admin/presentation/screens/admin_user_management_screen.dart';
+import '../../features/admin/presentation/screens/admin_category_management_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 import '../../features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart';
+
+// Worker screens
+import '../../features/worker/presentation/screens/worker_profile_edit_screen.dart';
+import '../../features/worker/presentation/screens/worker_reviews_screen.dart';
 
 // Payment / Wallet
 import '../../features/payment/presentation/pages/payment_page.dart';
@@ -194,6 +210,53 @@ final appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/customer/location-permission',
+      builder: (context, state) => const LocationPermissionScreen(),
+    ),
+    GoRoute(
+      path: '/customer/provider/:providerId',
+      builder: (context, state) {
+        final providerId = state.pathParameters['providerId']!;
+        return ProviderProfileScreen(providerId: providerId);
+      },
+    ),
+    GoRoute(
+      path: '/customer/bookings',
+      builder: (context, state) => const MyBookingsScreen(),
+    ),
+    GoRoute(
+      path: '/customer/bookings/:bookingId',
+      builder: (context, state) {
+        final bookingId = state.pathParameters['bookingId']!;
+        final booking = state.extra as booking_entity.Booking?;
+        return BookingDetailScreen(
+            bookingId: bookingId, initialBooking: booking);
+      },
+    ),
+    GoRoute(
+      path: '/customer/review/:requestId',
+      builder: (context, state) {
+        final requestId = state.pathParameters['requestId']!;
+        final booking = state.extra as booking_entity.Booking?;
+        return ReviewProviderScreen(
+            requestId: requestId, booking: booking);
+      },
+    ),
+    GoRoute(
+      path: '/customer/profile',
+      builder: (context, state) => const CustomerProfileScreen(),
+    ),
+
+    // ── Worker Profile Routes ─────────────────────────────────────────────────
+    GoRoute(
+      path: '/worker/profile/edit',
+      builder: (context, state) => const WorkerProfileEditScreen(),
+    ),
+    GoRoute(
+      path: '/worker/reviews',
+      builder: (context, state) => const WorkerReviewsScreen(),
+    ),
 
     // ── Admin Routes ─────────────────────────────────────────────────────────
     GoRoute(
@@ -231,6 +294,30 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/admin/revenue',
       builder: (context, state) => const AdminRevenueScreen(),
+    ),
+    GoRoute(
+      path: '/admin/customers',
+      builder: (context, state) => const AdminCustomersScreen(),
+    ),
+    GoRoute(
+      path: '/admin/reviews',
+      builder: (context, state) => const AdminReviewModerationScreen(),
+    ),
+    GoRoute(
+      path: '/admin/disputes',
+      builder: (context, state) => const AdminDisputeScreen(),
+    ),
+    GoRoute(
+      path: '/admin/audit-log',
+      builder: (context, state) => const AdminAuditLogScreen(),
+    ),
+    GoRoute(
+      path: '/admin/users',
+      builder: (context, state) => const AdminUserManagementScreen(),
+    ),
+    GoRoute(
+      path: '/admin/categories',
+      builder: (context, state) => const AdminCategoryManagementScreen(),
     ),
 
     // ── Shared Routes ────────────────────────────────────────────────────────
