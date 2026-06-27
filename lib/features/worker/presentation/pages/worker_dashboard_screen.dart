@@ -114,7 +114,7 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
               ),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white),
-                onSelected: (v) {
+                onSelected: (v) async {
                   switch (v) {
                     case 'profile':
                       context.push('/worker/profile/edit');
