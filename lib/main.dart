@@ -17,23 +17,23 @@ import 'core/bloc/performance_mixin.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Portrait only for v1
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
+  // Load environment variables FIRST — firebase_options.dart reads from dotenv
+  await dotenv.load(fileName: ".env");
+
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   // Initialize Crashlytics
   await CrashReportingService().initialize();
-  
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
   
   // Dependency Injection
   await di.init();
