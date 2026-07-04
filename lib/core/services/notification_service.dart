@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,9 +8,10 @@ import 'package:firebase_core/firebase_core.dart';
 class NotificationService {
   final FirebaseMessaging _messaging;
   final FirebaseFirestore _firestore;
-  final FlutterLocalNotificationsPlugin _localNotifications = 
-      FlutterLocalNotificationsPlugin();
-  
+  // flutter_local_notifications is not supported on web
+  final FlutterLocalNotificationsPlugin? _localNotifications =
+      kIsWeb ? null : FlutterLocalNotificationsPlugin();
+
   NotificationService(this._messaging, this._firestore);
 
   Future<void> initialize() async {
@@ -19,30 +21,34 @@ class NotificationService {
       badge: true,
       sound: true,
     );
-    
-    // Local notifications setup
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-    await _localNotifications.initialize(initSettings);
-    
+
+    // Local notifications setup — not supported on web
+    if (!kIsWeb) {
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings();
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
+      await _localNotifications!.initialize(initSettings);
+    }
+
     // FCM token
     final token = await _messaging.getToken();
     if (token != null) {
       await _saveToken(token);
     }
-    
+
     // Token refresh
     _messaging.onTokenRefresh.listen(_saveToken);
-    
+
     // Foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    
-    // Background/terminated messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Background message handler — not supported on web
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    }
   }
   
   Future<void> _saveToken(String token) async {
@@ -73,6 +79,7 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
+    if (kIsWeb || _localNotifications == null) return;
     const androidDetails = AndroidNotificationDetails(
       'helaservice_channel',
       'HelaService Notifications',
@@ -84,8 +91,7 @@ class NotificationService {
       android: androidDetails,
       iOS: iosDetails,
     );
-    
-    await _localNotifications.show(id, title, body, details, payload: payload);
+    await _localNotifications!.show(id, title, body, details, payload: payload);
   }
   
   /// Subscribe to topic

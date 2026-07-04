@@ -250,12 +250,14 @@ Future<void> init() async {
 
 /// Initialize services that need async setup
 Future<void> initServices() async {
-  // Initialize notifications
-  await sl<NotificationService>().initialize();
-  
-  // Initialize analytics
-  await sl<AnalyticsService>().initialize();
-  
-  // Initialize crash reporting
-  await sl<CrashReportingService>().initialize();
+  // Each service is isolated so one failure doesn't block the others
+  await sl<NotificationService>().initialize().catchError((e) {
+    debugPrint('NotificationService init failed (non-fatal): $e');
+  });
+  await sl<AnalyticsService>().initialize().catchError((e) {
+    debugPrint('AnalyticsService init failed (non-fatal): $e');
+  });
+  await sl<CrashReportingService>().initialize().catchError((e) {
+    debugPrint('CrashReportingService init failed (non-fatal): $e');
+  });
 }
