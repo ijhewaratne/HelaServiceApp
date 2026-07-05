@@ -17,21 +17,19 @@ class CustomerProfileScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF1B5E20),
         foregroundColor: Colors.white,
       ),
-      body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance
             .collection('customer_profiles')
-            .where('userId', isEqualTo: uid)
-            .limit(1)
+            .doc(uid)
             .snapshots(),
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snap.hasData || snap.data!.docs.isEmpty) {
+          if (!snap.hasData || !snap.data!.exists) {
             return _EmptyProfile(uid: uid);
           }
-          final profile =
-              CustomerProfile.fromFirestore(snap.data!.docs.first);
+          final profile = CustomerProfile.fromFirestore(snap.data!);
           return _ProfileBody(profile: profile);
         },
       ),
@@ -273,9 +271,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     try {
       final col = FirebaseFirestore.instance.collection('customer_profiles');
       if (widget.profile == null || widget.profile!.isEmpty) {
-        final docRef = col.doc();
+        final docRef = col.doc(widget.uid);
         await docRef.set({
-          'id': docRef.id,
+          'id': widget.uid,
           'userId': widget.uid,
           'fullName': _nameCtrl.text.trim(),
           'mobileNumber':
@@ -287,7 +285,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           'updatedAt': FieldValue.serverTimestamp(),
         });
       } else {
-        await col.doc(widget.profile!.id).update({
+        await col.doc(widget.uid).update({
           'fullName': _nameCtrl.text.trim(),
           'email': _emailCtrl.text.trim().isEmpty
               ? null

@@ -66,6 +66,12 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == workerId;
     }
 
+    match /worker_applications/{workerId} {
+      allow create, read, update: if isAuthenticated() && request.auth.uid == workerId;
+      allow read, update: if isAdmin();
+      allow delete: if false;
+    }
+
     // =========================================================================
     // BOOKINGS (canonical operational model used by the Flutter app)
     // =========================================================================
@@ -188,9 +194,14 @@ match /job_offers/{offerId} {
 match /worker_locations/{workerId} {
   // Workers write their own location
   allow write: if request.auth != null && request.auth.uid == workerId;
-  
-  // Only Cloud Functions can read all (for matching)
-  allow read: if false; // Deny direct reads, use Cloud Functions
+
+  // Transitional alignment: the current Flutter app still performs
+  // client-side matching and live tracking reads.
+  allow read: if request.auth != null && (
+    request.auth.uid == workerId ||
+    isAdmin() ||
+    resource.data.status == 'online'
+  );
 }
 
     // =========================================================================
@@ -242,6 +253,108 @@ match /worker_locations/{workerId} {
     match /service_catalog/{categoryId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isAdmin();
+    }
+
+    match /wallets/{walletId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == walletId;
+      allow read, write: if isAdmin();
+    }
+
+    match /wallet_transactions/{transactionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read, write: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.customerId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid || isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid || isAdmin()
+      );
+    }
+
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() && (
+        resource.data.workerId == request.auth.uid || isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    match /incidents/{incidentId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.reporterId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.reporterId == request.auth.uid ||
+        resource.data.subjectId == request.auth.uid ||
+        isAdmin()
+      );
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId;
+      allow create, delete: if isAdmin();
+    }
+
+    match /safety_alerts/{alertId} {
+      allow create: if isAuthenticated() && (
+        request.resource.data.workerId == request.auth.uid ||
+        request.resource.data.customerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow read: if isAuthenticated() && (
+        resource.data.workerId == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.workerId == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if false;
+    }
+
+    match /chatRooms/{chatRoomId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.customerId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.workerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.workerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      match /messages/{messageId} {
+        allow create: if isAuthenticated()
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.createdAt != null;
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.customerId == request.auth.uid ||
+          get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.workerId == request.auth.uid ||
+          isAdmin()
+        );
+        allow update: if isAuthenticated() && (
+          get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.customerId == request.auth.uid ||
+          get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.workerId == request.auth.uid ||
+          isAdmin()
+        );
+        allow delete: if false;
+      }
     }
 
     // =========================================================================

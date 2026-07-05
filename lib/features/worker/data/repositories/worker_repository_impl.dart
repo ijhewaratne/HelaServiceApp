@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/geohash_helper.dart';
 import '../../domain/entities/worker.dart';
 import '../../domain/entities/worker_application.dart' as app;
 import '../../domain/entities/worker_profile.dart';
@@ -45,7 +47,7 @@ class WorkerRepositoryImpl implements WorkerRepository {
     try {
       final doc = await _firestore.collection('workers').doc(workerId).get();
       if (!doc.exists) {
-        return Left(NotFoundFailure('Worker not found'));
+        return const Left(NotFoundFailure('Worker not found'));
       }
       return Right(_workerFromDoc(doc));
     } catch (e) {
@@ -138,6 +140,8 @@ class WorkerRepositoryImpl implements WorkerRepository {
         if (isOnline && lat != null && lng != null) ...{
           'lat': lat,
           'lng': lng,
+          'location': GeoPoint(lat, lng),
+          'geohash': GeohashHelper.encode(lat, lng),
         },
       };
 
@@ -156,6 +160,11 @@ class WorkerRepositoryImpl implements WorkerRepository {
 
           locationDoc['skills'] = services;
           locationDoc['isVerified'] = status == 'approved';
+          locationDoc['rating'] = (d['rating'] as num?)?.toDouble() ?? 4.0;
+          final lastJobCompletedAt = d['lastJobCompletedAt'];
+          if (lastJobCompletedAt is Timestamp) {
+            locationDoc['lastJobCompletedAt'] = lastJobCompletedAt;
+          }
           if (homeLat != null && homeLng != null) {
             locationDoc['homeLocation'] = {
               'latitude': homeLat,
@@ -209,7 +218,15 @@ class WorkerRepositoryImpl implements WorkerRepository {
   @override
   Future<Either<Failure, app.WorkerApplication>> submitApplication(app.WorkerApplication application) async {
     try {
-      final docRef = _firestore.collection('worker_applications').doc();
+      String? workerId;
+      try {
+        workerId = FirebaseAuth.instance.currentUser?.uid;
+      } catch (_) {
+        workerId = null;
+      }
+      final applications = _firestore.collection('worker_applications');
+      final docRef =
+          workerId == null ? applications.doc() : applications.doc(workerId);
       final data = application.copyWith(id: docRef.id).toJson();
       await docRef.set(data);
       return Right(application.copyWith(id: docRef.id));
@@ -227,7 +244,7 @@ class WorkerRepositoryImpl implements WorkerRepository {
         .get();
       
       if (!doc.exists) {
-        return Left(NotFoundFailure('Application not found'));
+        return const Left(NotFoundFailure('Application not found'));
       }
       
       return Right(app.WorkerApplication.fromJson(doc.data()!));
@@ -245,15 +262,11 @@ class WorkerRepositoryImpl implements WorkerRepository {
         'trainingCompletedAt': FieldValue.serverTimestamp(),
       });
       
-      // Also update the application if it exists
-      final query = await _firestore
-        .collection('worker_applications')
-        .where('mobileNumber', isEqualTo: workerId)
-        .limit(1)
-        .get();
-      
-      if (query.docs.isNotEmpty) {
-        await query.docs.first.reference.update({
+      final applicationRef =
+          _firestore.collection('worker_applications').doc(workerId);
+      final applicationDoc = await applicationRef.get();
+      if (applicationDoc.exists) {
+        await applicationRef.update({
           'hasCompletedTraining': true,
           'trainingCompletedAt': FieldValue.serverTimestamp(),
         });
@@ -282,6 +295,8 @@ class WorkerRepositoryImpl implements WorkerRepository {
       await _firestore.collection('worker_locations').doc(workerId).set({
         'lat': lat,
         'lng': lng,
+        'location': GeoPoint(lat, lng),
+        'geohash': GeohashHelper.encode(lat, lng),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       

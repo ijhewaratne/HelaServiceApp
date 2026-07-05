@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/geohash_helper.dart';
 
 class LocationService {
   final FirebaseFirestore _firestore;
@@ -25,10 +26,10 @@ class LocationService {
     if (_isTracking) return;
 
     _workerId = workerId;
-    _workerMetadata = workerMetadata;
+    _workerMetadata = workerMetadata ?? await _loadWorkerMetadata(workerId);
     
     // Check permissions
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw LocationException('Location services disabled');
     }
@@ -47,6 +48,7 @@ class LocationService {
 
     // Update initial position
     final position = await Geolocator.getCurrentPosition();
+    await _updateWorkerStatus(workerId, true);
     await _updateLocation(position);
 
     // Start listening
@@ -64,15 +66,15 @@ class LocationService {
     if (_workerId == null) return;
 
     // Generate geohash for efficient querying
-    final geohash = _encodeGeohash(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      precision: 9,
+    final geohash = GeohashHelper.encode(
+      position.latitude,
+      position.longitude,
     );
     
     await _firestore.collection('worker_locations').doc(_workerId).set({
       'lat': position.latitude,
       'lng': position.longitude,
+      'location': GeoPoint(position.latitude, position.longitude),
       'geohash': geohash,
       'updatedAt': FieldValue.serverTimestamp(),
       'status': 'online',
@@ -88,6 +90,7 @@ class LocationService {
     _workerMetadata = null;
 
     if (_workerId != null) {
+      await _updateWorkerStatus(_workerId!, false);
       await _firestore.collection('worker_locations').doc(_workerId).update({
         'status': 'offline',
         'offlineAt': FieldValue.serverTimestamp(),
@@ -107,56 +110,44 @@ class LocationService {
     return Geolocator.getPositionStream(locationSettings: _locationSettings);
   }
 
-  /// Geohash encoder for efficient spatial queries
-  String _encodeGeohash({
-    required double latitude,
-    required double longitude,
-    int precision = 9,
-  }) {
-    const base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
-    
-    double latMin = -90.0, latMax = 90.0;
-    double lonMin = -180.0, lonMax = 180.0;
-    
-    final buffer = StringBuffer();
-    int bits = 0;
-    int ch = 0;
-    bool evenBit = true;
-    
-    while (buffer.length < precision) {
-      if (evenBit) {
-        // Longitude
-        final lonMid = (lonMin + lonMax) / 2;
-        if (longitude > lonMid) {
-          ch = (ch << 1) | 1;
-          lonMin = lonMid;
-        } else {
-          ch = ch << 1;
-          lonMax = lonMid;
-        }
-      } else {
-        // Latitude
-        final latMid = (latMin + latMax) / 2;
-        if (latitude > latMid) {
-          ch = (ch << 1) | 1;
-          latMin = latMid;
-        } else {
-          ch = ch << 1;
-          latMax = latMid;
-        }
-      }
-      
-      evenBit = !evenBit;
-      bits++;
-      
-      if (bits == 5) {
-        buffer.write(base32[ch]);
-        bits = 0;
-        ch = 0;
-      }
+  Future<Map<String, dynamic>> _loadWorkerMetadata(String workerId) async {
+    final workerDoc = await _firestore.collection('workers').doc(workerId).get();
+    final data = workerDoc.data();
+    if (data == null) return const {};
+
+    final services = (data['services'] as List<dynamic>?)
+            ?.map((service) => service as String)
+            .toList() ??
+        const <String>[];
+    final status = data['status'] as String? ?? 'pending';
+    final metadata = <String, dynamic>{
+      'skills': services,
+      'isVerified': status == 'approved',
+      'rating': (data['rating'] as num?)?.toDouble() ?? 4.0,
+    };
+
+    final homeLat = (data['homeLat'] as num?)?.toDouble();
+    final homeLng = (data['homeLng'] as num?)?.toDouble();
+    if (homeLat != null && homeLng != null) {
+      metadata['homeLocation'] = {
+        'latitude': homeLat,
+        'longitude': homeLng,
+      };
     }
-    
-    return buffer.toString();
+
+    final lastJobCompletedAt = data['lastJobCompletedAt'];
+    if (lastJobCompletedAt is Timestamp) {
+      metadata['lastJobCompletedAt'] = lastJobCompletedAt;
+    }
+
+    return metadata;
+  }
+
+  Future<void> _updateWorkerStatus(String workerId, bool isOnline) async {
+    await _firestore.collection('workers').doc(workerId).set({
+      'isOnline': isOnline,
+      'lastStatusChange': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 }
 

@@ -24,43 +24,33 @@ class NICValidator {
   }
 
   static bool _validateOldNIC(String nic) {
-    // Extract digits
     final digits = nic.substring(0, 9);
-    final checkDigit = nic[9];
-    
-    // Check if first 9 are digits
     if (!RegExp(r'^[0-9]+$').hasMatch(digits)) return false;
-    
-    // Validate check digit (V for odd, X for even based on calculation)
-    // This is a simplified check - real validation would involve MOD 11 check
-    final checkVal = int.tryParse(digits[8]) ?? 0;
-    if (checkDigit == 'V' && checkVal % 2 == 0) return false;
-    if (checkDigit == 'X' && checkVal % 2 != 0) return false;
-    
-    return true;
+
+    final dayOfYear = int.tryParse(nic.substring(2, 5));
+    return _isValidDayOfYear(dayOfYear);
   }
 
   static bool _validateNewNIC(String nic) {
-    // New format: YYYYMMDDNNNN
-    // First 4: Year (1900-2024)
-    // Next 2: Month (01-12)
-    // Next 2: Day (01-31)
-    // Last 4: Serial
-    
+    // New format: YYYY + day-of-year/sex code + serial digits
     final year = int.tryParse(nic.substring(0, 4)) ?? 0;
-    final month = int.tryParse(nic.substring(4, 6)) ?? 0;
-    final day = int.tryParse(nic.substring(6, 8)) ?? 0;
-    
+    final dayOfYear = int.tryParse(nic.substring(4, 7));
+
     if (year < 1900 || year > DateTime.now().year) return false;
-    if (month < 1 || month > 12) return false;
-    if (day < 1 || day > 31) return false;
-    
-    return true;
+    return _isValidDayOfYear(dayOfYear);
+  }
+
+  static bool _isValidDayOfYear(int? dayOfYear) {
+    if (dayOfYear == null) return false;
+    if (dayOfYear >= 1 && dayOfYear <= 366) return true;
+    if (dayOfYear >= 501 && dayOfYear <= 866) return true;
+    return false;
   }
 
   /// Extract birth year from NIC
   static int? getBirthYear(String nic) {
     final clean = nic.trim().replaceAll(' ', '').toUpperCase();
+    if (!isValid(clean)) return null;
     
     if (clean.length == 10) {
       // Old format: 853202937V -> 1985

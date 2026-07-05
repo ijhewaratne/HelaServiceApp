@@ -68,11 +68,13 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
         for (final doc in snap.docs) {
           final data = doc.data();
           final gp = data['location'] as GeoPoint?;
-          if (gp == null) continue;
+          final lat = (data['lat'] as num?)?.toDouble() ?? gp?.latitude;
+          final lng = (data['lng'] as num?)?.toDouble() ?? gp?.longitude;
+          if (lat == null || lng == null) continue;
 
           final dist = _haversineKm(
               params.customerLat, params.customerLng,
-              gp.latitude, gp.longitude);
+              lat, lng);
           if (dist > params.maxRadiusKm) continue;
 
           // Load full Worker entity for skill / status checks
@@ -81,9 +83,10 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
           if (worker == null) continue;
           if (worker.status != WorkerStatus.approved) continue;
 
-          final serviceMatch = worker.services.any((s) =>
-              s.name.toLowerCase() ==
-              params.serviceType.toString().toLowerCase());
+          final requestedService = params.serviceType.toString().split('.').last.toLowerCase();
+          final serviceMatch = worker.services.any(
+            (service) => service.name.toLowerCase() == requestedService,
+          );
           if (!serviceMatch) continue;
 
           candidates.add(_ScoredWorker(
