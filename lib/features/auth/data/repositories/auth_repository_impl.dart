@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
@@ -33,16 +34,30 @@ class AuthRepositoryImpl implements AuthRepository {
     required Function(firebase.PhoneAuthCredential credential) onVerificationCompleted,
     required Function(String error) onVerificationFailed,
   }) async {
+    // Use a Completer so the Future only resolves after codeSent/error fires.
+    // Without this, verifyPhoneNumber returns before the OTP is sent (especially
+    // on web), and any emit() call inside onCodeSent would fire against a
+    // completed Emitter, causing a StateError / DDC tear-off crash.
+    final completer = Completer<Either<Failure, void>>();
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: onVerificationCompleted,
-        verificationFailed: (e) => onVerificationFailed(e.message ?? 'Verification failed'),
-        codeSent: (verificationId, _) => onCodeSent(verificationId),
-        codeAutoRetrievalTimeout: (_) {},
+        verificationFailed: (e) {
+          final msg = e.message ?? 'Verification failed';
+          onVerificationFailed(msg);
+          if (!completer.isCompleted) completer.complete(Left(AuthFailure(msg)));
+        },
+        codeSent: (verificationId, _) {
+          onCodeSent(verificationId);
+          if (!completer.isCompleted) completer.complete(const Right(null));
+        },
+        codeAutoRetrievalTimeout: (_) {
+          if (!completer.isCompleted) completer.complete(const Right(null));
+        },
         timeout: const Duration(seconds: 60),
       );
-      return const Right(null);
+      return completer.future;
     } catch (e) {
       return Left(AuthFailure(e.toString()));
     }
@@ -67,7 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       
       // Check if user exists in Firestore
-      final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+      var userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
       
       if (!userDoc.exists) {
         // New user - create profile
@@ -80,8 +95,10 @@ class AuthRepositoryImpl implements AuthRepository {
           'isPhoneVerified': true,
           'status': UserStatus.pendingVerification.name,
         });
+        // Re-fetch so the snapshot reflects the just-written document
+        userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
       }
-      
+
       return Right(_mapToUser(firebaseUser, userDoc));
     } catch (e) {
       return Left(AuthFailure(e.toString()));
