@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../worker/domain/entities/worker_profile.dart';
 import '../../../../features/customer/domain/booking.dart';
-import '../../domain/incident.dart';
+import '../../../incident/domain/entities/incident.dart';
 import '../../data/admin_repository.dart';
 
 class AdminViewModel extends ChangeNotifier {
@@ -115,6 +115,27 @@ class AdminViewModel extends ChangeNotifier {
       await _adminRepository.assignWorkerToBooking(bookingId, workerId);
       // Reload bookings to reflect the new assigned status state
       _activeBookings = await _adminRepository.getActiveBookings();
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> resolveIncident({
+    required String incidentId,
+    String? resolution,
+    String? resolvedBy,
+  }) async {
+    _setLoading(true);
+    try {
+      await _adminRepository.updateIncidentStatus(
+        incidentId: incidentId,
+        status: IncidentStatus.resolved,
+        resolution: resolution,
+        resolvedBy: resolvedBy,
+      );
+      _openIncidents = await _adminRepository.getOpenIncidents();
     } catch (e) {
       _setError(e.toString());
     } finally {

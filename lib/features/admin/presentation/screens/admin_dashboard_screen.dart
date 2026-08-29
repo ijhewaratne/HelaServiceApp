@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../injection_container.dart';
@@ -137,9 +138,9 @@ class _OverviewTab extends StatelessWidget {
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: _LiveCard(
-            label: 'Open Safety Alerts',
+            label: 'Unresolved Safety Alerts',
             stream: sl<FirebaseFirestore>().collection('safety_alerts')
-                .where('status', isEqualTo: 'active')
+                .where('status', whereIn: ['open', 'acknowledged', 'escalated'])
                 .snapshots().map((s) => s.size.toString()),
             icon: Icons.warning_amber, color: AppTheme.errorColor,
           )),
@@ -412,7 +413,7 @@ class _SafetyAlertsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: sl<FirebaseFirestore>().collection('safety_alerts')
-          .where('status', isEqualTo: 'active')
+          .where('status', whereIn: ['open', 'acknowledged', 'escalated'])
           .orderBy('createdAt', descending: true)
           .snapshots(),
       builder: (ctx, snap) {
@@ -424,7 +425,7 @@ class _SafetyAlertsTab extends StatelessWidget {
           return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Icon(Icons.security, size: 64, color: AppTheme.successColor),
             const SizedBox(height: 16),
-            Text('No active safety alerts', style: Theme.of(ctx).textTheme.titleMedium),
+            Text('No unresolved safety alerts', style: Theme.of(ctx).textTheme.titleMedium),
           ]));
         }
         return ListView.separated(
@@ -449,18 +450,41 @@ class _AlertCard extends StatelessWidget {
   Future<void> _resolve() async {
     await sl<FirebaseFirestore>().collection('safety_alerts').doc(alertId).update({
       'status': 'resolved',
+      'resolvedBy': FirebaseAuth.instance.currentUser?.uid,
       'resolvedAt': FieldValue.serverTimestamp(),
-      'resolution': 'Resolved by admin',
+      'resolutionNotes': 'Resolved by admin dashboard',
     });
+  }
+
+  String _typeLabel(String rawType) {
+    switch (rawType) {
+      case 'sosPanic':
+      case 'sos':
+        return 'SOS Emergency';
+      case 'customerReport':
+      case 'customer_emergency':
+        return 'Customer Report';
+      case 'missedCheckIn':
+        return 'Missed Check-In';
+      case 'missedCheckOut':
+        return 'Missed Check-Out';
+      case 'locationLost':
+        return 'Location Lost';
+      default:
+        return rawType.isEmpty ? 'Unknown Alert' : rawType;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final type = data['type'] as String? ?? 'unknown';
-    final isSOS = type == 'sos';
+    final status = data['status'] as String? ?? 'open';
+    final severity = data['severity'] as String? ?? 'medium';
+    final isSOS = type == 'sosPanic' || type == 'sos';
     final color = isSOS ? AppTheme.errorColor : AppTheme.warningColor;
-    final desc = data['description'] as String? ?? 'No description';
+    final desc = data['message'] as String? ?? data['description'] as String? ?? 'No description';
     final wid  = data['workerId'] as String? ?? '-';
+    final cid  = data['customerId'] as String? ?? '-';
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -479,12 +503,22 @@ class _AlertCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(isSOS ? 'SOS — Emergency' : type.toUpperCase(),
+            Text(_typeLabel(type),
                 style: Theme.of(context).textTheme.titleSmall
                     ?.copyWith(color: color, fontWeight: FontWeight.bold)),
-            Text('Worker: $wid', style: Theme.of(context).textTheme.bodySmall),
+            Text('Worker: $wid | Customer: $cid', style: Theme.of(context).textTheme.bodySmall),
           ])),
-          if (isSOS) Icon(Icons.priority_high, color: color, size: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (isSOS) Icon(Icons.priority_high, color: color, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                '${severity.toUpperCase()} · ${status.toUpperCase()}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+              ),
+            ],
+          ),
         ]),
         const SizedBox(height: 8),
         Text(desc, style: Theme.of(context).textTheme.bodySmall),

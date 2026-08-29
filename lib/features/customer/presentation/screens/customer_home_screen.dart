@@ -457,10 +457,12 @@ class _EmergencySheet extends StatelessWidget {
     if (uid == null) return;
     await sl<FirebaseFirestore>().collection('safety_alerts').add({
       'customerId': uid,
-      'workerId': null,
-      'type': 'customer_emergency',
-      'description': 'Customer triggered emergency button',
-      'status': 'active',
+      'workerId': '',
+      'bookingId': '',
+      'type': 'customerReport',
+      'severity': 'critical',
+      'message': 'Customer triggered the emergency support button.',
+      'status': 'open',
       'createdAt': FieldValue.serverTimestamp(),
     });
     if (context.mounted) {

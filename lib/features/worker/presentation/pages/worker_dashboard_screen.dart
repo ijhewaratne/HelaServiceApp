@@ -74,9 +74,12 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
               if (_workerId != null) {
                 await sl<FirebaseFirestore>().collection('safety_alerts').add({
                   'workerId': _workerId,
-                  'type': 'sos',
-                  'description': 'SOS triggered from worker dashboard',
-                  'status': 'active',
+                  'customerId': '',
+                  'bookingId': '',
+                  'type': 'sosPanic',
+                  'severity': 'critical',
+                  'message': 'Worker triggered the SOS button from the dashboard.',
+                  'status': 'open',
                   'createdAt': FieldValue.serverTimestamp(),
                 });
               }
@@ -215,7 +218,7 @@ class _Header extends StatelessWidget {
                   fontSize: 11, fontWeight: FontWeight.w600)),
           Switch(
             value: isOnline, onChanged: onToggle,
-            activeColor: Colors.greenAccent,
+            activeThumbColor: Colors.greenAccent,
           ),
         ]),
       ]),
@@ -573,7 +576,9 @@ class _CalendarTabState extends State<_CalendarTab> {
   @override
   void initState() {
     super.initState();
-    for (final d in _days) _schedule[d] = [];
+    for (final d in _days) {
+      _schedule[d] = [];
+    }
     _load();
   }
 

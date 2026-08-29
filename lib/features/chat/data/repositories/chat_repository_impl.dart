@@ -55,7 +55,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       final doc = await _firestore.collection('chatRooms').doc(chatRoomId).get();
       if (!doc.exists) {
-        return Left(GenericFailure('Chat room not found'));
+        return const Left(GenericFailure('Chat room not found'));
       }
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
@@ -199,19 +199,22 @@ class ChatRepositoryImpl implements ChatRepository {
     required String userId,
   }) async {
     try {
-      // Get unread messages
+      // Firestore cannot query "array does not contain", so inspect the recent
+      // message window and update only unread messages from the other party.
       final querySnapshot = await _firestore
           .collection('chatRooms')
           .doc(chatRoomId)
           .collection('messages')
-          .where('readBy', arrayContains: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(100)
           .get();
 
       // Batch update
       final batch = _firestore.batch();
       for (final doc in querySnapshot.docs) {
+        final senderId = doc.data()['senderId'] as String? ?? '';
         final readBy = List<String>.from(doc.data()['readBy'] as List<dynamic>? ?? []);
-        if (!readBy.contains(userId)) {
+        if (senderId != userId && !readBy.contains(userId)) {
           batch.update(doc.reference, {
             'readBy': FieldValue.arrayUnion([userId]),
           });

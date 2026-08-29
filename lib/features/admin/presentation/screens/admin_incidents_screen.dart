@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../incident/domain/entities/incident.dart';
 import '../viewmodels/admin_dashboard_viewmodel.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
@@ -37,7 +39,6 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
               itemBuilder: (context, index) {
                 final incident = vm.openIncidents[index];
                 return GlassCard(
-                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -47,9 +48,12 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(12)),
-                            child: const Text('URGENT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+                            child: Text(
+                              incident.status.name.toUpperCase(),
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red),
+                            ),
                           ),
-                          Text(incident.type.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                          Text(incident.type.displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -61,15 +65,22 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text('Booking ID: ${incident.bookingId}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                      Text('Reported By: ${incident.reportedBy}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text('Booking ID: ${incident.jobId ?? '-'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text('Reported By: ${incident.reporterId}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text('Status: ${incident.status.name}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                       const Divider(height: 30),
                       ElevatedButton(
-                        onPressed: () async {
+                        onPressed: vm.isLoading ? null : () async {
                           final confirm = await showConfirmDialog(context, title: 'Resolve Incident', message: 'Mark this incident as resolved?');
                           if (confirm && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Incident Resolved')));
-                            // In a real app we'd call a ViewModel method here
+                            await context.read<AdminViewModel>().resolveIncident(
+                              incidentId: incident.id,
+                              resolvedBy: FirebaseAuth.instance.currentUser?.uid,
+                              resolution: 'Resolved from admin incidents screen',
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Incident resolved')));
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(

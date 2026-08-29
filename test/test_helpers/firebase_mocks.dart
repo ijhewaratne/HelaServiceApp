@@ -30,34 +30,88 @@ class MockUploadTask extends Mock implements UploadTask {}
 
 class MockTaskSnapshot extends Mock implements TaskSnapshot {}
 
+class FakeDocumentSnapshot extends Fake
+    implements DocumentSnapshot<Map<String, dynamic>> {
+  FakeDocumentSnapshot({
+    required this.snapshotId,
+    required this.snapshotExists,
+    required this.snapshotData,
+  });
+
+  final String snapshotId;
+  final bool snapshotExists;
+  final Map<String, dynamic>? snapshotData;
+
+  @override
+  String get id => snapshotId;
+
+  @override
+  bool get exists => snapshotExists;
+
+  @override
+  Map<String, dynamic>? data() => snapshotData;
+}
+
+class FakeQueryDocumentSnapshot extends Fake
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {
+  FakeQueryDocumentSnapshot({
+    required this.snapshotId,
+    required this.snapshotData,
+  });
+
+  final String snapshotId;
+  final Map<String, dynamic> snapshotData;
+
+  @override
+  String get id => snapshotId;
+
+  @override
+  bool get exists => true;
+
+  @override
+  Map<String, dynamic> data() => snapshotData;
+}
+
+class FakeQuerySnapshot extends Fake
+    implements QuerySnapshot<Map<String, dynamic>> {
+  FakeQuerySnapshot(this.snapshotDocs);
+
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> snapshotDocs;
+
+  @override
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> get docs => snapshotDocs;
+
+  @override
+  int get size => snapshotDocs.length;
+}
+
 /// Helper to create mock DocumentSnapshot with data
-MockDocumentSnapshot createMockDocumentSnapshot({
+DocumentSnapshot<Map<String, dynamic>> createMockDocumentSnapshot({
   required String id,
   Map<String, dynamic>? data,
   bool exists = true,
 }) {
-  final snapshot = MockDocumentSnapshot();
-  when(snapshot.id).thenReturn(id);
-  when(snapshot.exists).thenReturn(exists);
-  when(snapshot.data()).thenReturn(data);
-  return snapshot;
+  return FakeDocumentSnapshot(
+    snapshotId: id,
+    snapshotExists: exists,
+    snapshotData: data,
+  );
 }
 
 /// Helper to create mock QueryDocumentSnapshot with data
-MockQueryDocumentSnapshot createMockQueryDocumentSnapshot({
+QueryDocumentSnapshot<Map<String, dynamic>> createMockQueryDocumentSnapshot({
   required String id,
   required Map<String, dynamic> data,
 }) {
-  final snapshot = MockQueryDocumentSnapshot();
-  when(snapshot.id).thenReturn(id);
-  when(snapshot.data()).thenReturn(data);
-  return snapshot;
+  return FakeQueryDocumentSnapshot(
+    snapshotId: id,
+    snapshotData: data,
+  );
 }
 
 /// Helper to create mock QuerySnapshot
-MockQuerySnapshot createMockQuerySnapshot(List<MockQueryDocumentSnapshot> docs) {
-  final snapshot = MockQuerySnapshot();
-  when(snapshot.docs).thenReturn(docs);
-  when(snapshot.size).thenReturn(docs.length);
-  return snapshot;
+QuerySnapshot<Map<String, dynamic>> createMockQuerySnapshot(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  return FakeQuerySnapshot(docs);
 }

@@ -24,6 +24,7 @@ void main() {
         final mockDocSnap = createMockDocumentSnapshot(
           id: 'room_404',
           data: null,
+          exists: false,
         );
         final mockDocRef = MockDocumentReference();
         final mockCollection = MockCollectionReference();

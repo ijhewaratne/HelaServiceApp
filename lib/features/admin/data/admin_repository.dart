@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../worker/domain/entities/worker_profile.dart';
 import '../../customer/domain/booking.dart';
-import '../domain/incident.dart';
+import '../../incident/domain/entities/incident.dart' as incident_entity;
 
 /// A blue-tier upgrade request submitted by a worker.
 class BlueTierVerification {
@@ -258,19 +258,104 @@ class AdminRepository {
     }, SetOptions(merge: true));
   }
 
-  Future<List<Incident>> getOpenIncidents() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return [
-      Incident(
-        incidentId: 'inc_888',
-        bookingId: 'bk_123',
-        reportedBy: 'cus_456',
-        type: 'late_arrival',
-        description: 'Worker arrived 40 minutes late',
-        severity: 'medium',
-        status: 'open',
-        createdAt: DateTime.now()
-      )
+  Future<List<incident_entity.Incident>> getOpenIncidents() async {
+    final unresolvedStatuses = [
+      incident_entity.IncidentStatus.pending.name,
+      incident_entity.IncidentStatus.investigating.name,
+      incident_entity.IncidentStatus.escalated.name,
     ];
+
+    final snap = await _firestore
+        .collection('incidents')
+        .where('status', whereIn: unresolvedStatuses)
+        .orderBy('reportedAt', descending: true)
+        .limit(50)
+        .get();
+
+    return snap.docs.map(_mapIncident).toList();
+  }
+
+  Future<void> updateIncidentStatus({
+    required String incidentId,
+    required incident_entity.IncidentStatus status,
+    String? resolution,
+    String? resolvedBy,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (resolution != null && resolution.trim().isNotEmpty) {
+      updateData['resolution'] = resolution.trim();
+    }
+    if (resolvedBy != null && resolvedBy.isNotEmpty) {
+      updateData['resolvedBy'] = resolvedBy;
+    }
+    if (status == incident_entity.IncidentStatus.resolved) {
+      updateData['resolvedAt'] = FieldValue.serverTimestamp();
+    }
+
+    await _firestore.collection('incidents').doc(incidentId).update(updateData);
+  }
+
+  incident_entity.Incident _mapIncident(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? <String, dynamic>{};
+
+    return incident_entity.Incident(
+      id: doc.id,
+      reporterId:
+          data['reporterId'] as String? ?? data['reportedBy'] as String? ?? '',
+      reporterType: data['reporterType'] as String? ?? 'customer',
+      jobId: data['jobId'] as String? ?? data['bookingId'] as String?,
+      subjectId: data['subjectId'] as String?,
+      type: _parseIncidentType(data['type'] as String?),
+      description: data['description'] as String? ?? '',
+      audioUrl: data['audioUrl'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      reportedAt: _asDateTime(data['reportedAt'] ?? data['createdAt']),
+      status: _parseIncidentStatus(data['status'] as String?),
+      resolvedBy: data['resolvedBy'] as String?,
+      resolvedAt: _asNullableDateTime(data['resolvedAt']),
+      resolution: data['resolution'] as String?,
+    );
+  }
+
+  incident_entity.IncidentType _parseIncidentType(String? rawType) {
+    return incident_entity.IncidentType.values.firstWhere(
+      (value) => value.name == rawType,
+      orElse: () => incident_entity.IncidentType.other,
+    );
+  }
+
+  incident_entity.IncidentStatus _parseIncidentStatus(String? rawStatus) {
+    switch (rawStatus) {
+      case 'investigating':
+        return incident_entity.IncidentStatus.investigating;
+      case 'resolved':
+        return incident_entity.IncidentStatus.resolved;
+      case 'escalated':
+        return incident_entity.IncidentStatus.escalated;
+      case 'open':
+      case 'pending':
+      default:
+        return incident_entity.IncidentStatus.pending;
+    }
+  }
+
+  DateTime _asDateTime(dynamic value) {
+    return _asNullableDateTime(value) ?? DateTime.now();
+  }
+
+  DateTime? _asNullableDateTime(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

@@ -251,11 +251,15 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
                   .add({
                 'workerId': _workerId,
                 'bookingId': widget.jobId,
-                'type': 'sos',
-                'description': 'SOS triggered during active job',
-                'status': 'active',
+                'customerId': '',
+                'type': 'sosPanic',
+                'severity': 'critical',
+                'message': 'Worker triggered SOS during an active job.',
+                'status': 'open',
                 if (pos != null)
-                  'location': GeoPoint(pos.latitude, pos.longitude),
+                  'latitude': pos.latitude,
+                if (pos != null)
+                  'longitude': pos.longitude,
                 'createdAt': FieldValue.serverTimestamp(),
               });
               if (mounted) {
