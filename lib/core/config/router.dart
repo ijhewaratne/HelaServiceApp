@@ -26,7 +26,6 @@ import '../../features/auth/presentation/screens/role_select_screen.dart';
 
 // Customer imports
 import '../../features/customer/presentation/screens/customer_home_screen.dart';
-import '../../features/customer/presentation/screens/booking_form_screen.dart';
 import '../../features/customer/presentation/screens/live_tracking_page.dart';
 import '../../features/customer/presentation/screens/location_permission_screen.dart';
 import '../../features/customer/presentation/screens/provider_profile_screen.dart';
@@ -221,10 +220,6 @@ final appRouter = GoRouter(
         final booking = state.extra as booking_entity.Booking;
         return BookingConfirmationPage(booking: booking);
       },
-    ),
-    GoRoute(
-      path: '/customer/book/legacy',
-      builder: (context, state) => const BookingFormScreen(),
     ),
     GoRoute(
       path: '/customer/track/:jobId',

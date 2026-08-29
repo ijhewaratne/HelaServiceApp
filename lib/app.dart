@@ -10,7 +10,6 @@ import 'core/localization/app_localizations.dart';
 import 'core/localization/localization_service.dart';
 import 'core/providers/theme_provider.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/worker/presentation/bloc/worker_onboarding_bloc.dart';
 import 'features/payment/presentation/bloc/payment_bloc.dart';
 import 'injection_container.dart';
@@ -37,7 +36,6 @@ class HelaServiceApp extends StatelessWidget {
       ],
       child: MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => AuthViewModel(sl())),
           ChangeNotifierProvider(create: (_) => sl<LocalizationService>()),
           ChangeNotifierProvider(create: (_) => sl<ThemeProvider>())
         ],

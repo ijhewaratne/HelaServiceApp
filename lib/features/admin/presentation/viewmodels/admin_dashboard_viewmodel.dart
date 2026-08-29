@@ -37,17 +37,57 @@ class AdminViewModel extends ChangeNotifier {
   Future<void> fetchDashboardData() async {
     _setLoading(true);
     _setError(null);
-    try {
-      _pendingWorkers = await _adminRepository.getPendingWorkers();
-      _activeBookings = await _adminRepository.getActiveBookings();
-      _openIncidents = await _adminRepository.getOpenIncidents();
-      _blueTierPending =
-          await _adminRepository.getBlueTierPendingVerifications();
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
+
+    final workersResult = await _adminRepository.getPendingWorkers();
+    final failure = workersResult.fold(
+      (failure) => failure,
+      (workers) {
+        _pendingWorkers = workers;
+        return null;
+      },
+    );
+    if (failure != null) {
+      _setError(failure.message);
       _setLoading(false);
+      return;
     }
+
+    final bookingsResult = await _adminRepository.getActiveBookings();
+    final bookingsFailure = bookingsResult.fold(
+      (failure) => failure,
+      (bookings) {
+        _activeBookings = bookings;
+        return null;
+      },
+    );
+    if (bookingsFailure != null) {
+      _setError(bookingsFailure.message);
+      _setLoading(false);
+      return;
+    }
+
+    final incidentsResult = await _adminRepository.getOpenIncidents();
+    final incidentsFailure = incidentsResult.fold(
+      (failure) => failure,
+      (incidents) {
+        _openIncidents = incidents;
+        return null;
+      },
+    );
+    if (incidentsFailure != null) {
+      _setError(incidentsFailure.message);
+      _setLoading(false);
+      return;
+    }
+
+    final blueTierResult =
+        await _adminRepository.getBlueTierPendingVerifications();
+    blueTierResult.fold(
+      (failure) => _setError(failure.message),
+      (verifications) => _blueTierPending = verifications,
+    );
+
+    _setLoading(false);
   }
 
   Future<void> logReferenceCallOutcome({
@@ -57,69 +97,83 @@ class AdminViewModel extends ChangeNotifier {
     required String notes,
   }) async {
     _setLoading(true);
-    try {
-      await _adminRepository.logReferenceCallOutcome(
-        workerId: workerId,
-        referenceIndex: referenceIndex,
-        outcome: outcome,
-        notes: notes,
-      );
-      _blueTierPending =
-          await _adminRepository.getBlueTierPendingVerifications();
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
+
+    final outcomeResult = await _adminRepository.logReferenceCallOutcome(
+      workerId: workerId,
+      referenceIndex: referenceIndex,
+      outcome: outcome,
+      notes: notes,
+    );
+
+    final failure = outcomeResult.fold((failure) => failure, (_) => null);
+    if (failure != null) {
+      _setError(failure.message);
       _setLoading(false);
+      return;
     }
+
+    final refreshResult =
+        await _adminRepository.getBlueTierPendingVerifications();
+    refreshResult.fold(
+      (failure) => _setError(failure.message),
+      (verifications) => _blueTierPending = verifications,
+    );
+
+    _setLoading(false);
   }
 
   Future<void> approveBlueTierUpgrade(String workerId) async {
     _setLoading(true);
-    try {
-      await _adminRepository.approveBlueTierUpgrade(workerId);
-      _blueTierPending.removeWhere((v) => v.workerId == workerId);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
+    final result = await _adminRepository.approveBlueTierUpgrade(workerId);
+    result.fold(
+      (failure) => _setError(failure.message),
+      (_) => _blueTierPending.removeWhere((v) => v.workerId == workerId),
+    );
+    _setLoading(false);
   }
 
   Future<void> rejectBlueTierUpgrade(String workerId, String reason) async {
     _setLoading(true);
-    try {
-      await _adminRepository.rejectBlueTierUpgrade(workerId, reason);
-      _blueTierPending.removeWhere((v) => v.workerId == workerId);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
+    final result =
+        await _adminRepository.rejectBlueTierUpgrade(workerId, reason);
+    result.fold(
+      (failure) => _setError(failure.message),
+      (_) => _blueTierPending.removeWhere((v) => v.workerId == workerId),
+    );
+    _setLoading(false);
   }
 
   Future<void> approveWorker(String workerId) async {
     _setLoading(true);
-    try {
-      await _adminRepository.updateWorkerStatus(workerId, 'approved');
-      _pendingWorkers.removeWhere((w) => w.uid == workerId);
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
+    final result =
+        await _adminRepository.updateWorkerStatus(workerId, 'approved');
+    result.fold(
+      (failure) => _setError(failure.message),
+      (_) => _pendingWorkers.removeWhere((w) => w.uid == workerId),
+    );
+    _setLoading(false);
   }
 
   Future<void> manuallyAssignWorker(String bookingId, String workerId) async {
     _setLoading(true);
-    try {
-      await _adminRepository.assignWorkerToBooking(bookingId, workerId);
-      // Reload bookings to reflect the new assigned status state
-      _activeBookings = await _adminRepository.getActiveBookings();
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
+
+    final assignResult =
+        await _adminRepository.assignWorkerToBooking(bookingId, workerId);
+    final failure = assignResult.fold((failure) => failure, (_) => null);
+    if (failure != null) {
+      _setError(failure.message);
       _setLoading(false);
+      return;
     }
+
+    // Reload bookings to reflect the new assigned status state
+    final bookingsResult = await _adminRepository.getActiveBookings();
+    bookingsResult.fold(
+      (failure) => _setError(failure.message),
+      (bookings) => _activeBookings = bookings,
+    );
+
+    _setLoading(false);
   }
 
   Future<void> resolveIncident({
@@ -128,18 +182,26 @@ class AdminViewModel extends ChangeNotifier {
     String? resolvedBy,
   }) async {
     _setLoading(true);
-    try {
-      await _adminRepository.updateIncidentStatus(
-        incidentId: incidentId,
-        status: IncidentStatus.resolved,
-        resolution: resolution,
-        resolvedBy: resolvedBy,
-      );
-      _openIncidents = await _adminRepository.getOpenIncidents();
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
+
+    final updateResult = await _adminRepository.updateIncidentStatus(
+      incidentId: incidentId,
+      status: IncidentStatus.resolved,
+      resolution: resolution,
+      resolvedBy: resolvedBy,
+    );
+    final failure = updateResult.fold((failure) => failure, (_) => null);
+    if (failure != null) {
+      _setError(failure.message);
       _setLoading(false);
+      return;
     }
+
+    final incidentsResult = await _adminRepository.getOpenIncidents();
+    incidentsResult.fold(
+      (failure) => _setError(failure.message),
+      (incidents) => _openIncidents = incidents,
+    );
+
+    _setLoading(false);
   }
 }
