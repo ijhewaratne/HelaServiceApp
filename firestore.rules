@@ -86,19 +86,29 @@ service cloud.firestore {
         resource.data.workerId == request.auth.uid
       );
 
-      // Workers update status/timestamps on jobs assigned to them
+      // Workers update status/timestamps on jobs assigned to them.
+      //
+      // NOTE: this must use diff().affectedKeys(), not keys(). request.resource.data
+      // is the FULL document after the write (existing fields merged with the
+      // update), so keys().hasOnly([...]) would require every field the booking
+      // has ever had — customerId, serviceType, price, etc. — to be in the
+      // allowlist, which blocks every update including legitimate ones. Verified
+      // empirically against the Firestore emulator: the previous keys()-based
+      // rule rejected a worker's plain status update with permission-denied.
       allow update: if isAuthenticated()
         && resource.data.workerId == request.auth.uid
-        && request.resource.data.keys().hasOnly([
-            'status', 'updatedAt', 'startedAt', 'completedAt',
-            'arrivedAt', 'checkInPhotoUrl', 'checkOutPhotoUrl',
-            'checkInLocation', 'checkOutLocation'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'updatedAt', 'startedAt', 'completedAt', 'arrivedAt',
+            'actualArrivalLocation', 'checkIn', 'checkOut', 'billableHours'
           ]);
 
       // Customers cancel their own bookings
       allow update: if isAuthenticated()
         && resource.data.customerId == request.auth.uid
-        && request.resource.data.status == 'cancelled';
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'cancellationReason', 'cancelledAt', 'updatedAt'
+          ]);
     }
 
     // =========================================================================
@@ -114,9 +124,13 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
         request.resource.data.customerId == request.auth.uid;
 
-      // Workers can only update jobs explicitly assigned to them
+      // Workers can only update jobs explicitly assigned to them, and only
+      // the state-machine fields (see Job entity) — not price, customerId, etc.
       allow update: if isAuthenticated() &&
-        resource.data.assignedWorkerId == request.auth.uid;
+        resource.data.assignedWorkerId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'acceptedAt', 'startedAt', 'completedAt'
+        ]);
     }
 
     // =========================================================================
@@ -256,7 +270,13 @@ match /worker_locations/{workerId} {
     }
 
     match /wallets/{walletId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == walletId;
+      // Read-only for the owner. Every legitimate balance mutation goes
+      // through server-side Cloud Functions (holdWalletFunds,
+      // releaseWalletFunds, payhereNotify, processRefund,
+      // completeReferralOnBooking) using the Admin SDK, which bypasses these
+      // rules entirely — so the client never needs write access here, and
+      // granting it only lets a user set their own balance directly.
+      allow read: if isAuthenticated() && request.auth.uid == walletId;
       allow read, write: if isAdmin();
     }
 
@@ -267,14 +287,19 @@ match /worker_locations/{workerId} {
     }
 
     match /payments/{paymentId} {
+      // Customers create their own pending payment record right after
+      // generating a checkout URL (see PaymentRepositoryImpl.processPayment).
       allow create: if isAuthenticated()
         && request.resource.data.customerId == request.auth.uid;
       allow read: if isAuthenticated() && (
         resource.data.customerId == request.auth.uid || isAdmin()
       );
-      allow update: if isAuthenticated() && (
-        resource.data.customerId == request.auth.uid || isAdmin()
-      );
+      // Status transitions ('completed', 'refunded', etc.) are only ever
+      // legitimate via the payhereNotify webhook, which validates PayHere's
+      // signature server-side and writes with the Admin SDK (bypassing these
+      // rules) — a client update here would be a forged status, not a real
+      // payment confirmation.
+      allow update: if isAdmin();
     }
 
     match /payouts/{payoutId} {
