@@ -88,17 +88,21 @@ class PayoutRepositoryImpl implements PayoutRepository {
           DateTime(weekStart.year, weekStart.month, weekStart.day);
       final periodEnd = periodStart.add(const Duration(days: 7));
 
-      // Find all completed bookings not yet in a payout
+      // Find all completed bookings not yet in a payout. Firestore queries
+      // never match documents where the filtered field is absent, and
+      // payoutId is never initialized on booking creation — so filtering by
+      // `payoutId isNull` here would silently exclude every normal booking.
+      // Filter for a missing/null payoutId client-side instead.
       final bookingsSnap = await _db
           .collection('bookings')
           .where('status', isEqualTo: 'completed')
-          .where('payoutId', isNull: true)
           .get();
 
       // Group by workerId
       final Map<String, List<DocumentSnapshot>> byWorker = {};
       for (final doc in bookingsSnap.docs) {
         final data = doc.data();
+        if (data['payoutId'] != null) continue;
         final workerId = data['workerId'] as String?;
         if (workerId == null || workerId.isEmpty) continue;
         byWorker.putIfAbsent(workerId, () => []).add(doc);
