@@ -44,6 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Cloud Functions build output (tsc outDir)
+/functions/lib/
+/functions/node_modules/
+
 # ============================================
 # SECURITY - NEVER COMMIT THESE FILES
 # ============================================

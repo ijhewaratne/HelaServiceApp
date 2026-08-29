@@ -13,6 +13,8 @@ enum WalletPaymentMethod {
 /// Abstract repository for wallet operations
 ///
 /// Phase 7: Business Features - In-App Wallet
+///
+/// All amounts are integer minor units (cents) — see [WalletEntity].
 abstract class WalletRepository {
   /// Get or create wallet for user
   Future<Either<Failure, WalletEntity>> getWallet(String userId);
@@ -27,7 +29,7 @@ abstract class WalletRepository {
   /// Top up wallet
   Future<Either<Failure, WalletEntity>> topUp({
     required String userId,
-    required double amount,
+    required int amount,
     required WalletPaymentMethod method,
     String? description,
   });
@@ -35,7 +37,7 @@ abstract class WalletRepository {
   /// Process payment from wallet
   Future<Either<Failure, WalletEntity>> processPayment({
     required String userId,
-    required double amount,
+    required int amount,
     required String bookingId,
     String? description,
   });
@@ -43,7 +45,7 @@ abstract class WalletRepository {
   /// Process refund to wallet
   Future<Either<Failure, WalletEntity>> processRefund({
     required String userId,
-    required double amount,
+    required int amount,
     required String bookingId,
     String? description,
   });
@@ -69,13 +71,13 @@ abstract class WalletRepository {
   /// Unfreeze wallet (admin only)
   Future<Either<Failure, WalletEntity>> unfreezeWallet(String userId);
 
-  /// Get wallet balance (real-time)
-  Stream<Either<Failure, double>> watchBalance(String userId);
+  /// Get wallet balance (real-time, cents)
+  Stream<Either<Failure, int>> watchBalance(String userId);
 
-  /// Verify sufficient balance
+  /// Verify sufficient balance (amount in cents)
   Future<Either<Failure, bool>> hasSufficientBalance(
     String userId,
-    double amount,
+    int amount,
   );
 
   /// Get wallet statistics
@@ -86,14 +88,14 @@ abstract class WalletRepository {
   });
 }
 
-/// Wallet statistics
+/// Wallet statistics (all amounts in cents)
 class WalletStatistics {
-  final double openingBalance;
-  final double closingBalance;
-  final double totalCredits;
-  final double totalDebits;
+  final int openingBalance;
+  final int closingBalance;
+  final int totalCredits;
+  final int totalDebits;
   final int transactionCount;
-  final Map<TransactionType, double> byType;
+  final Map<TransactionType, int> byType;
 
   const WalletStatistics({
     required this.openingBalance,
@@ -104,14 +106,14 @@ class WalletStatistics {
     required this.byType,
   });
 
-  double get netChange => closingBalance - openingBalance;
+  int get netChange => closingBalance - openingBalance;
 
   factory WalletStatistics.empty() {
     return const WalletStatistics(
-      openingBalance: 0.0,
-      closingBalance: 0.0,
-      totalCredits: 0.0,
-      totalDebits: 0.0,
+      openingBalance: 0,
+      closingBalance: 0,
+      totalCredits: 0,
+      totalDebits: 0,
       transactionCount: 0,
       byType: {},
     );

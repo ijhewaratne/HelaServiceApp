@@ -101,17 +101,20 @@ export const payhereNotify = functions.https.onRequest(async (req, res) => {
         // order_id convention: 'topup_{userId}_{timestamp}'
         if (order_id.startsWith('topup_') && status_code === '2') {
             const topupUserId = customerId || order_id.split('_')[1];
-            const topupAmount = parseFloat(payhere_amount);
+            const topupAmount = parseFloat(payhere_amount); // LKR, as PayHere reports it
             if (topupUserId && topupAmount > 0) {
+                // wallets.balance/totalCredited and transactions.amount/balanceAfter
+                // are stored in integer cents.
+                const topupAmountCents = Math.round(topupAmount * 100);
                 await db.runTransaction(async (tx) => {
                     const walletRef = db.collection('wallets').doc(topupUserId);
                     const walletSnap = await tx.get(walletRef);
                     const wallet = walletSnap.data() ?? {};
-                    const newBalance = (wallet.balance as number ?? 0) + topupAmount;
+                    const newBalance = (wallet.balance as number ?? 0) + topupAmountCents;
                     tx.set(walletRef, {
                         userId: topupUserId,
                         balance: newBalance,
-                        totalCredited: (wallet.totalCredited as number ?? 0) + topupAmount,
+                        totalCredited: (wallet.totalCredited as number ?? 0) + topupAmountCents,
                         isActive: true,
                         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                     }, { merge: true });
@@ -120,7 +123,7 @@ export const payhereNotify = functions.https.onRequest(async (req, res) => {
                         id: txRef.id,
                         userId: topupUserId,
                         type: 'topUp',
-                        amount: topupAmount,
+                        amount: topupAmountCents,
                         balanceAfter: newBalance,
                         paymentMethod: 'payhere',
                         description: `PayHere wallet top-up`,

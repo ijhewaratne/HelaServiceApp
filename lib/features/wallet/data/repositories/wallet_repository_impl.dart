@@ -10,6 +10,12 @@ import '../models/wallet_model.dart';
 /// Implementation of WalletRepository using Firebase Firestore
 ///
 /// Phase 7: Business Features - In-App Wallet
+///
+/// All amounts are integer cents. There is no stored "availableBalance"
+/// field — it is always derived as balance - heldBalance, matching the
+/// convention enforced across the Cloud Functions that also write to the
+/// wallets collection (holdWalletFunds, releaseWalletFunds, payhereNotify,
+/// processRefund, completeReferralOnBooking).
 class WalletRepositoryImpl implements WalletRepository {
   final FirebaseFirestore _firestore;
 
@@ -24,9 +30,10 @@ class WalletRepositoryImpl implements WalletRepository {
         // Create new wallet
         final newWallet = WalletModel(
           userId: userId,
-          balance: 0.0,
-          totalCredited: 0.0,
-          totalDebited: 0.0,
+          balance: 0,
+          heldBalance: 0,
+          totalCredited: 0,
+          totalDebited: 0,
           isActive: true,
           isFrozen: false,
           createdAt: DateTime.now(),
@@ -92,7 +99,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<Either<Failure, WalletEntity>> topUp({
     required String userId,
-    required double amount,
+    required int amount,
     required WalletPaymentMethod method,
     String? description,
   }) async {
@@ -111,8 +118,9 @@ class WalletRepositoryImpl implements WalletRepository {
             // Create wallet first
             transaction.set(walletRef, {
               'balance': amount,
+              'heldBalance': 0,
               'totalCredited': amount,
-              'totalDebited': 0.0,
+              'totalDebited': 0,
               'isActive': true,
               'isFrozen': false,
               'createdAt': FieldValue.serverTimestamp(),
@@ -120,9 +128,9 @@ class WalletRepositoryImpl implements WalletRepository {
             });
           } else {
             final currentBalance =
-                ((snapshot.data()?['balance'] ?? 0.0) as num).toDouble();
+                ((snapshot.data()?['balance'] ?? 0) as num).toInt();
             final currentTotalCredited =
-                ((snapshot.data()?['totalCredited'] ?? 0.0) as num).toDouble();
+                ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt();
 
             final newBalance = currentBalance + amount;
             final newTotalCredited = currentTotalCredited + amount;
@@ -143,7 +151,7 @@ class WalletRepositoryImpl implements WalletRepository {
             'amount': amount,
             'balanceAfter': !snapshot.exists
                 ? amount
-                : ((snapshot.data()?['balance'] ?? 0.0) as num).toDouble() +
+                : ((snapshot.data()?['balance'] ?? 0) as num).toInt() +
                     amount,
             'description': description ?? 'Wallet top-up',
             'paymentMethod': method.name,
@@ -155,14 +163,16 @@ class WalletRepositoryImpl implements WalletRepository {
             userId: userId,
             balance: !snapshot.exists
                 ? amount
-                : ((snapshot.data()?['balance'] ?? 0.0) as num).toDouble() +
+                : ((snapshot.data()?['balance'] ?? 0) as num).toInt() +
                     amount,
+            heldBalance:
+                ((snapshot.data()?['heldBalance'] ?? 0) as num).toInt(),
             totalCredited: !snapshot.exists
                 ? amount
-                : ((snapshot.data()?['totalCredited'] ?? 0.0) as num)
-                        .toDouble() +
+                : ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt() +
                     amount,
-            totalDebited: (snapshot.data()?['totalDebited'] ?? 0.0) as double,
+            totalDebited:
+                ((snapshot.data()?['totalDebited'] ?? 0) as num).toInt(),
             isActive: true,
             isFrozen: false,
             createdAt: DateTime.now(),
@@ -180,7 +190,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<Either<Failure, WalletEntity>> processPayment({
     required String userId,
-    required double amount,
+    required int amount,
     required String bookingId,
     String? description,
   }) async {
@@ -199,7 +209,7 @@ class WalletRepositoryImpl implements WalletRepository {
           }
 
           final walletData = snapshot.data()!;
-          final currentBalance = (walletData['balance'] as num?)?.toDouble() ?? 0.0;
+          final currentBalance = (walletData['balance'] as num?)?.toInt() ?? 0;
           final isFrozen = walletData['isFrozen'] as bool? ?? false;
           final isActive = walletData['isActive'] as bool? ?? true;
 
@@ -216,7 +226,7 @@ class WalletRepositoryImpl implements WalletRepository {
           }
 
           final currentTotalDebited =
-              (walletData['totalDebited'] ?? 0.0) as double;
+              ((walletData['totalDebited'] ?? 0) as num).toInt();
           final newBalance = currentBalance - amount;
           final newTotalDebited = currentTotalDebited + amount;
 
@@ -254,7 +264,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<Either<Failure, WalletEntity>> processRefund({
     required String userId,
-    required double amount,
+    required int amount,
     required String bookingId,
     String? description,
   }) async {
@@ -269,9 +279,9 @@ class WalletRepositoryImpl implements WalletRepository {
           }
 
           final walletData = snapshot.data()!;
-          final currentBalance = (walletData['balance'] ?? 0.0) as double;
+          final currentBalance = ((walletData['balance'] ?? 0) as num).toInt();
           final currentTotalCredited =
-              (walletData['totalCredited'] ?? 0.0) as double;
+              ((walletData['totalCredited'] ?? 0) as num).toInt();
 
           final newBalance = currentBalance + amount;
           final newTotalCredited = currentTotalCredited + amount;
@@ -408,26 +418,26 @@ class WalletRepositoryImpl implements WalletRepository {
   }
 
   @override
-  Stream<Either<Failure, double>> watchBalance(String userId) {
+  Stream<Either<Failure, int>> watchBalance(String userId) {
     return _firestore
         .collection('wallets')
         .doc(userId)
         .snapshots()
-        .map<Either<Failure, double>>((snapshot) {
+        .map<Either<Failure, int>>((snapshot) {
       if (!snapshot.exists) {
-        return const Right(0.0);
+        return const Right(0);
       }
       final data = snapshot.data();
-      return Right((data?['balance'] ?? 0.0) as double);
+      return Right(((data?['balance'] ?? 0) as num).toInt());
     }).handleError((e) {
-      return Left<Failure, double>(ServerFailure('Failed to watch balance: $e'));
+      return Left<Failure, int>(ServerFailure('Failed to watch balance: $e'));
     });
   }
 
   @override
   Future<Either<Failure, bool>> hasSufficientBalance(
     String userId,
-    double amount,
+    int amount,
   ) async {
     final walletResult = await getWallet(userId);
     return walletResult.map((wallet) => wallet.hasSufficientBalance(amount));
@@ -460,9 +470,9 @@ class WalletRepositoryImpl implements WalletRepository {
       );
 
       return transactions.map((txList) {
-        double totalCredits = 0.0;
-        double totalDebits = 0.0;
-        Map<TransactionType, double> byType = {};
+        int totalCredits = 0;
+        int totalDebits = 0;
+        Map<TransactionType, int> byType = {};
 
         for (final tx in txList) {
           if (tx.amount > 0) {
@@ -471,7 +481,7 @@ class WalletRepositoryImpl implements WalletRepository {
             totalDebits += tx.amount.abs();
           }
 
-          byType[tx.type] = (byType[tx.type] ?? 0.0) + tx.amount.abs();
+          byType[tx.type] = (byType[tx.type] ?? 0) + tx.amount.abs();
         }
 
         return WalletStatistics(

@@ -157,11 +157,10 @@ class _HomeHeader extends StatelessWidget {
                   .snapshots(),
               builder: (context, snap) {
                 final data = snap.data?.data() as Map<String, dynamic>?;
-                final balance =
-                    (data?['balance'] as num?)?.toDouble() ?? 0.0;
-                final held =
-                    (data?['heldBalance'] as num?)?.toDouble() ?? 0.0;
-                final available = balance - held;
+                // balance/heldBalance are stored in integer cents.
+                final balance = (data?['balance'] as num?)?.toInt() ?? 0;
+                final held = (data?['heldBalance'] as num?)?.toInt() ?? 0;
+                final available = (balance - held) / 100;
                 return GestureDetector(
                   onTap: () => context.push('/wallet/topup'),
                   child: Container(

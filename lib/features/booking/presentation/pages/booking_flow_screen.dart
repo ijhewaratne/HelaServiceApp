@@ -945,7 +945,7 @@ class _ReviewStep extends StatelessWidget {
                 return const Center(child: Padding(
                     padding: EdgeInsets.all(12), child: CircularProgressIndicator()));
               }
-              final available = snap.data?.availableBalance ?? 0;
+              final available = snap.data?.availableBalanceLKR ?? 0;
               final ok = available >= price;
               final color = ok ? AppTheme.successColor : AppTheme.errorColor;
               return Container(

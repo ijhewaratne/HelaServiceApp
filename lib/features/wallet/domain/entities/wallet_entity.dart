@@ -19,12 +19,15 @@ enum TransactionStatus {
 }
 
 /// Transaction entity
+///
+/// [amount] and [balanceAfter] are integer minor units (cents), matching
+/// [WalletEntity.balance]. Use [formattedAmount] for LKR display.
 class TransactionEntity extends Equatable {
   final String id;
   final String userId;
   final TransactionType type;
-  final double amount;
-  final double balanceAfter;
+  final int amount;
+  final int balanceAfter;
   final String? description;
   final String? relatedBookingId;
   final String? paymentMethod;
@@ -51,17 +54,17 @@ class TransactionEntity extends Equatable {
     id: '',
     userId: '',
     type: TransactionType.topUp,
-    amount: 0.0,
-    balanceAfter: 0.0,
+    amount: 0,
+    balanceAfter: 0,
     createdAt: DateTime(2000, 1, 1),
   );
 
   bool get isEmpty => id.isEmpty;
 
-  /// Get formatted amount with sign
+  /// Get formatted amount with sign (LKR, converted from cents)
   String get formattedAmount {
     final sign = _isCredit ? '+' : '-';
-    return '$sign LKR ${amount.abs().toStringAsFixed(2)}';
+    return '$sign LKR ${(amount.abs() / 100).toStringAsFixed(2)}';
   }
 
   /// Get display icon based on transaction type
@@ -92,8 +95,8 @@ class TransactionEntity extends Equatable {
     String? id,
     String? userId,
     TransactionType? type,
-    double? amount,
-    double? balanceAfter,
+    int? amount,
+    int? balanceAfter,
     String? description,
     String? relatedBookingId,
     String? paymentMethod,
@@ -130,12 +133,19 @@ class TransactionEntity extends Equatable {
 /// Wallet entity
 ///
 /// Phase 7: Business Features - In-App Wallet
+///
+/// [balance], [heldBalance], [totalCredited], and [totalDebited] are integer
+/// minor units (cents) to avoid floating-point drift across many
+/// FieldValue.increment() writes. There is no separately-stored
+/// "availableBalance" field anywhere (client or server) — it is always
+/// derived as [availableBalance] below, so it can never disagree with
+/// balance/heldBalance.
 class WalletEntity extends Equatable {
   final String userId;
-  final double balance;
-  final double heldBalance; // funds locked pending booking completion
-  final double totalCredited;
-  final double totalDebited;
+  final int balance;
+  final int heldBalance; // funds locked pending booking completion
+  final int totalCredited;
+  final int totalDebited;
   final List<TransactionEntity> transactions;
   final bool isActive;
   final bool isFrozen;
@@ -144,10 +154,10 @@ class WalletEntity extends Equatable {
 
   const WalletEntity({
     required this.userId,
-    this.balance = 0.0,
-    this.heldBalance = 0.0,
-    this.totalCredited = 0.0,
-    this.totalDebited = 0.0,
+    this.balance = 0,
+    this.heldBalance = 0,
+    this.totalCredited = 0,
+    this.totalDebited = 0,
     this.transactions = const [],
     this.isActive = true,
     this.isFrozen = false,
@@ -163,20 +173,26 @@ class WalletEntity extends Equatable {
 
   bool get isEmpty => userId.isEmpty;
 
-  /// Check if wallet has sufficient balance
-  double get availableBalance => balance - heldBalance;
+  /// Check if wallet has sufficient balance (cents)
+  int get availableBalance => balance - heldBalance;
 
-  bool hasSufficientBalance(double amount) =>
-      availableBalance >= amount && !isFrozen;
+  /// [availableBalance] converted to LKR, for display/comparison against
+  /// other LKR-denominated values (e.g. booking prices).
+  double get availableBalanceLKR => availableBalance / 100;
 
-  /// Get formatted balance
-  String get formattedBalance => 'LKR ${balance.toStringAsFixed(2)}';
+  bool hasSufficientBalance(int amountCents) =>
+      availableBalance >= amountCents && !isFrozen;
 
-  /// Get formatted total credited
-  String get formattedTotalCredited => 'LKR ${totalCredited.toStringAsFixed(2)}';
+  /// Get formatted balance (LKR, converted from cents)
+  String get formattedBalance => 'LKR ${(balance / 100).toStringAsFixed(2)}';
 
-  /// Get formatted total debited
-  String get formattedTotalDebited => 'LKR ${totalDebited.toStringAsFixed(2)}';
+  /// Get formatted total credited (LKR, converted from cents)
+  String get formattedTotalCredited =>
+      'LKR ${(totalCredited / 100).toStringAsFixed(2)}';
+
+  /// Get formatted total debited (LKR, converted from cents)
+  String get formattedTotalDebited =>
+      'LKR ${(totalDebited / 100).toStringAsFixed(2)}';
 
   /// Get recent transactions (last 10)
   List<TransactionEntity> get recentTransactions =>
@@ -192,32 +208,32 @@ class WalletEntity extends Equatable {
         .toList();
   }
 
-  /// Get total credits for a period
-  double getTotalCreditsForPeriod(DateTime start, DateTime end) {
+  /// Get total credits for a period (cents)
+  int getTotalCreditsForPeriod(DateTime start, DateTime end) {
     return getTransactionsForPeriod(start, end)
         .where((t) =>
             t.type == TransactionType.topUp ||
             t.type == TransactionType.refund ||
             t.type == TransactionType.referralReward ||
             t.type == TransactionType.promoCredit)
-        .fold(0.0, (sum, t) => sum + t.amount);
+        .fold(0, (sum, t) => sum + t.amount);
   }
 
-  /// Get total debits for a period
-  double getTotalDebitsForPeriod(DateTime start, DateTime end) {
+  /// Get total debits for a period (cents)
+  int getTotalDebitsForPeriod(DateTime start, DateTime end) {
     return getTransactionsForPeriod(start, end)
         .where((t) =>
             t.type == TransactionType.payment ||
             t.type == TransactionType.withdrawal)
-        .fold(0.0, (sum, t) => sum + t.amount.abs());
+        .fold(0, (sum, t) => sum + t.amount.abs());
   }
 
   WalletEntity copyWith({
     String? userId,
-    double? balance,
-    double? heldBalance,
-    double? totalCredited,
-    double? totalDebited,
+    int? balance,
+    int? heldBalance,
+    int? totalCredited,
+    int? totalDebited,
     List<TransactionEntity>? transactions,
     bool? isActive,
     bool? isFrozen,
@@ -250,8 +266,8 @@ class WalletEntity extends Equatable {
 
 /// Extension for wallet operations
 extension WalletEntityX on WalletEntity {
-  /// Check if wallet can perform a transaction
-  bool canPerformTransaction(double amount, {bool allowNegative = false}) {
+  /// Check if wallet can perform a transaction (amount in cents)
+  bool canPerformTransaction(int amount, {bool allowNegative = false}) {
     if (!isActive || isFrozen) return false;
     if (amount <= 0) return true;
     return allowNegative || balance >= amount;

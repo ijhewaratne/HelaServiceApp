@@ -3,12 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/wallet_entity.dart';
 import 'transaction_model.dart';
 
-/// Wallet model for Firestore
+/// Wallet model for Firestore.
+///
+/// balance/heldBalance/totalCredited/totalDebited are stored as integer
+/// cents. There is no stored "availableBalance" field — every writer
+/// (client and Cloud Functions) derives it as balance - heldBalance, so it
+/// can never disagree with the two source fields.
 class WalletModel {
   final String userId;
-  final double balance;
-  final double totalCredited;
-  final double totalDebited;
+  final int balance;
+  final int heldBalance;
+  final int totalCredited;
+  final int totalDebited;
   final bool isActive;
   final bool isFrozen;
   final DateTime createdAt;
@@ -18,6 +24,7 @@ class WalletModel {
   WalletModel({
     required this.userId,
     required this.balance,
+    this.heldBalance = 0,
     required this.totalCredited,
     required this.totalDebited,
     required this.isActive,
@@ -29,7 +36,7 @@ class WalletModel {
 
   factory WalletModel.fromFirestore(DocumentSnapshot doc, {QuerySnapshot? transactionsSnapshot}) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     List<TransactionModel>? transactions;
     if (transactionsSnapshot != null) {
       transactions = transactionsSnapshot.docs
@@ -39,9 +46,10 @@ class WalletModel {
 
     return WalletModel(
       userId: doc.id,
-      balance: (data['balance'] as num?)?.toDouble() ?? 0.0,
-      totalCredited: (data['totalCredited'] as num?)?.toDouble() ?? 0.0,
-      totalDebited: (data['totalDebited'] as num?)?.toDouble() ?? 0.0,
+      balance: (data['balance'] as num?)?.toInt() ?? 0,
+      heldBalance: (data['heldBalance'] as num?)?.toInt() ?? 0,
+      totalCredited: (data['totalCredited'] as num?)?.toInt() ?? 0,
+      totalDebited: (data['totalDebited'] as num?)?.toInt() ?? 0,
       isActive: data['isActive'] as bool? ?? true,
       isFrozen: data['isFrozen'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -55,6 +63,7 @@ class WalletModel {
   Map<String, dynamic> toFirestore() {
     return {
       'balance': balance,
+      'heldBalance': heldBalance,
       'totalCredited': totalCredited,
       'totalDebited': totalDebited,
       'isActive': isActive,
@@ -68,6 +77,7 @@ class WalletModel {
     return WalletEntity(
       userId: userId,
       balance: balance,
+      heldBalance: heldBalance,
       totalCredited: totalCredited,
       totalDebited: totalDebited,
       transactions: transactions?.map((t) => t.toEntity()).toList() ?? [],
@@ -79,9 +89,10 @@ class WalletModel {
   }
 
   WalletModel copyWith({
-    double? balance,
-    double? totalCredited,
-    double? totalDebited,
+    int? balance,
+    int? heldBalance,
+    int? totalCredited,
+    int? totalDebited,
     bool? isActive,
     bool? isFrozen,
     DateTime? updatedAt,
@@ -90,6 +101,7 @@ class WalletModel {
     return WalletModel(
       userId: userId,
       balance: balance ?? this.balance,
+      heldBalance: heldBalance ?? this.heldBalance,
       totalCredited: totalCredited ?? this.totalCredited,
       totalDebited: totalDebited ?? this.totalDebited,
       isActive: isActive ?? this.isActive,

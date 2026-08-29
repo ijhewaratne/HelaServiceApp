@@ -42,8 +42,9 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
         .get();
     if (snap.exists && mounted) {
       setState(() {
+        // balance is stored in integer cents.
         _currentBalance =
-            (snap.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+            ((snap.data()?['balance'] as num?)?.toInt() ?? 0) / 100;
       });
     }
   }

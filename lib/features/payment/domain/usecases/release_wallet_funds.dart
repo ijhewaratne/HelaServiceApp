@@ -14,14 +14,18 @@ class ReleaseWalletFunds implements UseCase<void, ReleaseWalletFundsParams> {
   @override
   Future<Either<Failure, void>> call(ReleaseWalletFundsParams params) async {
     try {
+      // Wallet heldBalance is stored in integer cents; params.amount is LKR
+      // (matching Booking.heldAmount elsewhere in the app).
+      final amountCents = (params.amount * 100).round();
+
       await _db.runTransaction((tx) async {
         final ref = _db.collection('wallets').doc(params.customerId);
         final snap = await tx.get(ref);
         if (!snap.exists) throw Exception('Wallet not found');
 
         final data = snap.data()!;
-        final held = (data['heldBalance'] as num?)?.toDouble() ?? 0.0;
-        final release = held < params.amount ? held : params.amount;
+        final held = (data['heldBalance'] as num?)?.toInt() ?? 0;
+        final release = held < amountCents ? held : amountCents;
 
         tx.update(ref, {
           'heldBalance': FieldValue.increment(-release),

@@ -158,7 +158,10 @@ export const completeReferralOnBooking = functions.firestore
         const referralData = referralDoc.data();
         const referralId = referralDoc.id;
         const referrerId = referralData.referrerId;
-        const rewardAmount = referralData.rewardAmount || DEFAULT_REFERRAL_REWARD;
+        // referrals.rewardAmount / DEFAULT_REFERRAL_REWARD are LKR;
+        // wallets.balance/totalCredited and wallet_transactions.amount are cents.
+        const rewardAmountLkr = referralData.rewardAmount || DEFAULT_REFERRAL_REWARD;
+        const rewardAmount = Math.round(rewardAmountLkr * 100);
 
         // Start a batch to ensure atomic updates
         const batch = db.batch();
@@ -174,6 +177,8 @@ export const completeReferralOnBooking = functions.firestore
         // Credit referrer's wallet
         const referrerWalletRef = db.collection('wallets').doc(referrerId);
         const referrerWalletDoc = await referrerWalletRef.get();
+        const referrerBalanceBefore = (referrerWalletDoc.data()?.balance as number) ?? 0;
+        const referrerBalanceAfter = referrerBalanceBefore + rewardAmount;
 
         if (referrerWalletDoc.exists) {
           batch.update(referrerWalletRef, {
@@ -200,7 +205,7 @@ export const completeReferralOnBooking = functions.firestore
           userId: referrerId,
           type: 'referralReward',
           amount: rewardAmount,
-          balanceAfter: admin.firestore.FieldValue.increment(rewardAmount),
+          balanceAfter: referrerBalanceAfter,
           description: `Referral reward for inviting user ${customerId.substring(0, 8)}...`,
           relatedBookingId: context.params.bookingId,
           relatedReferralId: referralId,
@@ -211,7 +216,10 @@ export const completeReferralOnBooking = functions.firestore
         // Credit referred user's wallet (welcome bonus)
         const referredWalletRef = db.collection('wallets').doc(customerId);
         const referredWalletDoc = await referredWalletRef.get();
-        const welcomeBonus = 100; // LKR 100 welcome bonus
+        const welcomeBonusLkr = 100; // LKR 100 welcome bonus
+        const welcomeBonus = welcomeBonusLkr * 100; // cents
+        const referredBalanceBefore = (referredWalletDoc.data()?.balance as number) ?? 0;
+        const referredBalanceAfter = referredBalanceBefore + welcomeBonus;
 
         if (referredWalletDoc.exists) {
           batch.update(referredWalletRef, {
@@ -237,7 +245,7 @@ export const completeReferralOnBooking = functions.firestore
           userId: customerId,
           type: 'referralReward',
           amount: welcomeBonus,
-          balanceAfter: admin.firestore.FieldValue.increment(welcomeBonus),
+          balanceAfter: referredBalanceAfter,
           description: 'Welcome bonus for signing up with a referral code',
           relatedBookingId: context.params.bookingId,
           relatedReferralId: referralId,
@@ -255,14 +263,14 @@ export const completeReferralOnBooking = functions.firestore
           referralStatus: 'completed',
         });
 
-        // Update referral with reward status
+        // Update referral with reward status (LKR, matching referrals.rewardAmount)
         batch.update(referralDoc.ref, {
           status: 'rewarded',
           rewardedAt: now,
           referrerRewarded: true,
           referredRewarded: true,
-          referrerRewardAmount: rewardAmount,
-          referredRewardAmount: welcomeBonus,
+          referrerRewardAmount: rewardAmountLkr,
+          referredRewardAmount: welcomeBonusLkr,
         });
 
         // Commit all updates
@@ -272,11 +280,11 @@ export const completeReferralOnBooking = functions.firestore
         await createNotification(
           referrerId,
           'Referral Reward Earned! 🎉',
-          `You've earned LKR ${rewardAmount} because ${customerId.substring(0, 8)}... completed their first booking!`,
+          `You've earned LKR ${rewardAmountLkr} because ${customerId.substring(0, 8)}... completed their first booking!`,
           {
             type: 'referral_reward',
             referralId: referralId,
-            rewardAmount: rewardAmount,
+            rewardAmount: rewardAmountLkr,
           }
         );
 
@@ -284,11 +292,11 @@ export const completeReferralOnBooking = functions.firestore
         await createNotification(
           customerId,
           'Welcome Bonus! 🎁',
-          `You've earned LKR ${welcomeBonus} for completing your first booking!`,
+          `You've earned LKR ${welcomeBonusLkr} for completing your first booking!`,
           {
             type: 'welcome_bonus',
             referralId: referralId,
-            rewardAmount: welcomeBonus,
+            rewardAmount: welcomeBonusLkr,
           }
         );
 

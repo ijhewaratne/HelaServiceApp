@@ -14,27 +14,31 @@ class HoldWalletFunds implements UseCase<void, HoldWalletFundsParams> {
   @override
   Future<Either<Failure, void>> call(HoldWalletFundsParams params) async {
     try {
+      // Wallet balance/heldBalance are stored in integer cents; params.amount
+      // is LKR (matching Booking.estimatedPrice etc. elsewhere in the app).
+      final amountCents = (params.amount * 100).round();
+
       await _db.runTransaction((tx) async {
         final ref = _db.collection('wallets').doc(params.customerId);
         final snap = await tx.get(ref);
         if (!snap.exists) throw Exception('Wallet not found');
 
         final data = snap.data()!;
-        final balance = (data['balance'] as num?)?.toDouble() ?? 0.0;
-        final held = (data['heldBalance'] as num?)?.toDouble() ?? 0.0;
+        final balance = (data['balance'] as num?)?.toInt() ?? 0;
+        final held = (data['heldBalance'] as num?)?.toInt() ?? 0;
         final available = balance - held;
 
-        if (available < params.amount) {
+        if (available < amountCents) {
           throw Exception(
-              'Insufficient available balance: $available < ${params.amount}');
+              'Insufficient available balance: $available < $amountCents');
         }
 
         tx.update(ref, {
-          'heldBalance': FieldValue.increment(params.amount),
+          'heldBalance': FieldValue.increment(amountCents),
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        // Mirror held amount onto the booking
+        // Mirror held amount onto the booking (LKR, matching Booking.heldAmount)
         final bookingRef =
             _db.collection('bookings').doc(params.bookingId);
         tx.update(bookingRef, {'heldAmount': params.amount});

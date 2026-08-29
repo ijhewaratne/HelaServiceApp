@@ -25,7 +25,7 @@ class TopUpWallet implements UseCase<WalletEntity, TopUpWalletParams> {
 
 class TopUpWalletParams extends Equatable {
   final String userId;
-  final double amount;
+  final int amount;
   final WalletPaymentMethod method;
   final String? description;
 

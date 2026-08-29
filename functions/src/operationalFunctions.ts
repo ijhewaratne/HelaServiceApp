@@ -55,10 +55,15 @@ export const processRefund = functions.https.onCall(async (data, context) => {
     const currentBalance: number = wallet.balance ?? 0;
     const currentHeld: number = wallet.heldBalance ?? 0;
 
-    // Return held funds to available balance
+    // heldAmount is LKR (Booking.heldAmount); wallets.balance/heldBalance and
+    // transactions.amount are integer cents.
+    const heldAmountCents = Math.round(heldAmount * 100);
+
+    // Return held funds to available balance (balance - heldBalance is always
+    // the source of truth — there is no separately-stored availableBalance)
     tx.update(walletRef, {
-      balance: currentBalance + heldAmount,
-      heldBalance: Math.max(0, currentHeld - heldAmount),
+      balance: currentBalance + heldAmountCents,
+      heldBalance: Math.max(0, currentHeld - heldAmountCents),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -68,7 +73,7 @@ export const processRefund = functions.https.onCall(async (data, context) => {
       id: txRef.id,
       userId: booking.customerId,
       type: 'refund',
-      amount: heldAmount,
+      amount: heldAmountCents,
       relatedBookingId: bookingId,
       description: reason ?? 'Booking cancellation refund',
       status: 'completed',
@@ -412,12 +417,15 @@ export const cleanupOldPendingBookings = functions.pubsub
 
       // Refund any held funds (fire-and-forget via a separate transaction)
       if ((data.heldAmount as number ?? 0) > 0) {
+        // data.heldAmount is LKR (Booking.heldAmount); wallets.balance/heldBalance
+        // are integer cents.
+        const heldAmountCents = Math.round((data.heldAmount as number) * 100);
         db.runTransaction(async (tx) => {
           const walletRef = db.collection('wallets').doc(data.customerId as string);
           const wallet = (await tx.get(walletRef)).data() ?? {};
           tx.update(walletRef, {
-            balance: (wallet.balance as number ?? 0) + (data.heldAmount as number),
-            heldBalance: Math.max(0, (wallet.heldBalance as number ?? 0) - (data.heldAmount as number)),
+            balance: (wallet.balance as number ?? 0) + heldAmountCents,
+            heldBalance: Math.max(0, (wallet.heldBalance as number ?? 0) - heldAmountCents),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
         }).catch(err => console.error('Auto-refund failed for booking', doc.id, err));

@@ -9,9 +9,15 @@ const MIN_PAYOUT_THRESHOLD_LKR = 1000;
 // ── Hold Wallet Funds (Escrow on Booking Confirmation) ────────────────────────
 
 /**
- * Callable: atomically move `amount` from customer's availableBalance → heldBalance.
+ * Callable: atomically move `amount` from customer's available balance → heldBalance.
  * Must be called before a booking is confirmed.
- * Params: { customerId: string, bookingId: string, amount: number }
+ * Params: { customerId: string, bookingId: string, amount: number } — amount is LKR.
+ *
+ * wallets.balance/heldBalance are stored in integer cents. There is no
+ * separately-stored "availableBalance" field — it is always derived as
+ * balance - heldBalance, here and in every other function that touches this
+ * collection (releaseWalletFunds, payhereNotify, processRefund,
+ * completeReferralOnBooking), so the two numbers can never disagree.
  */
 export const holdWalletFunds = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -33,6 +39,8 @@ export const holdWalletFunds = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Not authorised to hold funds for this customer');
   }
 
+  const amountCents = Math.round(amount * 100);
+
   const walletRef = db.collection('wallets').doc(customerId);
   const bookingRef = db.collection('bookings').doc(bookingId);
 
@@ -43,13 +51,14 @@ export const holdWalletFunds = functions.https.onCall(async (data, context) => {
     if (!bookingSnap.exists) throw new functions.https.HttpsError('not-found', 'Booking not found');
 
     const wallet = walletSnap.data()!;
-    const available = (wallet.availableBalance ?? wallet.balance ?? 0) as number;
+    const balance = (wallet.balance ?? 0) as number;
     const held = (wallet.heldBalance ?? 0) as number;
+    const available = balance - held;
 
-    if (available < amount) {
+    if (available < amountCents) {
       throw new functions.https.HttpsError(
         'failed-precondition',
-        `Insufficient balance: available LKR ${available.toFixed(2)}, needed LKR ${amount.toFixed(2)}`,
+        `Insufficient balance: available LKR ${(available / 100).toFixed(2)}, needed LKR ${amount.toFixed(2)}`,
       );
     }
 
@@ -59,8 +68,7 @@ export const holdWalletFunds = functions.https.onCall(async (data, context) => {
     }
 
     tx.update(walletRef, {
-      availableBalance: available - amount,
-      heldBalance: held + amount,
+      heldBalance: held + amountCents,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -70,20 +78,20 @@ export const holdWalletFunds = functions.https.onCall(async (data, context) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Wallet transaction log
+    // Wallet transaction log (amount in cents, matching wallets.balance)
     const txRef = db.collection('wallet_transactions').doc();
     tx.set(txRef, {
       id: txRef.id,
       walletId: customerId,
       type: 'hold',
-      amount,
+      amount: amountCents,
       bookingId,
       description: 'Funds held for booking',
-      balanceAfter: available - amount,
+      balanceAfter: balance - held - amountCents,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return { success: true, heldAmount: amount, availableBalance: available - amount };
+    return { success: true, heldAmount: amount, availableBalance: (available - amountCents) / 100 };
   });
 });
 
@@ -124,22 +132,28 @@ export const releaseWalletFunds = functions.https.onCall(async (data, context) =
       throw new functions.https.HttpsError('already-exists', 'Funds already released for this booking');
     }
 
+    // booking.heldAmount is LKR (Booking.heldAmount elsewhere in the app);
+    // wallets.balance/heldBalance and wallet_transactions.amount are cents.
     const heldAmount = (booking.heldAmount ?? 0) as number;
     if (heldAmount <= 0) {
       throw new functions.https.HttpsError('failed-precondition', 'No held funds to release');
     }
+    const heldAmountCents = Math.round(heldAmount * 100);
 
     const platformFee = heldAmount * PLATFORM_FEE_RATE;
     const workerAmount = heldAmount - platformFee;
+    const workerAmountCents = Math.round(workerAmount * 100);
 
     // 1. Release hold on customer wallet
     const customerWalletRef = db.collection('wallets').doc(booking.customerId);
     const customerWalletSnap = await tx.get(customerWalletRef);
     if (customerWalletSnap.exists) {
       const cw = customerWalletSnap.data()!;
+      const currentBalance = (cw.balance ?? 0) as number;
       const currentHeld = (cw.heldBalance ?? 0) as number;
       tx.update(customerWalletRef, {
-        heldBalance: Math.max(0, currentHeld - heldAmount),
+        balance: Math.max(0, currentBalance - heldAmountCents),
+        heldBalance: Math.max(0, currentHeld - heldAmountCents),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
@@ -150,23 +164,21 @@ export const releaseWalletFunds = functions.https.onCall(async (data, context) =
     if (workerWalletSnap.exists) {
       const ww = workerWalletSnap.data()!;
       const workerBalance = (ww.balance ?? 0) as number;
-      const workerAvailable = (ww.availableBalance ?? workerBalance) as number;
       tx.update(workerWalletRef, {
-        balance: workerBalance + workerAmount,
-        availableBalance: workerAvailable + workerAmount,
+        balance: workerBalance + workerAmountCents,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } else {
       tx.set(workerWalletRef, {
-        balance: workerAmount,
-        availableBalance: workerAmount,
+        balance: workerAmountCents,
         heldBalance: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
 
-    // 3. Create pending payout record (paid out on next Monday batch)
+    // 3. Create pending payout record (paid out on next Monday batch).
+    // Payout amounts stay LKR, matching Payout entities/screens elsewhere.
     const payoutRef = db.collection('payouts').doc();
     tx.set(payoutRef, {
       id: payoutRef.id,
@@ -188,13 +200,13 @@ export const releaseWalletFunds = functions.https.onCall(async (data, context) =
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // 5. Wallet transaction logs
+    // 5. Wallet transaction logs (amounts in cents, matching wallets.balance)
     const customerTxRef = db.collection('wallet_transactions').doc();
     tx.set(customerTxRef, {
       id: customerTxRef.id,
       walletId: booking.customerId,
       type: 'debit',
-      amount: heldAmount,
+      amount: heldAmountCents,
       bookingId,
       description: 'Payment for completed booking',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -205,7 +217,7 @@ export const releaseWalletFunds = functions.https.onCall(async (data, context) =
       id: workerTxRef.id,
       walletId: booking.workerId,
       type: 'credit',
-      amount: workerAmount,
+      amount: workerAmountCents,
       bookingId,
       description: `Earnings (80% of LKR ${heldAmount.toFixed(2)})`,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

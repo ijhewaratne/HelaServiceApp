@@ -20,6 +20,11 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
     try {
       late Payout payout;
 
+      // Wallet balance/heldBalance/totalDebited are stored in integer cents;
+      // params.amount is LKR (matching Booking.finalPrice, Payout.grossAmount,
+      // and the transactions log below, which all stay LKR).
+      final amountCents = (params.amount * 100).round();
+
       await _db.runTransaction((tx) async {
         // 1. Read customer wallet
         final walletRef =
@@ -31,29 +36,30 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
         }
 
         final walletData = walletSnap.data()!;
-        final held = (walletData['heldBalance'] as num?)?.toDouble() ?? 0.0;
-        final balance = (walletData['balance'] as num?)?.toDouble() ?? 0.0;
+        final held = (walletData['heldBalance'] as num?)?.toInt() ?? 0;
+        final balance = (walletData['balance'] as num?)?.toInt() ?? 0;
 
-        if (held < params.amount) {
+        if (held < amountCents) {
           throw Exception(
-              'Held amount ($held) less than requested (${params.amount})');
+              'Held amount ($held) less than requested ($amountCents)');
         }
 
         // 2. Debit customer: release hold and debit from balance
         tx.update(walletRef, {
-          'balance': balance - params.amount,
-          'heldBalance': held - params.amount,
-          'totalDebited': FieldValue.increment(params.amount),
+          'balance': balance - amountCents,
+          'heldBalance': held - amountCents,
+          'totalDebited': FieldValue.increment(amountCents),
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        // 3. Log customer transaction
+        // 3. Log customer transaction (amount in cents, matching the wallet
+        // fields above and every other writer of this collection)
         final txRef = _db.collection('transactions').doc();
         tx.set(txRef, {
           'id': txRef.id,
           'userId': params.customerId,
           'type': 'payment',
-          'amount': params.amount,
+          'amount': amountCents,
           'description': 'Payment for booking ${params.bookingId}',
           'relatedBookingId': params.bookingId,
           'status': 'completed',

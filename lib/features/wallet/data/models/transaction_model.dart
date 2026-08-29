@@ -7,8 +7,8 @@ class TransactionModel {
   final String id;
   final String userId;
   final String type;
-  final double amount;
-  final double balanceAfter;
+  final int amount;
+  final int balanceAfter;
   final String? description;
   final String? relatedBookingId;
   final String? paymentMethod;
@@ -36,8 +36,8 @@ class TransactionModel {
       id: doc.id,
       userId: data['userId'] as String? ?? '',
       type: data['type'] as String? ?? 'topUp',
-      amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
-      balanceAfter: (data['balanceAfter'] as num?)?.toDouble() ?? 0.0,
+      amount: (data['amount'] as num?)?.toInt() ?? 0,
+      balanceAfter: (data['balanceAfter'] as num?)?.toInt() ?? 0,
       description: data['description'] as String?,
       relatedBookingId: data['relatedBookingId'] as String?,
       paymentMethod: data['paymentMethod'] as String?,
