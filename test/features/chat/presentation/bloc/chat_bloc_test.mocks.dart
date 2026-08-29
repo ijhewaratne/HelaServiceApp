@@ -7,6 +7,10 @@ import 'dart:async' as _i4;
 
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:home_service_app/core/errors/failures.dart' as _i5;
+import 'package:home_service_app/features/booking/domain/entities/booking.dart'
+    as _i7;
+import 'package:home_service_app/features/booking/domain/repositories/booking_repository.dart'
+    as _i6;
 import 'package:home_service_app/features/chat/domain/repositories/chat_repository.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
@@ -231,4 +235,197 @@ class MockChatRepository extends _i1.Mock implements _i3.ChatRepository {
                 ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, List<Map<String, dynamic>>>>);
+}
+
+/// A class which mocks [BookingRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockBookingRepository extends _i1.Mock implements _i6.BookingRepository {
+  MockBookingRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>> createBooking(
+    _i7.Booking? booking,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#createBooking, [booking]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i7.Booking>(
+                this,
+                Invocation.method(#createBooking, [booking]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>> getBooking(
+    String? bookingId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getBooking, [bookingId]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i7.Booking>(
+                this,
+                Invocation.method(#getBooking, [bookingId]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>> updateBooking(
+    String? bookingId,
+    Map<String, dynamic>? data,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateBooking, [bookingId, data]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i7.Booking>(
+                this,
+                Invocation.method(#updateBooking, [bookingId, data]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, void>> cancelBooking(
+    String? bookingId, {
+    String? reason,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#cancelBooking, [bookingId], {#reason: reason}),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, void>>.value(
+              _FakeEither_0<_i5.Failure, void>(
+                this,
+                Invocation.method(
+                  #cancelBooking,
+                  [bookingId],
+                  {#reason: reason},
+                ),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, void>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>> getCustomerBookings(
+    String? customerId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCustomerBookings, [customerId]),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i7.Booking>>(
+                    this,
+                    Invocation.method(#getCustomerBookings, [customerId]),
+                  ),
+                ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>> getWorkerBookings(
+    String? workerId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getWorkerBookings, [workerId]),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>>.value(
+                  _FakeEither_0<_i5.Failure, List<_i7.Booking>>(
+                    this,
+                    Invocation.method(#getWorkerBookings, [workerId]),
+                  ),
+                ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, List<_i7.Booking>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>> getActiveBookingForCustomer(
+    String? customerId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getActiveBookingForCustomer, [customerId]),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>>.value(
+                  _FakeEither_0<_i5.Failure, _i7.Booking?>(
+                    this,
+                    Invocation.method(#getActiveBookingForCustomer, [
+                      customerId,
+                    ]),
+                  ),
+                ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>> getActiveBookingForWorker(
+    String? workerId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getActiveBookingForWorker, [workerId]),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>>.value(
+                  _FakeEither_0<_i5.Failure, _i7.Booking?>(
+                    this,
+                    Invocation.method(#getActiveBookingForWorker, [workerId]),
+                  ),
+                ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking?>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>> assignWorker(
+    String? bookingId,
+    String? workerId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#assignWorker, [bookingId, workerId]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i7.Booking>(
+                this,
+                Invocation.method(#assignWorker, [bookingId, workerId]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>> updateBookingStatus(
+    String? bookingId,
+    _i7.BookingStatus? status, {
+    Map<String, dynamic>? additionalData,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateBookingStatus,
+              [bookingId, status],
+              {#additionalData: additionalData},
+            ),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>.value(
+              _FakeEither_0<_i5.Failure, _i7.Booking>(
+                this,
+                Invocation.method(
+                  #updateBookingStatus,
+                  [bookingId, status],
+                  {#additionalData: additionalData},
+                ),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i7.Booking>>);
+
+  @override
+  _i4.Stream<_i2.Either<_i5.Failure, _i7.Booking>> watchBooking(
+    String? bookingId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#watchBooking, [bookingId]),
+            returnValue:
+                _i4.Stream<_i2.Either<_i5.Failure, _i7.Booking>>.empty(),
+          )
+          as _i4.Stream<_i2.Either<_i5.Failure, _i7.Booking>>);
 }

@@ -52,6 +52,7 @@ import 'features/payment/presentation/bloc/payment_bloc.dart';
 
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
+import 'features/chat/presentation/bloc/chat_bloc.dart';
 
 import 'features/wallet/data/repositories/wallet_repository_impl.dart';
 import 'features/wallet/domain/repositories/wallet_repository.dart';
@@ -230,6 +231,12 @@ Future<void> init() async {
 
   sl.registerFactory(() => SafetyBloc(repository: sl()));
   sl.registerFactory(() => AdminBloc(sl()));
+
+  sl.registerFactory(() => ChatBloc(
+        chatRepository: sl(),
+        bookingRepository: sl(),
+        firebaseAuth: sl(),
+      ));
 
   // Support
   sl.registerLazySingleton<SupportRepository>(

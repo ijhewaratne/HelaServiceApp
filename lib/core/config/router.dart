@@ -63,6 +63,7 @@ import '../../features/wallet/presentation/pages/wallet_topup_page.dart';
 // Shared
 import '../../features/incident/presentation/pages/incident_report_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
+import '../../features/chat/presentation/bloc/chat_bloc.dart';
 import '../../features/support/presentation/pages/support_ticket_page.dart';
 import '../../features/support/presentation/pages/admin_support_screen.dart';
 import '../../features/admin/presentation/screens/admin_revenue_screen.dart';
@@ -351,8 +352,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/chat/:jobId',
       builder: (context, state) {
-        final jobId = state.pathParameters['jobId']!;
-        return ChatPage(jobId: jobId);
+        final bookingId = state.pathParameters['jobId']!;
+        return BlocProvider(
+          create: (_) => sl<ChatBloc>(),
+          child: ChatPage(bookingId: bookingId),
+        );
       },
     ),
     GoRoute(
