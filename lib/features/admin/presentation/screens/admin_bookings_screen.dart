@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../viewmodels/admin_dashboard_viewmodel.dart';
+import '../bloc/admin_bloc.dart';
+import '../bloc/admin_event.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
 import '../../../../injection_container.dart';
@@ -19,7 +20,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminViewModel>().fetchDashboardData();
+      context.read<AdminBloc>().add(const FetchDashboardData());
     });
   }
 
@@ -57,15 +58,15 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
     );
 
     if (selected != null && mounted) {
-      await context
-          .read<AdminViewModel>()
-          .manuallyAssignWorker(bookingId, selected.uid);
+      context
+          .read<AdminBloc>()
+          .add(ManuallyAssignWorker(bookingId, selected.uid));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminViewModel>();
+    final vm = context.watch<AdminBloc>().state;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dispatch Board')),

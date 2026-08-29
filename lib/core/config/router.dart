@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../injection_container.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
@@ -49,7 +49,7 @@ import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
 import '../../features/admin/presentation/screens/admin_user_management_screen.dart';
 import '../../features/admin/presentation/screens/admin_category_management_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
-import '../../features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart';
+import '../../features/admin/presentation/bloc/admin_bloc.dart';
 
 // Worker screens
 import '../../features/worker/presentation/screens/worker_profile_edit_screen.dart';
@@ -69,9 +69,9 @@ import '../../features/admin/presentation/screens/admin_revenue_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-Widget _withAdminViewModel(Widget child) {
-  return ChangeNotifierProvider(
-    create: (_) => sl<AdminViewModel>(),
+Widget _withAdminBloc(Widget child) {
+  return BlocProvider(
+    create: (_) => sl<AdminBloc>(),
     child: child,
   );
 }
@@ -292,25 +292,25 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/admin/workers',
-      builder: (context, state) => _withAdminViewModel(
+      builder: (context, state) => _withAdminBloc(
         const AdminWorkersScreen(),
       ),
     ),
     GoRoute(
       path: '/admin/verify/:workerId',
-      builder: (context, state) => _withAdminViewModel(
+      builder: (context, state) => _withAdminBloc(
         const AdminWorkersScreen(),
       ),
     ),
     GoRoute(
       path: '/admin/bookings',
-      builder: (context, state) => _withAdminViewModel(
+      builder: (context, state) => _withAdminBloc(
         const AdminBookingsScreen(),
       ),
     ),
     GoRoute(
       path: '/admin/incidents',
-      builder: (context, state) => _withAdminViewModel(
+      builder: (context, state) => _withAdminBloc(
         const AdminIncidentsScreen(),
       ),
     ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../viewmodels/admin_dashboard_viewmodel.dart';
+import '../bloc/admin_bloc.dart';
+import '../bloc/admin_event.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
 import '../../data/admin_repository.dart';
@@ -22,7 +23,7 @@ class _AdminWorkersScreenState extends State<AdminWorkersScreen>
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminViewModel>().fetchDashboardData();
+      context.read<AdminBloc>().add(const FetchDashboardData());
     });
   }
 
@@ -63,7 +64,7 @@ class _NewApplicantsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminViewModel>();
+    final vm = context.watch<AdminBloc>().state;
     if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     if (vm.pendingWorkers.isEmpty) {
       return Center(
@@ -98,7 +99,7 @@ class _NewApplicantsTab extends StatelessWidget {
                     title: 'Approve Worker',
                     message: 'Approve ${worker.name}?');
                 if (confirm && context.mounted) {
-                  await context.read<AdminViewModel>().approveWorker(worker.uid);
+                  context.read<AdminBloc>().add(ApproveWorker(worker.uid));
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -125,7 +126,7 @@ class _BlueTierTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminViewModel>();
+    final vm = context.watch<AdminBloc>().state;
     if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     if (vm.blueTierPending.isEmpty) {
       return Center(
@@ -231,7 +232,7 @@ class _BlueTierCard extends StatelessWidget {
         message:
             'Grant Blue Tier status to ${v.workerName ?? v.workerId}? This cannot be reversed without admin CLI.');
     if (ok && context.mounted) {
-      await context.read<AdminViewModel>().approveBlueTierUpgrade(v.workerId);
+      context.read<AdminBloc>().add(ApproveBlueTierUpgrade(v.workerId));
     }
   }
 
@@ -260,9 +261,9 @@ class _BlueTierCard extends StatelessWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      await context
-          .read<AdminViewModel>()
-          .rejectBlueTierUpgrade(v.workerId, reasonCtrl.text.trim());
+      context
+          .read<AdminBloc>()
+          .add(RejectBlueTierUpgrade(v.workerId, reasonCtrl.text.trim()));
     }
   }
 
@@ -371,12 +372,15 @@ class _ReferenceRow extends StatelessWidget {
       builder: (ctx) => _LogCallDialog(
         reference: reference,
         onSubmit: (outcome, notes) async {
-          await context.read<AdminViewModel>().logReferenceCallOutcome(
+          final bloc = context.read<AdminBloc>();
+          final done = bloc.stream.firstWhere((s) => !s.isLoading);
+          bloc.add(LogReferenceCallOutcome(
             workerId: verification.workerId,
             referenceIndex: index,
             outcome: outcome,
             notes: notes,
-          );
+          ));
+          await done;
         },
       ),
     );

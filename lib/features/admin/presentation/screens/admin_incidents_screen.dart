@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../incident/domain/entities/incident.dart';
-import '../viewmodels/admin_dashboard_viewmodel.dart';
+import '../bloc/admin_bloc.dart';
+import '../bloc/admin_event.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../../../core/widgets/branded_widgets.dart';
 
@@ -19,13 +20,13 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminViewModel>().fetchDashboardData();
+      context.read<AdminBloc>().add(const FetchDashboardData());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminViewModel>();
+    final vm = context.watch<AdminBloc>().state;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Support & Incidents')),
@@ -73,11 +74,15 @@ class _AdminIncidentsScreenState extends State<AdminIncidentsScreen> {
                         onPressed: vm.isLoading ? null : () async {
                           final confirm = await showConfirmDialog(context, title: 'Resolve Incident', message: 'Mark this incident as resolved?');
                           if (confirm && context.mounted) {
-                            await context.read<AdminViewModel>().resolveIncident(
+                            final bloc = context.read<AdminBloc>();
+                            final done =
+                                bloc.stream.firstWhere((s) => !s.isLoading);
+                            bloc.add(ResolveIncident(
                               incidentId: incident.id,
                               resolvedBy: FirebaseAuth.instance.currentUser?.uid,
                               resolution: 'Resolved from admin incidents screen',
-                            );
+                            ));
+                            await done;
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Incident resolved')));
                             }

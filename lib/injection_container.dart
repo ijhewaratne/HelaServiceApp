@@ -18,7 +18,7 @@ import 'core/providers/theme_provider.dart';
 
 import 'features/incident/services/emergency_service.dart';
 import 'features/admin/data/admin_repository.dart';
-import 'features/admin/presentation/viewmodels/admin_dashboard_viewmodel.dart';
+import 'features/admin/presentation/bloc/admin_bloc.dart';
 
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -229,7 +229,7 @@ Future<void> init() async {
       ));
 
   sl.registerFactory(() => SafetyBloc(repository: sl()));
-  sl.registerFactory(() => AdminViewModel(sl()));
+  sl.registerFactory(() => AdminBloc(sl()));
 
   // Support
   sl.registerLazySingleton<SupportRepository>(
