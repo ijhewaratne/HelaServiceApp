@@ -438,3 +438,6 @@ export {
 
 // Phase 11: Admin governance — two-person approval
 export { applyApprovedChange } from "./approvals";
+
+// Phase 12: Session management
+export { revokeOtherSessions } from "./sessions";

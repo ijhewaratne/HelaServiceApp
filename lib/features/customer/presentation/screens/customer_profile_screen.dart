@@ -117,6 +117,14 @@ class _ProfileBody extends StatelessWidget {
                   onTap: () => context.go('/support'),
                   contentPadding: EdgeInsets.zero,
                 ),
+                ListTile(
+                  leading: const Icon(Icons.devices_outlined,
+                      color: Color(0xFF1B5E20)),
+                  title: const Text('Active Sessions'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/account/sessions'),
+                  contentPadding: EdgeInsets.zero,
+                ),
                 const Divider(),
                 const SizedBox(height: 8),
                 ListTile(

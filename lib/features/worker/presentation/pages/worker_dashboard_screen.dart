@@ -131,6 +131,9 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
                     case 'support':
                       context.push('/support');
                       break;
+                    case 'sessions':
+                      context.push('/account/sessions');
+                      break;
                     case 'logout':
                       await FirebaseAuth.instance.signOut();
                       if (context.mounted) context.go('/auth');
@@ -142,6 +145,8 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen>
                   PopupMenuItem(value: 'payouts', child: Text('Payout History')),
                   PopupMenuItem(value: 'bank', child: Text('Bank Account')),
                   PopupMenuItem(value: 'support', child: Text('Support')),
+                  PopupMenuItem(
+                      value: 'sessions', child: Text('Active Sessions')),
                   PopupMenuItem(value: 'logout', child: Text('Sign Out')),
                 ],
               ),

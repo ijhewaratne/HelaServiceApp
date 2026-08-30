@@ -40,6 +40,14 @@ service cloud.firestore {
     // =========================================================================
     match /users/{userId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
+
+      // Device/session list (FR-AUTH-007) — purely metadata about the
+      // owner's own devices, so a normal self-write is sufficient; the
+      // actual security boundary (killing a refresh token) is enforced by
+      // Firebase Auth itself via the revokeOtherSessions Cloud Function.
+      match /sessions/{sessionId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
     }
 
     // =========================================================================

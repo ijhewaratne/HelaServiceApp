@@ -1,24 +1,37 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/monitoring/crash_reporting.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/session_repository.dart';
 
 /// BLoC for managing authentication state
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   final AnalyticsService _analytics;
   final CrashReportingService _crashReporting;
+  // Nullable and never Firebase-backed by default — unlike _analytics and
+  // _crashReporting above, there is no safe way to lazily construct a
+  // Firestore-backed default here without touching FirebaseFirestore.instance
+  // eagerly in the initializer list, which breaks every test/tool that
+  // constructs AuthBloc without Firebase.initializeApp() having run. Session
+  // recording is a side effect, not core auth logic, so skipping it when
+  // absent is the correct behavior, not a workaround.
+  final SessionRepository? _sessionRepository;
   String? _verificationId;
 
   AuthBloc({
     required AuthRepository authRepository,
     AnalyticsService? analytics,
     CrashReportingService? crashReporting,
+    SessionRepository? sessionRepository,
   })  : _authRepository = authRepository,
         _analytics = analytics ?? AnalyticsService(),
         _crashReporting = crashReporting ?? CrashReportingService(),
+        _sessionRepository = sessionRepository,
         super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
@@ -43,6 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         userType: user.userType.name,
       );
       await _crashReporting.setUserIdentifier(user.uid);
+      unawaited(_sessionRepository?.recordCurrentSession(user.uid));
 
       if (user.isOnboarded) {
         emit(AuthAuthenticated(user: user));
