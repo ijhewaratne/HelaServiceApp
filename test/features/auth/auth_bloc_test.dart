@@ -152,6 +152,66 @@ void main() {
     );
 
     blocTest<AuthBloc, AuthState>(
+      'emits AuthMfaRequired (not AuthError) when the account has a second factor enrolled',
+      build: () {
+        when(mockRepository.verifyPhone(
+          phoneNumber: anyNamed('phoneNumber'),
+          onCodeSent: anyNamed('onCodeSent'),
+          onVerificationCompleted: anyNamed('onVerificationCompleted'),
+          onVerificationFailed: anyNamed('onVerificationFailed'),
+        )).thenAnswer((inv) async {
+          final cb = inv.namedArguments[#onCodeSent] as Function(String);
+          cb(testVerificationId);
+          return const Right(null);
+        });
+        when(mockRepository.verifyOTP(
+          verificationId: testVerificationId,
+          smsCode: testSmsCode,
+        )).thenAnswer((_) async => const Left(MfaRequiredFailure()));
+        return authBloc;
+      },
+      act: (bloc) async {
+        bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(OtpSubmitted(otpCode: testSmsCode));
+      },
+      expect: () => [
+        AuthLoading(),
+        AuthOtpSent(phoneNumber: testPhoneNumber),
+        AuthLoading(),
+        isA<AuthMfaRequired>(),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'emits [AuthLoading, AuthAuthenticated] when the authenticator code completes sign-in',
+      build: () {
+        when(mockRepository.completeMfaChallenge(totpCode: '654321'))
+            .thenAnswer((_) async => Right(testUser));
+        return authBloc;
+      },
+      act: (bloc) => bloc.add(MfaCodeSubmitted(totpCode: '654321')),
+      expect: () => [
+        AuthLoading(),
+        isA<AuthAuthenticated>(),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'emits AuthError when the authenticator code is wrong',
+      build: () {
+        when(mockRepository.completeMfaChallenge(totpCode: '000000'))
+            .thenAnswer((_) async => Left(AuthFailure('Invalid code')));
+        return authBloc;
+      },
+      act: (bloc) => bloc.add(MfaCodeSubmitted(totpCode: '000000')),
+      expect: () => [
+        AuthLoading(),
+        AuthError(message: 'Invalid code'),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthUnauthenticated] when logged out',
       build: () {
         when(mockRepository.signOut()).thenAnswer((_) async {});

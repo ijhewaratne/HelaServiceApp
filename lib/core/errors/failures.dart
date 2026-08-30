@@ -25,6 +25,14 @@ class AuthFailure extends Failure {
   const AuthFailure(super.message);
 }
 
+/// Sign-in paused pending a second-factor (MFA) code. Not a terminal error —
+/// the caller should prompt for the authenticator code and complete sign-in
+/// via AuthRepository.completeMfaChallenge.
+class MfaRequiredFailure extends Failure {
+  const MfaRequiredFailure()
+      : super('Two-factor authentication code required');
+}
+
 /// Not found failures
 class NotFoundFailure extends Failure {
   const NotFoundFailure(super.message);

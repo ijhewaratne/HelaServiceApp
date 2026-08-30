@@ -103,6 +103,23 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           as _i4.Future<_i2.Either<_i6.Failure, _i5.User>>);
 
   @override
+  _i4.Future<_i2.Either<_i6.Failure, _i5.User>> completeMfaChallenge({
+    required String? totpCode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#completeMfaChallenge, [], {#totpCode: totpCode}),
+            returnValue: _i4.Future<_i2.Either<_i6.Failure, _i5.User>>.value(
+              _FakeEither_0<_i6.Failure, _i5.User>(
+                this,
+                Invocation.method(#completeMfaChallenge, [], {
+                  #totpCode: totpCode,
+                }),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i6.Failure, _i5.User>>);
+
+  @override
   _i4.Future<void> signOut() =>
       (super.noSuchMethod(
             Invocation.method(#signOut, []),

@@ -19,10 +19,18 @@ abstract class AuthRepository {
     required Function(String error) onVerificationFailed,
   });
 
-  /// Verify OTP and sign in
+  /// Verify OTP and sign in. If the account has a second factor enrolled,
+  /// this returns Left(MfaRequiredFailure) instead of failing outright —
+  /// call [completeMfaChallenge] next with the authenticator code.
   Future<Either<Failure, User>> verifyOTP({
     required String verificationId,
     required String smsCode,
+  });
+
+  /// Completes a sign-in that verifyOTP paused for a second factor.
+  /// Only valid immediately after a Left(MfaRequiredFailure) from verifyOTP.
+  Future<Either<Failure, User>> completeMfaChallenge({
+    required String totpCode,
   });
 
   /// Sign out current user

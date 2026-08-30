@@ -16,15 +16,18 @@ class PhoneAuthPage extends StatefulWidget {
 class _PhoneAuthPageState extends State<PhoneAuthPage> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
+  final _totpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = false;
   bool _otpSent = false;
+  bool _mfaRequired = false;
 
   @override
   void dispose() {
     _phoneController.dispose();
     _otpController.dispose();
+    _totpController.dispose();
     super.dispose();
   }
 
@@ -44,7 +47,11 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
               _otpSent = true;
             });
           }
-          
+
+          if (state is AuthMfaRequired) {
+            setState(() => _mfaRequired = true);
+          }
+
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -81,21 +88,49 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
                   children: [
                     const SizedBox(height: 40),
                     Text(
-                      _otpSent ? 'Enter OTP' : 'Welcome to HelaService',
+                      _mfaRequired
+                          ? 'Two-Factor Authentication'
+                          : (_otpSent ? 'Enter OTP' : 'Welcome to HelaService'),
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _otpSent 
-                        ? 'Enter the 6-digit code sent to +94 ${_phoneController.text}'
-                        : 'Enter your mobile number to get started',
+                      _mfaRequired
+                          ? 'Enter the code from your authenticator app'
+                          : (_otpSent
+                              ? 'Enter the 6-digit code sent to +94 ${_phoneController.text}'
+                              : 'Enter your mobile number to get started'),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 40),
-                    
-                    if (!_otpSent) ...[
+
+                    if (_mfaRequired) ...[
+                      // Authenticator (TOTP) code input
+                      TextFormField(
+                        controller: _totpController,
+                        keyboardType: TextInputType.number,
+                        enabled: !_isLoading,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: '000000',
+                          labelText: 'Authenticator Code',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.shield_outlined),
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.length != 6) {
+                            return 'Please enter the 6-digit code';
+                          }
+                          return null;
+                        },
+                      ),
+                    ] else if (!_otpSent) ...[
                       // Phone Input
                       TextFormField(
                         controller: _phoneController,
@@ -164,10 +199,16 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : (_otpSent ? _verifyOTP : _sendOTP),
+                        onPressed: _isLoading
+                            ? null
+                            : (_mfaRequired
+                                ? _verifyMfaCode
+                                : (_otpSent ? _verifyOTP : _sendOTP)),
                         child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(_otpSent ? 'VERIFY' : 'SEND CODE'),
+                          : Text(_mfaRequired
+                              ? 'VERIFY'
+                              : (_otpSent ? 'VERIFY' : 'SEND CODE')),
                       ),
                     ),
                   ],
@@ -189,9 +230,17 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
 
   void _verifyOTP() {
     if (!_formKey.currentState!.validate()) return;
-    
+
     context.read<AuthBloc>().add(
       OtpSubmitted(otpCode: _otpController.text.trim()),
+    );
+  }
+
+  void _verifyMfaCode() {
+    if (!_formKey.currentState!.validate()) return;
+
+    context.read<AuthBloc>().add(
+      MfaCodeSubmitted(totpCode: _totpController.text.trim()),
     );
   }
 

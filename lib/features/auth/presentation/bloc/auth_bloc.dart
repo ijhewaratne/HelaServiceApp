@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/errors/failures.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/monitoring/crash_reporting.dart';
 import '../../domain/entities/user.dart';
@@ -36,6 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AppStarted>(_onAppStarted);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
     on<OtpSubmitted>(_onOtpSubmitted);
+    on<MfaCodeSubmitted>(_onMfaCodeSubmitted);
     on<LoggedOut>(_onLoggedOut);
     on<_AuthStateChanged>(_onAuthStateChanged);
 
@@ -110,6 +112,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         
         result.fold(
           (failure) {
+            if (failure is MfaRequiredFailure) {
+              emit(AuthMfaRequired());
+              return;
+            }
             _analytics.logError(
               error: 'Auto-verification failed: ${failure.message}',
               context: 'auth_bloc',
@@ -173,6 +179,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw StateError(''));
+      if (failure is MfaRequiredFailure) {
+        emit(AuthMfaRequired());
+        return;
+      }
       await _analytics.logError(
           error: 'OTP verification failed: ${failure.message}',
           context: 'auth_bloc');
@@ -190,6 +200,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _analytics.logLogin(
           method: 'phone_otp', userType: user.userType.name);
     }
+
+    if (!emit.isDone) {
+      if (user.isOnboarded) {
+        emit(AuthAuthenticated(user: user));
+      } else {
+        emit(AuthNeedsOnboarding(user: user));
+      }
+    }
+  }
+
+  Future<void> _onMfaCodeSubmitted(
+    MfaCodeSubmitted event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result =
+        await _authRepository.completeMfaChallenge(totpCode: event.totpCode);
+
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (_) => throw StateError(''));
+      emit(AuthError(message: failure.message));
+      return;
+    }
+
+    final user = result.getOrElse(() => throw StateError(''));
+    await _analytics.logLogin(
+        method: 'phone_otp_mfa', userType: user.userType.name);
 
     if (!emit.isDone) {
       if (user.isOnboarded) {
@@ -238,6 +276,16 @@ class OtpSubmitted extends AuthEvent {
 
   @override
   List<Object?> get props => [otpCode];
+}
+
+/// Authenticator (TOTP) code submitted to complete an MFA-gated sign-in
+class MfaCodeSubmitted extends AuthEvent {
+  final String totpCode;
+
+  MfaCodeSubmitted({required this.totpCode});
+
+  @override
+  List<Object?> get props => [totpCode];
 }
 
 /// User logged out
@@ -295,6 +343,9 @@ class AuthOtpSent extends AuthState {
   @override
   List<Object?> get props => [phoneNumber];
 }
+
+/// Sign-in paused pending an authenticator code (account has MFA enrolled)
+class AuthMfaRequired extends AuthState {}
 
 /// User is not authenticated
 class AuthUnauthenticated extends AuthState {}

@@ -50,6 +50,7 @@ import '../../features/admin/presentation/screens/admin_user_management_screen.d
 import '../../features/admin/presentation/screens/admin_category_management_screen.dart';
 import '../../features/admin/presentation/screens/admin_approvals_screen.dart';
 import '../../features/auth/presentation/screens/active_sessions_screen.dart';
+import '../../features/auth/presentation/screens/mfa_enrollment_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 import '../../features/admin/presentation/bloc/admin_bloc.dart';
 
@@ -356,6 +357,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/account/sessions',
       builder: (context, state) => const ActiveSessionsScreen(),
+    ),
+    GoRoute(
+      path: '/account/mfa',
+      builder: (context, state) => const MfaEnrollmentScreen(),
     ),
 
     // ── Shared Routes ────────────────────────────────────────────────────────

@@ -63,6 +63,8 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  firebase.MultiFactorResolver? _pendingMfaResolver;
+
   @override
   Future<Either<Failure, User>> verifyOTP({
     required String verificationId,
@@ -73,36 +75,72 @@ class AuthRepositoryImpl implements AuthRepository {
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      
-      final userCredential = await _auth.signInWithCredential(credential);
-      final firebaseUser = userCredential.user;
-      
-      if (firebaseUser == null) {
-        return Left(AuthFailure('User is null after verification'));
-      }
-      
-      // Check if user exists in Firestore
-      var userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
-      
-      if (!userDoc.exists) {
-        // New user - create profile
-        await _firestore.collection('users').doc(firebaseUser.uid).set({
-          'phoneNumber': firebaseUser.phoneNumber,
-          'createdAt': FieldValue.serverTimestamp(),
-          'userType': UserType.unknown.name,
-          'isOnboarded': false,
-          'isEmailVerified': false,
-          'isPhoneVerified': true,
-          'status': UserStatus.pendingVerification.name,
-        });
-        // Re-fetch so the snapshot reflects the just-written document
-        userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
-      }
 
-      return Right(_mapToUser(firebaseUser, userDoc));
+      final userCredential = await _auth.signInWithCredential(credential);
+      return await _finishSignIn(userCredential);
+    } on firebase.FirebaseAuthMultiFactorException catch (e) {
+      // Account has a second factor enrolled — pause here and wait for
+      // completeMfaChallenge() with the authenticator code.
+      _pendingMfaResolver = e.resolver;
+      return const Left(MfaRequiredFailure());
     } catch (e) {
       return Left(AuthFailure(e.toString()));
     }
+  }
+
+  @override
+  Future<Either<Failure, User>> completeMfaChallenge({
+    required String totpCode,
+  }) async {
+    final resolver = _pendingMfaResolver;
+    if (resolver == null) {
+      return const Left(
+          AuthFailure('No pending two-factor challenge to complete'));
+    }
+
+    try {
+      final hint = resolver.hints.firstWhere(
+        (h) => h is firebase.TotpMultiFactorInfo,
+        orElse: () => resolver.hints.first,
+      );
+      final assertion = await firebase.TotpMultiFactorGenerator
+          .getAssertionForSignIn(hint.uid, totpCode);
+      final userCredential = await resolver.resolveSignIn(assertion);
+      _pendingMfaResolver = null;
+      return await _finishSignIn(userCredential);
+    } catch (e) {
+      return Left(AuthFailure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, User>> _finishSignIn(
+    firebase.UserCredential userCredential,
+  ) async {
+    final firebaseUser = userCredential.user;
+    if (firebaseUser == null) {
+      return Left(AuthFailure('User is null after verification'));
+    }
+
+    // Check if user exists in Firestore
+    var userDoc =
+        await _firestore.collection('users').doc(firebaseUser.uid).get();
+
+    if (!userDoc.exists) {
+      // New user - create profile
+      await _firestore.collection('users').doc(firebaseUser.uid).set({
+        'phoneNumber': firebaseUser.phoneNumber,
+        'createdAt': FieldValue.serverTimestamp(),
+        'userType': UserType.unknown.name,
+        'isOnboarded': false,
+        'isEmailVerified': false,
+        'isPhoneVerified': true,
+        'status': UserStatus.pendingVerification.name,
+      });
+      // Re-fetch so the snapshot reflects the just-written document
+      userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+    }
+
+    return Right(_mapToUser(firebaseUser, userDoc));
   }
 
   @override

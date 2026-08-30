@@ -116,6 +116,7 @@ class _OverviewTab extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const _MfaBanner(),
         Text('Live metrics', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         Row(children: [
@@ -192,7 +193,56 @@ class _OverviewTab extends StatelessWidget {
         _ActionTile(icon: Icons.fact_check_outlined,
             label: 'Pending Approvals', subtitle: 'Two-person sign-off for high-risk changes',
             onTap: () => context.push('/admin/approvals')),
+        _ActionTile(icon: Icons.shield_outlined,
+            label: 'Two-Factor Authentication', subtitle: 'Secure your admin account with a second step',
+            onTap: () => context.push('/account/mfa')),
       ]),
+    );
+  }
+}
+
+/// Soft-launch nudge (docs/SPEC_DECISIONS.md): encourages, never blocks.
+class _MfaBanner extends StatelessWidget {
+  const _MfaBanner();
+
+  Future<bool> _isEnrolled() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final factors = await user?.multiFactor.getEnrolledFactors() ?? [];
+    return factors.isNotEmpty;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _isEnrolled(),
+      builder: (context, snap) {
+        if (snap.data != false) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Material(
+            color: AppTheme.warningColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => context.push('/account/mfa'),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(children: [
+                  Icon(Icons.shield_outlined, color: AppTheme.warningColor),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Two-factor authentication is not enabled for this admin account. Tap to set it up.',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ]),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
