@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../../core/constants/admin_scope.dart';
+import '../../../../injection_container.dart';
+import '../../domain/entities/pending_approval.dart';
+import '../../domain/repositories/admin_permissions_repository.dart';
+import '../../domain/repositories/approval_repository.dart';
 
 /// Super-admin-only screen to view and manage admin user accounts.
 /// Actual role changes (Firebase custom claims) must be done via
@@ -126,21 +133,27 @@ class AdminUserManagementScreen extends StatelessWidget {
                               fontSize: 12),
                         ),
                         isThreeLine: true,
-                        trailing: !isSuperAdmin
-                            ? PopupMenuButton<String>(
-                                onSelected: (v) =>
-                                    _toggleUserStatus(
-                                        context, uid, isSuspended),
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                    value: 'toggle',
-                                    child: Text(isSuspended
-                                        ? 'Reactivate'
-                                        : 'Suspend'),
-                                  ),
-                                ],
-                              )
-                            : null,
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (v) {
+                            if (v == 'toggle') {
+                              _toggleUserStatus(context, uid, isSuspended);
+                            } else if (v == 'permissions') {
+                              _managePermissions(context, uid, name);
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: 'permissions',
+                              child: Text('Manage permissions'),
+                            ),
+                            if (!isSuperAdmin)
+                              PopupMenuItem(
+                                value: 'toggle',
+                                child: Text(
+                                    isSuspended ? 'Reactivate' : 'Suspend'),
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -182,5 +195,107 @@ class AdminUserManagementScreen extends StatelessWidget {
         .collection('users')
         .doc(uid)
         .update({'status': isSuspended ? 'active' : 'suspended'});
+  }
+
+  Future<void> _managePermissions(
+      BuildContext context, String adminUid, String name) async {
+    final repository = sl<AdminPermissionsRepository>();
+    final currentScopesResult = await repository.getScopes(adminUid);
+    if (!context.mounted) return;
+
+    final currentScopes =
+        currentScopesResult.fold((_) => <AdminScope>{}, (s) => s);
+
+    final updated = await showDialog<Set<AdminScope>>(
+      context: context,
+      builder: (_) => _PermissionsDialog(
+        name: name,
+        initialScopes: currentScopes,
+      ),
+    );
+    if (updated == null || !context.mounted) return;
+
+    final proposedBy = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final result = await sl<ApprovalRepository>().propose(
+      type: ApprovalType.permissionGrant,
+      payload: {
+        'adminUid': adminUid,
+        'adminName': name,
+        'scopes': updated.map((s) => s.name).toList(),
+      },
+      proposedBy: proposedBy,
+    );
+    if (!context.mounted) return;
+
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to propose: ${failure.message}'))),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Proposed — awaiting a second admin\'s approval in Pending Approvals'))),
+    );
+  }
+}
+
+class _PermissionsDialog extends StatefulWidget {
+  final String name;
+  final Set<AdminScope> initialScopes;
+
+  const _PermissionsDialog({required this.name, required this.initialScopes});
+
+  @override
+  State<_PermissionsDialog> createState() => _PermissionsDialogState();
+}
+
+class _PermissionsDialogState extends State<_PermissionsDialog> {
+  late final Set<AdminScope> _selected = {...widget.initialScopes};
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Permissions — ${widget.name}'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'These scopes are not yet enforced — every admin keeps '
+                  'full access until scope-based rules are turned on. '
+                  'Assign them now so access is ready to narrow later.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ),
+              ...AdminScope.values.map((scope) => CheckboxListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(scope.label),
+                    value: _selected.contains(scope),
+                    onChanged: (checked) => setState(() {
+                      if (checked == true) {
+                        _selected.add(scope);
+                      } else {
+                        _selected.remove(scope);
+                      }
+                    }),
+                  )),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _selected),
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }

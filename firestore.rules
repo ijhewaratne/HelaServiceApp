@@ -25,6 +25,16 @@ service cloud.firestore {
       return zoneId in get(/databases/$(database)/documents/workers/$(workerId)).data.allowedZones;
     }
 
+    // Additive permission-scopes rollout (docs/SPEC_DECISIONS.md): defined
+    // and available, but not yet required by any existing rule below —
+    // isAdmin() alone remains sufficient everywhere it already was. Use
+    // hasScope() only in NEW rules until a deliberate follow-up decision
+    // starts tightening existing ones.
+    function hasScope(scope) {
+      return isAdmin() && scope in
+        get(/databases/$(database)/documents/admin_permissions/$(request.auth.uid)).data.scopes;
+    }
+
     // =========================================================================
     // USERS (Base Auth Records)
     // =========================================================================
@@ -159,6 +169,56 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // ADMIN PERMISSIONS (granular scopes — additive, see hasScope() above)
+    // =========================================================================
+    match /admin_permissions/{adminUid} {
+      allow read: if isAuthenticated() && request.auth.uid == adminUid;
+      allow read: if isAdmin();
+      // No client write, ever — even for super admin. Granting/revoking a
+      // scope requires two-person approval (pending_approvals below); only
+      // the applyApprovedChange Cloud Function (Admin SDK, bypasses rules)
+      // writes here.
+      allow write: if false;
+    }
+
+    // =========================================================================
+    // PENDING APPROVALS (two-person approval for high-risk admin changes)
+    // =========================================================================
+    match /pending_approvals/{approvalId} {
+      allow read: if isAdmin();
+
+      allow create: if isAdmin()
+        && request.resource.data.proposedBy == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // Only a DIFFERENT admin than the proposer may decide, only while
+      // still pending, and only status/decision fields may change — the
+      // actual change (e.g. deactivating a category) is applied server-side
+      // by a Cloud Function once status becomes 'approved', never by this
+      // write directly.
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && resource.data.proposedBy != request.auth.uid
+        && request.resource.data.decidedBy == request.auth.uid
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'decidedBy', 'decidedAt', 'reason']);
+
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // CONSENT RECORDS (Terms/Privacy acceptance — immutable, versioned)
+    // =========================================================================
+    match /consent_records/{recordId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAdmin();
+      allow update, delete: if false; // Immutable — a new version gets a new record
+    }
+
+    // =========================================================================
     // CHAT MESSAGES (PDPA Data Retention — 30-day TTL via GCP policy)
     // =========================================================================
     match /messages/{messageId} {
@@ -172,8 +232,20 @@ service cloud.firestore {
     // =========================================================================
     // ADMIN OVERRIDE (Custom Claim)
     // =========================================================================
+    //
+    // This blanket rule ORs with every other match block in this file — a
+    // more specific `allow write: if false` elsewhere does NOT override it,
+    // Firestore has no "more specific wins" precedence between sibling
+    // match blocks. Verified empirically against the emulator: the specific
+    // `admin_permissions` and `pending_approvals` rules below were being
+    // silently bypassed by this catch-all until the exclusion was added,
+    // which would have made the two-person-approval mechanism decorative —
+    // any single admin could still write either collection directly.
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin()
+        && !(request.path[3] in [
+              'admin_permissions', 'pending_approvals', 'service_catalog'
+            ]);
     }
 
     // Job matching specific rules (mirrors bookings collection for Cloud Function dispatch)
@@ -266,7 +338,14 @@ match /worker_locations/{workerId} {
     // =========================================================================
     match /service_catalog/{categoryId} {
       allow read: if isAuthenticated();
-      allow create, update, delete: if isAdmin();
+      allow create, delete: if isAdmin();
+      // A lone admin may create/edit a category and may reactivate one, but
+      // deactivating (isActive: true -> false) requires two-person approval
+      // — see pending_approvals. Only applyApprovedChange (Admin SDK)
+      // actually flips it to false once approved.
+      allow update: if isAdmin() &&
+        !(resource.data.get('isActive', true) == true &&
+          request.resource.data.isActive == false);
     }
 
     match /wallets/{walletId} {

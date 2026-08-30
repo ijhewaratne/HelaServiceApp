@@ -189,6 +189,9 @@ class _OverviewTab extends StatelessWidget {
         _ActionTile(icon: Icons.manage_accounts_outlined,
             label: 'User Management', subtitle: 'View and manage admin accounts',
             onTap: () => context.push('/admin/users')),
+        _ActionTile(icon: Icons.fact_check_outlined,
+            label: 'Pending Approvals', subtitle: 'Two-person sign-off for high-risk changes',
+            onTap: () => context.push('/admin/approvals')),
       ]),
     );
   }

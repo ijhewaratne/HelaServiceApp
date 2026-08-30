@@ -3,6 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../injection_container.dart';
+import '../../domain/entities/consent_record.dart';
+import '../../domain/repositories/consent_repository.dart';
+
 class RoleSelectScreen extends StatefulWidget {
   const RoleSelectScreen({super.key});
 
@@ -14,6 +19,7 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
   String? _selectedRole;
   final _nameController = TextEditingController();
   bool _loading = false;
+  bool _agreedToTerms = false;
 
   @override
   void dispose() {
@@ -33,6 +39,12 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
           const SnackBar(content: Text('Please enter your name')));
       return;
     }
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Please agree to the Terms of Service and Privacy Notice')));
+      return;
+    }
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
@@ -49,6 +61,24 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
         'status': 'active',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+
+      final consentRepository = sl<ConsentRepository>();
+      final termsResult = await consentRepository.recordAcceptance(
+        userId: uid,
+        documentType: ConsentDocumentType.terms,
+        version: AppConstants.termsVersion,
+      );
+      final privacyResult = await consentRepository.recordAcceptance(
+        userId: uid,
+        documentType: ConsentDocumentType.privacy,
+        version: AppConstants.privacyVersion,
+      );
+      final consentFailure = termsResult.fold((f) => f, (_) => null) ??
+          privacyResult.fold((f) => f, (_) => null);
+      if (consentFailure != null) {
+        throw Exception(
+            'Could not record consent: ${consentFailure.message}');
+      }
 
       if (!mounted) return;
 
@@ -129,7 +159,53 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
+              InkWell(
+                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: _agreedToTerms,
+                        activeColor: const Color(0xFF1B5E20),
+                        onChanged: (v) =>
+                            setState(() => _agreedToTerms = v ?? false),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text.rich(
+                            TextSpan(
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey[700]),
+                              children: const [
+                                TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'Terms of Service',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1B5E20)),
+                                ),
+                                TextSpan(text: ' and '),
+                                TextSpan(
+                                  text: 'Privacy Notice',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1B5E20)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

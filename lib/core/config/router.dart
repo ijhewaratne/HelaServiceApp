@@ -48,6 +48,7 @@ import '../../features/admin/presentation/screens/admin_dispute_screen.dart';
 import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
 import '../../features/admin/presentation/screens/admin_user_management_screen.dart';
 import '../../features/admin/presentation/screens/admin_category_management_screen.dart';
+import '../../features/admin/presentation/screens/admin_approvals_screen.dart';
 import '../../features/admin/presentation/pages/emergency_dashboard.dart';
 import '../../features/admin/presentation/bloc/admin_bloc.dart';
 
@@ -346,6 +347,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/admin/categories',
       builder: (context, state) => const AdminCategoryManagementScreen(),
+    ),
+    GoRoute(
+      path: '/admin/approvals',
+      builder: (context, state) => const AdminApprovalsScreen(),
     ),
 
     // ── Shared Routes ────────────────────────────────────────────────────────

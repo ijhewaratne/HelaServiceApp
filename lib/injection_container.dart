@@ -18,9 +18,15 @@ import 'core/providers/theme_provider.dart';
 
 import 'features/incident/services/emergency_service.dart';
 import 'features/admin/data/admin_repository.dart';
+import 'features/admin/data/repositories/admin_permissions_repository_impl.dart';
+import 'features/admin/domain/repositories/admin_permissions_repository.dart';
+import 'features/admin/data/repositories/approval_repository_impl.dart';
+import 'features/admin/domain/repositories/approval_repository.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 
 import 'features/auth/data/repositories/auth_repository_impl.dart';
+import 'features/auth/data/repositories/consent_repository_impl.dart';
+import 'features/auth/domain/repositories/consent_repository.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
@@ -137,6 +143,8 @@ Future<void> init() async {
   // Core
   sl.registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(sl(), sl()));
+  sl.registerLazySingleton<ConsentRepository>(
+      () => ConsentRepositoryImpl(sl()));
   sl.registerLazySingleton<WorkerRepository>(
       () => WorkerRepositoryImpl(sl(), sl()));
   sl.registerLazySingleton<CustomerRepository>(
@@ -147,6 +155,10 @@ Future<void> init() async {
       () => PaymentRepositoryImpl(sl()));
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
   sl.registerLazySingleton(() => AdminRepository(firestore: sl()));
+  sl.registerLazySingleton<AdminPermissionsRepository>(
+      () => AdminPermissionsRepositoryImpl(sl()));
+  sl.registerLazySingleton<ApprovalRepository>(
+      () => ApprovalRepositoryImpl(sl()));
 
   // Business features
   sl.registerLazySingleton<WalletRepository>(

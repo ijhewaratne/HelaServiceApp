@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../../injection_container.dart';
+import '../../domain/entities/pending_approval.dart';
+import '../../domain/repositories/approval_repository.dart';
 
 class AdminCategoryManagementScreen extends StatelessWidget {
   const AdminCategoryManagementScreen({super.key});
@@ -114,10 +119,15 @@ class AdminCategoryManagementScreen extends StatelessWidget {
                     children: [
                       Switch(
                         value: isActive,
-                        onChanged: (v) => FirebaseFirestore.instance
-                            .collection('service_catalog')
-                            .doc(id)
-                            .update({'isActive': v}),
+                        onChanged: (v) => v
+                            // Turning a category back on is low-risk and stays
+                            // a direct action; turning one off needs a second
+                            // admin's sign-off (see docs/SPEC_DECISIONS.md).
+                            ? FirebaseFirestore.instance
+                                .collection('service_catalog')
+                                .doc(id)
+                                .update({'isActive': true})
+                            : _proposeDeactivation(context, id, name),
                         activeColor: const Color(0xFF1B5E20),
                         materialTapTargetSize:
                             MaterialTapTargetSize.shrinkWrap,
@@ -156,6 +166,46 @@ class AdminCategoryManagementScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => _CategoryDialog(doc: doc),
+    );
+  }
+
+  Future<void> _proposeDeactivation(
+      BuildContext context, String categoryId, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Propose deactivation'),
+        content: Text(
+          'Deactivating "$name" needs sign-off from a second admin before '
+          'it takes effect. This will create a pending approval.',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Propose'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final proposedBy = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final result = await sl<ApprovalRepository>().propose(
+      type: ApprovalType.categoryDeactivation,
+      payload: {'categoryId': categoryId, 'categoryName': name},
+      proposedBy: proposedBy,
+    );
+    if (!context.mounted) return;
+
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to propose: ${failure.message}'))),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Proposed — awaiting a second admin\'s approval in Pending Approvals'))),
     );
   }
 }

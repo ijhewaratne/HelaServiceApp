@@ -3,6 +3,11 @@ class AppConstants {
   static const String appName = 'HelaService';
   static const String companySolePropName = 'Your Name'; // Update until PLC formed
 
+  // Bump these when the corresponding document materially changes — each
+  // bump requires re-acceptance from every user (see ConsentRepository).
+  static const String termsVersion = '1.0';
+  static const String privacyVersion = '1.0';
+
   // Geofencing - Colombo Launch Zones
   static const List<Map<String, dynamic>> serviceZones = [
     {

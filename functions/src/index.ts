@@ -435,3 +435,6 @@ export {
   generateDailyReport,
   cleanupOldPendingBookings,
 } from "./operationalFunctions";
+
+// Phase 11: Admin governance — two-person approval
+export { applyApprovedChange } from "./approvals";
