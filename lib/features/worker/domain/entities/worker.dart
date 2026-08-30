@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 import 'worker_verification.dart';
+import '../../../../core/constants/service_type.dart';
+
+export '../../../../core/constants/service_type.dart';
 
 class Worker extends Equatable {
   final String id;
@@ -247,47 +250,13 @@ class Worker extends Equatable {
       ];
 }
 
-enum ServiceType { cleaning, babysitting, elderlyCare, cooking, laundry }
-
-enum WorkerStatus { 
+enum WorkerStatus {
   pending,      // Applied, waiting for doc upload
   underReview,  // Docs uploaded, admin reviewing
   trainingRequired, // Needs to complete training
   approved,     // Can go online
   rejected,     // Application rejected
   suspended,    // Temporarily suspended
-}
-
-extension ServiceTypeExtension on ServiceType {
-  String get displayName {
-    switch (this) {
-      case ServiceType.cleaning:
-        return 'Home Cleaning';
-      case ServiceType.babysitting:
-        return 'Babysitting';
-      case ServiceType.elderlyCare:
-        return 'Elderly Care';
-      case ServiceType.cooking:
-        return 'Cooking Help';
-      case ServiceType.laundry:
-        return 'Laundry & Ironing';
-    }
-  }
-
-  String get icon {
-    switch (this) {
-      case ServiceType.cleaning:
-        return '🧹';
-      case ServiceType.babysitting:
-        return '👶';
-      case ServiceType.elderlyCare:
-        return '❤️';
-      case ServiceType.cooking:
-        return '🍳';
-      case ServiceType.laundry:
-        return '👕';
-    }
-  }
 }
 
 extension WorkerStatusExtension on WorkerStatus {

@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../customer/domain/entities/address.dart';
 import '../../../scheduling/domain/entities/booking_schedule.dart';
 import '../../../scheduling/domain/entities/recurrence_rule.dart';
+import '../../../../core/constants/service_type.dart';
+
+export '../../../../core/constants/service_type.dart';
 
 enum BookingStatus {
   draft,
@@ -15,19 +18,6 @@ enum BookingStatus {
   completed,
   cancelled,
   disputed,
-}
-
-enum ServiceType {
-  cleaning,
-  plumbing,
-  electrical,
-  acRepair,
-  gardening,
-  babysitting,
-  elderlyCare,
-  cooking,
-  laundry,
-  other,
 }
 
 /// GPS-stamped check-in or check-out record

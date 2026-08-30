@@ -86,6 +86,35 @@ void main() {
     );
   });
 
+  test(
+      'matches a worker for plumbing (regression: ServiceType used to be a '
+      "separate 5-value enum on Worker that didn't include plumbing/"
+      'electrical/acRepair/gardening/other at all)', () async {
+    await seedWorker(
+      id: 'w_plumber',
+      status: WorkerStatus.approved,
+      services: const [ServiceType.plumbing],
+      lat: customerLat + 0.001,
+      lng: customerLng + 0.001,
+    );
+
+    final result = await findNearestWorker(FindNearestWorkerParams(
+      customerLat: customerLat,
+      customerLng: customerLng,
+      serviceType: ServiceType.plumbing,
+      zoneId: 'colombo',
+    ));
+
+    expect(result.isRight(), isTrue);
+    result.fold(
+      (_) => fail('Expected a list of workers'),
+      (workers) {
+        expect(workers.length, 1);
+        expect(workers.first.id, 'w_plumber');
+      },
+    );
+  });
+
   test('excludes workers who are not approved', () async {
     await seedWorker(
       id: 'w_pending',

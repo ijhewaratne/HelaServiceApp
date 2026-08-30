@@ -1,4 +1,7 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/constants/service_type.dart';
+
+export '../../../../core/constants/service_type.dart';
 
 class WorkerApplication extends Equatable {
   final String? id;
@@ -124,44 +127,11 @@ class WorkerApplication extends Equatable {
   }
 }
 
-enum ServiceType { cleaning, babysitting, elderlyCare, cooking, laundry }
-enum ApplicationStatus { 
+enum ApplicationStatus {
   draft,           // Filling form
   pendingDocs,     // Awaiting NIC upload
   underReview,     // Admin checking
   trainingRequired,// Needs to watch videos
   approved,        // Can go online
   rejected         // Failed verification
-}
-
-extension ServiceTypeExtension on ServiceType {
-  String get displayName {
-    switch (this) {
-      case ServiceType.cleaning:
-        return 'Home Cleaning';
-      case ServiceType.babysitting:
-        return 'Babysitting';
-      case ServiceType.elderlyCare:
-        return 'Elderly Care';
-      case ServiceType.cooking:
-        return 'Cooking Help';
-      case ServiceType.laundry:
-        return 'Laundry & Ironing';
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case ServiceType.cleaning:
-        return 'General house cleaning, sweeping, mopping';
-      case ServiceType.babysitting:
-        return 'Child care (non-medical), feeding, playing';
-      case ServiceType.elderlyCare:
-        return 'Companion care, assistance with mobility (no medical tasks)';
-      case ServiceType.cooking:
-        return 'Meal preparation, kitchen help';
-      case ServiceType.laundry:
-        return 'Washing and ironing clothes';
-    }
-  }
 }

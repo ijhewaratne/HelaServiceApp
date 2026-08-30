@@ -103,6 +103,14 @@ class _ServiceSelectionPageState extends State<ServiceSelectionPage> {
     switch (service) {
       case ServiceType.cleaning:
         return Icons.cleaning_services;
+      case ServiceType.plumbing:
+        return Icons.plumbing;
+      case ServiceType.electrical:
+        return Icons.electrical_services;
+      case ServiceType.acRepair:
+        return Icons.ac_unit;
+      case ServiceType.gardening:
+        return Icons.grass;
       case ServiceType.babysitting:
         return Icons.child_care;
       case ServiceType.elderlyCare:
@@ -111,6 +119,8 @@ class _ServiceSelectionPageState extends State<ServiceSelectionPage> {
         return Icons.restaurant;
       case ServiceType.laundry:
         return Icons.local_laundry_service;
+      case ServiceType.other:
+        return Icons.miscellaneous_services;
     }
   }
 
