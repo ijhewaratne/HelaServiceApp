@@ -5,11 +5,28 @@ import * as crypto from 'crypto';
 const db = admin.firestore();
 
 /**
+ * Gate 0: in-app payment processing is disabled for this MVP release (see
+ * 02_PROJECT_HISTORY_AND_DECISIONS/confirmed_decisions.md #2 and
+ * 12_ISSUES_RISKS_AND_NEXT_STEPS/specification_conflicts.md C-01 in the
+ * prior handover — this repository's PayHere/wallet build-out conflicts
+ * with the reference specification's launch-scope exclusion of in-app
+ * payment processing, and Gate 0 is a stabilization sprint, not the place
+ * to resolve that product/spec conflict). Flip this back to `true` only
+ * once that decision has actually been revisited.
+ */
+const PAYMENTS_ENABLED = false;
+
+/**
  * PayHere Webhook Handler
  * Receives payment notifications from PayHere server
  * URL: https://us-central1-helaservice-prod.cloudfunctions.net/payhereNotify
  */
 export const payhereNotify = functions.https.onRequest(async (req, res) => {
+    if (!PAYMENTS_ENABLED) {
+        res.status(503).send('Payments are disabled for this MVP release.');
+        return;
+    }
+
     // Only accept POST requests
     if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');
@@ -284,6 +301,9 @@ async function sendPaymentNotification(
  * Manual payment status check (for polling fallback)
  */
 export const checkPaymentStatus = functions.https.onCall(async (data, context) => {
+    if (!PAYMENTS_ENABLED) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are disabled for this MVP release.');
+    }
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Login required');
     }
@@ -323,6 +343,9 @@ export const checkPaymentStatus = functions.https.onCall(async (data, context) =
 // Output: { url: string, orderId: string }
 
 export const generatePayHereUrl = functions.https.onCall(async (data, context) => {
+    if (!PAYMENTS_ENABLED) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are disabled for this MVP release.');
+    }
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Login required');
     }

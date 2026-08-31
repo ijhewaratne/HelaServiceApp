@@ -22,15 +22,23 @@ export const verifyWorkerCheckInLocation = functions.firestore
     // Only run when checkIn is newly set
     if (before.checkIn || !after.checkIn) return;
 
-    const checkIn = after.checkIn as { lat?: number; lng?: number } | null;
-    if (!checkIn?.lat || !checkIn?.lng) return;
+    // Gate 0 fix (check-in/out evidence): this read `lat`/`lng`, but the
+    // actual Dart entities (CheckRecord.toJson(), Address.toJson() —
+    // lib/features/booking/domain/entities/booking.dart,
+    // lib/features/customer/domain/entities/address.dart) serialize
+    // `latitude`/`longitude`. The field-name mismatch meant `checkIn?.lat`
+    // and `address?.lat` were always undefined for every real booking, so
+    // this trigger silently no-opped on every check-in and the GPS
+    // proximity safety check never actually ran.
+    const checkIn = after.checkIn as { latitude?: number; longitude?: number } | null;
+    if (!checkIn?.latitude || !checkIn?.longitude) return;
 
-    const address = after.address as { lat?: number; lng?: number } | null;
-    if (!address?.lat || !address?.lng) return;
+    const address = after.address as { latitude?: number; longitude?: number } | null;
+    if (!address?.latitude || !address?.longitude) return;
 
     const distanceM = geofire.distanceBetween(
-      [checkIn.lat, checkIn.lng],
-      [address.lat, address.lng],
+      [checkIn.latitude, checkIn.longitude],
+      [address.latitude, address.longitude],
     ) * 1000;
 
     if (distanceM > CHECK_IN_RADIUS_M) {
@@ -45,10 +53,10 @@ export const verifyWorkerCheckInLocation = functions.firestore
         severity: 'medium',
         status: 'open',
         message: `Worker checked in ${Math.round(distanceM)}m from booking address (max ${CHECK_IN_RADIUS_M}m).`,
-        checkInLat: checkIn.lat,
-        checkInLng: checkIn.lng,
-        bookingLat: address.lat,
-        bookingLng: address.lng,
+        checkInLat: checkIn.latitude,
+        checkInLng: checkIn.longitude,
+        bookingLat: address.latitude,
+        bookingLng: address.longitude,
         distanceMeters: Math.round(distanceM),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

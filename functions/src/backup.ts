@@ -8,6 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
+import { assertIsAdmin } from './authUtils';
 
 const db = admin.firestore();
 const storage = new Storage();
@@ -106,24 +107,14 @@ export const scheduledFirestoreBackup = functions.pubsub
  * Manual backup trigger - for on-demand backups
  */
 export const manualBackup = functions.https.onCall(async (data, context) => {
-  // Verify admin role
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
-  }
-  
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
-  const userData = userDoc.data();
-  
-  if (!userData || userData.role !== 'admin') {
-    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
-  }
-  
+  const adminUid = assertIsAdmin(context);
+
   const projectId = process.env.GCLOUD_PROJECT || 'helaservice-prod';
   const timestamp = new Date().toISOString();
   const bucketName = `${projectId}-backups`;
   const collections = data.collections || CRITICAL_COLLECTIONS;
-  
-  console.log(`🔵 Manual backup started by ${context.auth.uid}`);
+
+  console.log(`🔵 Manual backup started by ${adminUid}`);
   
   const results: Record<string, number> = {};
   
@@ -183,17 +174,8 @@ export const listBackups = functions.https.onCall(async (data, context) => {
  * Restore collection from backup (admin only)
  */
 export const restoreFromBackup = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
-  }
-  
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
-  const userData = userDoc.data();
-  
-  if (!userData || userData.role !== 'admin') {
-    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
-  }
-  
+  const adminUid = assertIsAdmin(context);
+
   const { backupDate, collections, dryRun = true } = data;
   
   if (!backupDate || !collections || !Array.isArray(collections)) {
@@ -203,7 +185,7 @@ export const restoreFromBackup = functions.https.onCall(async (data, context) =>
   const projectId = process.env.GCLOUD_PROJECT || 'helaservice-prod';
   const bucketName = `${projectId}-backups`;
   
-  console.log(`🟡 Restore initiated by ${context.auth.uid}`, { backupDate, collections, dryRun });
+  console.log(`🟡 Restore initiated by ${adminUid}`, { backupDate, collections, dryRun });
   
   const results: Record<string, { restored: number; errors: number }> = {};
   

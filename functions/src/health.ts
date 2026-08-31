@@ -10,6 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { assertIsAdmin } from './authUtils';
 
 const db = admin.firestore();
 
@@ -91,18 +92,8 @@ export const healthCheck = functions.https.onRequest(async (req, res) => {
  * Callable health check - for admin dashboard
  */
 export const getSystemHealth = functions.https.onCall(async (data, context) => {
-  // Verify admin
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
-  }
-  
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
-  const userData = userDoc.data();
-  
-  if (!userData || userData.role !== 'admin') {
-    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
-  }
-  
+  assertIsAdmin(context);
+
   const health = await performHealthChecks();
   
   // Add additional metrics for admin view

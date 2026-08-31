@@ -25,6 +25,7 @@ interface WorkerLocation {
 
 interface JobRequest {
     jobId?: string;
+    bookingId?: string;
     customerId: string;
     serviceType: string;
     zoneId: string;
@@ -36,6 +37,21 @@ interface JobRequest {
     status?: string;
     offerCount?: number;
     retryCount?: number;
+}
+
+/**
+ * Gate 0: `bookings` is the single source of truth for booking state and
+ * worker assignment — job_requests/job_offers below are an internal
+ * matching/offer mechanism only. Every place that mutates a job_requests
+ * document in a way that should be visible to the customer/worker apps
+ * (offers went out, a worker was assigned, matching failed) must also write
+ * the corresponding, minimal update to the linked `bookings/{bookingId}`
+ * document in the same operation, so the two can never drift apart. This
+ * helper centralizes that so it isn't duplicated (and isn't forgotten) at
+ * each call site.
+ */
+function syncBookingRef(bookingId: string | undefined) {
+    return bookingId ? db.collection('bookings').doc(bookingId) : null;
 }
 
 
@@ -68,6 +84,11 @@ export const dispatchJob = functions.firestore
                     status: 'no_workers_available',
                     searchable: false
                 });
+
+                const bookingRef = syncBookingRef(job.bookingId);
+                if (bookingRef) {
+                    await bookingRef.update({ noWorkersAvailable: true });
+                }
 
                 // Notify customer
                 await notifyCustomerNoWorkers(job.customerId, jobId);
@@ -112,6 +133,17 @@ export const dispatchJob = functions.firestore
                 dispatchedAt: admin.firestore.FieldValue.serverTimestamp(),
                 offerCount: offers.length
             });
+
+            // Gate 0: mirror the offer onto the canonical booking so the
+            // customer app can show "offers sent" and acceptJob has an
+            // authoritative offeredWorkerIds list to check the accepting
+            // worker against.
+            const bookingRef = syncBookingRef(job.bookingId);
+            if (bookingRef) {
+                batch.update(bookingRef, {
+                    offeredWorkerIds: top3.map(w => w.workerId),
+                });
+            }
 
             await batch.commit();
 
@@ -212,13 +244,32 @@ function scoreWorkers(workers: WorkerLocation[], job: JobRequest) {
 }
 
 /**
- * Handle worker accepting job (race condition resolver)
+ * Handle worker accepting job (race condition resolver).
+ *
+ * Gate 0 fix (authenticated worker acceptance, CRITICAL): this function used
+ * to take `workerId` from the client-supplied `data` payload and trust it
+ * outright — it never checked that `context.auth.uid` was the worker
+ * actually accepting. Any authenticated user could call this with an
+ * arbitrary workerId and assign that job to any worker of their choosing
+ * (or a nonexistent one), regardless of who the offer was actually made to.
+ * The only trustworthy identity here is `context.auth.uid`; the client no
+ * longer needs to (and no longer can) supply which worker is accepting.
+ *
+ * This also now syncs the result onto the canonical `bookings` document
+ * (via the `bookingId` stored on the job_requests doc), which the original
+ * version never did at all — meaning a successful acceptance previously
+ * left the customer-facing booking permanently stuck at its pre-assignment
+ * status. `bookings` is the single source of truth for booking state; this
+ * update happens inside the same transaction so the two can never diverge.
  */
 export const acceptJob = functions.https.onCall(async (data, context) => {
-    const { jobId, workerId } = data;
-
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Login required');
+    }
+    const workerId = context.auth.uid;
+    const { jobId } = data;
+    if (typeof jobId !== 'string' || !jobId) {
+        throw new functions.https.HttpsError('invalid-argument', 'jobId is required');
     }
 
     const jobRef = db.collection('job_requests').doc(jobId);
@@ -229,6 +280,10 @@ export const acceptJob = functions.https.onCall(async (data, context) => {
         const offerDoc = await transaction.get(offerRef);
 
         if (!jobDoc.exists) throw new Error('Job not found');
+        // Because offerRef is keyed by `${jobId}_${workerId}` and workerId is
+        // now context.auth.uid, this existence check IS the "only the
+        // offered provider can accept" guarantee — a worker who was never
+        // offered this job has no document here to read.
         if (!offerDoc.exists) throw new Error('Offer not found');
 
         const jobData = jobDoc.data() as JobRequest;
@@ -272,6 +327,21 @@ export const acceptJob = functions.https.onCall(async (data, context) => {
             isAvailable: false
         });
 
+        // Gate 0: bookings is the single source of truth — sync the
+        // assignment atomically in the same transaction that decides the
+        // winner, so no client ever observes a booking whose status says
+        // "confirmed" without a workerId, or vice versa.
+        const bookingRef = syncBookingRef(jobData.bookingId);
+        if (bookingRef) {
+            transaction.update(bookingRef, {
+                workerId,
+                status: 'confirmed',
+                offeredWorkerIds: admin.firestore.FieldValue.delete(),
+                confirmedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+
         // Notify customer
         await notifyCustomerWorkerAssigned(jobData.customerId, workerId, jobId);
 
@@ -312,6 +382,10 @@ async function handleOfferTimeout(jobId: string, workerIds: string[]) {
         // Trigger new search with wider radius (implementation omitted for brevity)
     } else {
         batch.update(jobRef, { status: 'no_workers_available' });
+        const bookingRef = syncBookingRef(jobData.bookingId);
+        if (bookingRef) {
+            batch.update(bookingRef, { noWorkersAvailable: true });
+        }
         await batch.commit();
         await notifyCustomerNoWorkers(jobData.customerId, jobId);
     }
@@ -441,3 +515,6 @@ export { applyApprovedChange } from "./approvals";
 
 // Phase 12: Session management
 export { revokeOtherSessions } from "./sessions";
+
+// Gate 0: security & core-flow stabilization
+export { syncWorkerPublicProfile } from "./workerPublicProfile";
