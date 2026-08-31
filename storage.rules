@@ -6,10 +6,17 @@ service firebase.storage {
     // WORKER DOCUMENTS (PDPA Critical — encrypted at rest)
     // =========================================================================
     match /workers/{workerId}/{fileName} {
-      // Only the worker themselves can read/write their own documents
-      allow read, write: if request.auth != null && request.auth.uid == workerId;
+      // Only the worker themselves can read their own documents.
+      allow read: if request.auth != null && request.auth.uid == workerId;
 
-      // File size limit: 5MB for NIC images, 2MB for profile photos
+      // Gate 0 fix (Storage rules, CRITICAL): this used to be a plain
+      // `allow read, write: if request.auth.uid == workerId` PLUS a second,
+      // separate `allow write` adding a 5MB/image-only restriction.
+      // Firebase Security Rules OR every matching `allow` in a match block —
+      // there is no "most restrictive wins" — so the unconditional first
+      // rule made the size/type check on the second one completely
+      // unreachable: a worker could upload a file of any size and any MIME
+      // type. The size/type constraints are now the ONLY write rule.
       allow write: if request.auth != null
         && request.auth.uid == workerId
         && request.resource.size <= 5 * 1024 * 1024
@@ -20,7 +27,12 @@ service firebase.storage {
     // ADMIN — can read all worker documents for verification
     // =========================================================================
     match /workers/{workerId}/{fileName} {
-      allow read: if request.auth != null && request.auth.token.admin == true;
+      // Gate 0 fix: also accept the superAdmin claim, matching firestore.rules'
+      // isAdmin() helper — previously a superAdmin-only account (no separate
+      // `admin` claim) would be denied here despite being the highest
+      // privilege level in Firestore.
+      allow read: if request.auth != null &&
+        (request.auth.token.admin == true || request.auth.token.superAdmin == true);
     }
 
     // =========================================================================

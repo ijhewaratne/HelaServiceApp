@@ -35,11 +35,43 @@ service cloud.firestore {
         get(/databases/$(database)/documents/admin_permissions/$(request.auth.uid)).data.scopes;
     }
 
+    // Gate 0 fix (legal state transitions): the worker- and customer-driven
+    // slices of the booking lifecycle that a plain client Firestore write is
+    // allowed to perform. Assignment itself (pending -> confirmed) is
+    // deliberately NOT here — that only ever happens server-side, inside the
+    // acceptJob Cloud Function transaction (functions/src/index.ts), which
+    // uses the Admin SDK and so bypasses these rules entirely. This function
+    // only fences in what an authenticated client can do directly.
+    function isLegalWorkerBookingTransition(from, to) {
+      return (from == 'confirmed' && to == 'workerAssigned') ||
+             (from == 'workerAssigned' && to == 'workerEnRoute') ||
+             (from == 'workerEnRoute' && to == 'workerArrived') ||
+             (from == 'workerArrived' && to == 'inProgress') ||
+             (from == 'inProgress' && to == 'completed') ||
+             (from == to);
+    }
+
     // =========================================================================
     // USERS (Base Auth Records)
     // =========================================================================
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      // Gate 0 fix (role escalation, CRITICAL): this rule previously allowed
+      // an unrestricted self-write. Combined with manualBackup/
+      // restoreFromBackup/getSystemHealth (functions/src/backup.ts,
+      // health.ts) trusting this document's `role` field instead of a
+      // Firebase Auth custom claim, any signed-in user could set
+      // role: 'admin' on their own doc and then successfully call those
+      // admin-only Cloud Functions — including restoreFromBackup, which can
+      // overwrite production data. Those functions now check
+      // request.auth.token.admin/superAdmin instead, but this rule is
+      // hardened in depth too: `role` can never be client-written at all,
+      // and `userType` may only ever be self-set to a non-privileged value.
+      allow create, update: if isAuthenticated() && request.auth.uid == userId
+        && !('role' in request.resource.data)
+        && (!('userType' in request.resource.data)
+            || request.resource.data.userType in ['customer', 'worker', 'unknown']);
 
       // Device/session list (FR-AUTH-007) — purely metadata about the
       // owner's own devices, so a normal self-write is sufficient; the
@@ -67,11 +99,17 @@ service cloud.firestore {
     // =========================================================================
     match /workers/{workerId} {
       // Workers read/write their own profile
-      allow read, write: if isAuthenticated() && request.auth.uid == workerId;
+      allow read: if isAuthenticated() && request.auth.uid == workerId;
 
-      // Workers CANNOT self-promote their verification status
+      // Workers CANNOT self-promote their verification status or tier.
+      // Gate 0 fix (provider self-approval): `verificationTier` was not
+      // previously guarded here, only `isVerified` — a worker could raise
+      // their own tier (e.g. to unlock higher-risk categories) even though
+      // isVerified itself was already correctly frozen.
+      allow create: if isAuthenticated() && request.auth.uid == workerId;
       allow update: if isAuthenticated() && request.auth.uid == workerId
-        && request.resource.data.isVerified == resource.data.isVerified;
+        && request.resource.data.isVerified == resource.data.isVerified
+        && request.resource.data.get('verificationTier', null) == resource.data.get('verificationTier', null);
 
       // Private subcollection (bank details, passport) — extra protection
       match /private_data/{doc} {
@@ -85,18 +123,59 @@ service cloud.firestore {
     }
 
     match /worker_applications/{workerId} {
-      allow create, read, update: if isAuthenticated() && request.auth.uid == workerId;
+      allow create: if isAuthenticated() && request.auth.uid == workerId;
+
+      // Gate 0 fix (provider self-approval, CRITICAL): this rule previously
+      // let a worker update ANY field on their own application, including
+      // `status` — meaning a worker could set status: 'approved' on
+      // themselves directly, with no admin ever involved. Applicants may
+      // still freely edit their own submitted application content; only the
+      // review-decision fields are now admin/Cloud-Function-only.
+      allow update: if isAuthenticated() && request.auth.uid == workerId
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['status', 'rejectionReason', 'reviewedBy', 'reviewedAt', 'approvedAt']);
+
+      allow read: if isAuthenticated() && request.auth.uid == workerId;
       allow read, update: if isAdmin();
       allow delete: if false;
+    }
+
+    // =========================================================================
+    // WORKER PUBLIC PROFILES (Gate 0 addition — location privacy)
+    // =========================================================================
+    //
+    // The `workers` document above is owner+admin-only, which is correct for
+    // its NIC/home-address/home-coordinate fields — but it means there was
+    // no rule anywhere granting a customer read access to a provider's
+    // profile at all. ProviderProfileScreen (which reads `workers` directly
+    // today) is therefore denied under the rules as actually deployed. This
+    // collection is the fix: a Cloud-Function-maintained mirror containing
+    // only the fields that are safe for any authenticated user to see
+    // (name, photo, rating, bio, services, district-level area, tier) —
+    // never NIC, exact address, or home/live coordinates. It is written only
+    // by the syncWorkerPublicProfile trigger (functions/src/index.ts, Admin
+    // SDK), never directly by a client.
+    match /worker_public_profiles/{workerId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
     }
 
     // =========================================================================
     // BOOKINGS (canonical operational model used by the Flutter app)
     // =========================================================================
     match /bookings/{bookingId} {
-      // Customers create their own bookings
+      // Customers create their own bookings. Gate 0 fix: a booking must
+      // start in 'pending' with no worker pre-assigned — previously this
+      // rule only checked ownership, so a client could create a booking
+      // that was already 'confirmed' with an arbitrary workerId, skipping
+      // the offer/acceptance process entirely and self-assigning any
+      // worker. Real assignment only ever happens server-side (see
+      // acceptJob in functions/src/index.ts), which uses the Admin SDK and
+      // so is unaffected by this restriction.
       allow create: if isAuthenticated()
-        && request.resource.data.customerId == request.auth.uid;
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.get('workerId', null) == null;
 
       // Customers read their own bookings; assigned workers read theirs
       allow read: if isAuthenticated() && (
@@ -113,12 +192,18 @@ service cloud.firestore {
       // allowlist, which blocks every update including legitimate ones. Verified
       // empirically against the Firestore emulator: the previous keys()-based
       // rule rejected a worker's plain status update with permission-denied.
+      //
+      // Gate 0 fix (legal state transitions): added
+      // isLegalWorkerBookingTransition() so a worker can only move their own
+      // booking one legal step forward (e.g. cannot jump straight from
+      // 'confirmed' to 'completed'), not set status to an arbitrary value.
       allow update: if isAuthenticated()
         && resource.data.workerId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'status', 'updatedAt', 'startedAt', 'completedAt', 'arrivedAt',
             'actualArrivalLocation', 'checkIn', 'checkOut', 'billableHours'
-          ]);
+          ])
+        && isLegalWorkerBookingTransition(resource.data.status, request.resource.data.status);
 
       // Customers cancel their own bookings
       allow update: if isAuthenticated()
@@ -127,6 +212,7 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'status', 'cancellationReason', 'cancelledAt', 'updatedAt'
           ]);
+
     }
 
     // =========================================================================
@@ -171,7 +257,15 @@ service cloud.firestore {
     // AUDIT LOGS (Immutable — write-once for labor dispute protection)
     // =========================================================================
     match /audit_logs/{logId} {
-      allow create: if isAuthenticated();
+      // Gate 0 fix (audit-log permissions, HIGH): this rule previously let
+      // ANY authenticated user create an audit_logs entry, not just admins —
+      // meaning a malicious customer or worker could permanently pollute the
+      // immutable audit trail with fabricated entries. Every real write site
+      // found in the app (review_repository_impl.dart, admin_dispute_screen.dart,
+      // admin_review_moderation_screen.dart) is an admin-initiated action and
+      // already stamps `adminUserId`, so requiring both isAdmin() and actor
+      // self-attribution here does not break any legitimate current caller.
+      allow create: if isAdmin() && request.resource.data.adminUserId == request.auth.uid;
       allow read: if isAdmin();
       allow update, delete: if false; // Immutable — no updates or deletions ever
     }
@@ -249,10 +343,18 @@ service cloud.firestore {
     // silently bypassed by this catch-all until the exclusion was added,
     // which would have made the two-person-approval mechanism decorative —
     // any single admin could still write either collection directly.
+    //
+    // Gate 0 fix: `audit_logs` had exactly this same bug and was caught by
+    // this branch's own emulator tests — the specific audit_logs rule above
+    // (isAdmin() + actor-must-match-self, immutable) was being silently
+    // overridden by this catch-all, since audit_logs was missing from the
+    // exclusion list below. Any admin could still forge another admin as
+    // the actor, or edit/delete an existing log entry, straight through
+    // this blanket grant.
     match /{document=**} {
       allow read, write: if isAdmin()
         && !(request.path[3] in [
-              'admin_permissions', 'pending_approvals', 'service_catalog'
+              'admin_permissions', 'pending_approvals', 'service_catalog', 'audit_logs'
             ]);
     }
 
@@ -276,25 +378,45 @@ match /job_requests/{jobId} {
 
 match /job_offers/{offerId} {
   // Workers can only read their own offers
-  allow read: if request.auth != null 
+  allow read: if request.auth != null
     && resource.data.workerId == request.auth.uid;
-    
-  // Cloud Function updates status
-  allow update: if request.auth != null 
+
+  // Gate 0 fix (authenticated worker acceptance, CRITICAL): a worker could
+  // previously set their own offer's status directly to 'accepted' via a
+  // plain client write, completely bypassing the acceptJob Cloud Function's
+  // atomic transaction (functions/src/index.ts) — meaning two workers could
+  // each accept the same offer with no cross-worker atomicity check at all,
+  // and neither acceptance would ever be reflected on the bookings document.
+  // 'accepted' is now only ever set server-side, inside that transaction,
+  // using the Admin SDK (which bypasses this rule entirely). A client may
+  // still directly decline an offer — that path has no atomicity concern.
+  allow update: if request.auth != null
     && resource.data.workerId == request.auth.uid
-    && request.resource.data.status in ['accepted', 'rejected'];
+    && request.resource.data.status == 'rejected';
 }
 
 match /worker_locations/{workerId} {
   // Workers write their own location
   allow write: if request.auth != null && request.auth.uid == workerId;
 
-  // Transitional alignment: the current Flutter app still performs
-  // client-side matching and live tracking reads.
+  // Gate 0 fix (location privacy, HIGH): this rule previously let ANY
+  // signed-in user read ANY online worker's precise live coordinates just
+  // by knowing (or guessing) their uid — a real, exploitable location
+  // exposure with no relationship to the requester required at all. The
+  // broader client-side proximity-discovery code that this clause existed
+  // to support (lib/features/matching/data/services/location_tracking_service.dart's
+  // geohash range query, lib/features/matching/domain/usecases/find_nearest_worker.dart)
+  // has no caller anywhere in the app today — verified by grep — so this
+  // tightening does not remove any currently-reachable capability. A
+  // worker's location is now only visible to themselves, an admin, or the
+  // customer of the booking that worker is actively assigned to (via the
+  // currentBookingId field the worker's app sets when it starts sending
+  // location updates for a specific job).
   allow read: if request.auth != null && (
     request.auth.uid == workerId ||
     isAdmin() ||
-    resource.data.status == 'online'
+    ('currentBookingId' in resource.data && resource.data.currentBookingId != null &&
+     get(/databases/$(database)/documents/bookings/$(resource.data.currentBookingId)).data.customerId == request.auth.uid)
   );
 }
 

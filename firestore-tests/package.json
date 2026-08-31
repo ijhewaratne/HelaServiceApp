@@ -1,0 +1,20 @@
+{
+  "name": "hela_firestore_rules_tests",
+  "private": true,
+  "type": "commonjs",
+  "description": "Emulator-based tests for firestore.rules and storage.rules. Run `firebase emulators:exec --only firestore,storage,auth \"npm test\"` from this directory, or start emulators separately and run `npm test`.",
+  "scripts": {
+    "pretest": "tsc -p tsconfig.json",
+    "test": "mocha --timeout 20000 --exit \"dist/**/*.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "mocha": "^10.4.0",
+    "chai": "^4.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "@types/mocha": "^10.0.6",
+    "@types/chai": "^4.3.14",
+    "@types/node": "^20.0.0"
+  }
+}
