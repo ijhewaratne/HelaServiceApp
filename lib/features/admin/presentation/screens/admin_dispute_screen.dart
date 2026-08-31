@@ -26,12 +26,10 @@ class _AdminDisputeScreenState extends State<AdminDisputeScreen> {
             icon: const Icon(Icons.filter_list, color: Colors.white),
             onSelected: (v) => setState(() => _filterStatus = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(
-                  value: null, child: Text('All Disputes')),
-              ...DisputeStatus.values.map((s) => PopupMenuItem(
-                    value: s,
-                    child: Text(s.name),
-                  )),
+              const PopupMenuItem(value: null, child: Text('All Disputes')),
+              ...DisputeStatus.values.map(
+                (s) => PopupMenuItem(value: s, child: Text(s.name)),
+              ),
             ],
           ),
         ],
@@ -41,21 +39,25 @@ class _AdminDisputeScreenState extends State<AdminDisputeScreen> {
           if (_filterStatus != null)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               color: const Color(0xFFE8F5E9),
               child: Row(
                 children: [
-                  Text('Filter: ${_filterStatus!.name}',
-                      style: const TextStyle(
-                          color: Color(0xFF1B5E20),
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    'Filter: ${_filterStatus!.name}',
+                    style: const TextStyle(
+                      color: Color(0xFF1B5E20),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: () =>
-                        setState(() => _filterStatus = null),
-                    child: const Icon(Icons.close,
-                        size: 16, color: Color(0xFF1B5E20)),
+                    onTap: () => setState(() => _filterStatus = null),
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: Color(0xFF1B5E20),
+                    ),
                   ),
                 ],
               ),
@@ -99,8 +101,7 @@ class _DisputeList extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           itemCount: disputes.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, i) =>
-              _DisputeCard(dispute: disputes[i]),
+          itemBuilder: (context, i) => _DisputeCard(dispute: disputes[i]),
         );
       },
     );
@@ -121,10 +122,14 @@ class _DisputeCardState extends State<_DisputeCard> {
 
   Color _statusColor(DisputeStatus s) {
     switch (s) {
-      case DisputeStatus.open:        return Colors.orange;
-      case DisputeStatus.underReview: return Colors.blue;
-      case DisputeStatus.resolved:    return Colors.green;
-      case DisputeStatus.closed:      return Colors.grey;
+      case DisputeStatus.open:
+        return Colors.orange;
+      case DisputeStatus.underReview:
+        return Colors.blue;
+      case DisputeStatus.resolved:
+        return Colors.green;
+      case DisputeStatus.closed:
+        return Colors.grey;
     }
   }
 
@@ -136,20 +141,20 @@ class _DisputeCardState extends State<_DisputeCard> {
         title: Text('Mark as ${newStatus.name}'),
         content: TextField(
           controller: noteCtrl,
-          decoration: const InputDecoration(
-              hintText: 'Admin note (optional)'),
+          decoration: const InputDecoration(hintText: 'Admin note (optional)'),
           maxLines: 3,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B5E20)),
-            child: const Text('Confirm',
-                style: TextStyle(color: Colors.white)),
+              backgroundColor: const Color(0xFF1B5E20),
+            ),
+            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -185,8 +190,9 @@ class _DisputeCardState extends State<_DisputeCard> {
       await batch.commit();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -222,23 +228,24 @@ class _DisputeCardState extends State<_DisputeCard> {
                       children: [
                         Text(
                           d.issueType.name
-                              .replaceAllMapped(RegExp(r'([A-Z])'),
-                                  (m) => ' ${m[0]}')
+                              .replaceAllMapped(
+                                RegExp(r'([A-Z])'),
+                                (m) => ' ${m[0]}',
+                              )
                               .trim(),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           'Booking: ${d.requestId.substring(0, 8)}... · ${d.status.name}',
                           style: TextStyle(
-                              color: Colors.grey[500], fontSize: 12),
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(_expanded
-                      ? Icons.expand_less
-                      : Icons.expand_more),
+                  Icon(_expanded ? Icons.expand_less : Icons.expand_more),
                 ],
               ),
             ),
@@ -250,16 +257,20 @@ class _DisputeCardState extends State<_DisputeCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(d.description,
-                      style: TextStyle(
-                          color: Colors.grey[700], height: 1.4)),
+                  Text(
+                    d.description,
+                    style: TextStyle(color: Colors.grey[700], height: 1.4),
+                  ),
                   if (d.adminNote != null) ...[
                     const SizedBox(height: 8),
-                    Text('Admin note: ${d.adminNote}',
-                        style: TextStyle(
-                            color: Colors.grey[500],
-                            fontStyle: FontStyle.italic,
-                            fontSize: 13)),
+                    Text(
+                      'Admin note: ${d.adminNote}',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontStyle: FontStyle.italic,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 12),
                   if (_busy)
@@ -272,20 +283,20 @@ class _DisputeCardState extends State<_DisputeCard> {
                       children: [
                         if (d.status == DisputeStatus.open)
                           _StatusBtn(
-                              'Under Review',
-                              Colors.blue,
-                              () => _updateStatus(
-                                  DisputeStatus.underReview)),
+                            'Under Review',
+                            Colors.blue,
+                            () => _updateStatus(DisputeStatus.underReview),
+                          ),
                         _StatusBtn(
-                            'Resolved',
-                            Colors.green,
-                            () =>
-                                _updateStatus(DisputeStatus.resolved)),
+                          'Resolved',
+                          Colors.green,
+                          () => _updateStatus(DisputeStatus.resolved),
+                        ),
                         _StatusBtn(
-                            'Close',
-                            Colors.grey,
-                            () =>
-                                _updateStatus(DisputeStatus.closed)),
+                          'Close',
+                          Colors.grey,
+                          () => _updateStatus(DisputeStatus.closed),
+                        ),
                       ],
                     ),
                 ],

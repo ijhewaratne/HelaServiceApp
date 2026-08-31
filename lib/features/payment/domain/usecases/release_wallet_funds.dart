@@ -9,7 +9,7 @@ import '../../../../core/usecases/usecase.dart';
 class ReleaseWalletFunds implements UseCase<void, ReleaseWalletFundsParams> {
   final FirebaseFirestore _db;
   ReleaseWalletFunds({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<Either<Failure, void>> call(ReleaseWalletFundsParams params) async {
@@ -32,8 +32,7 @@ class ReleaseWalletFunds implements UseCase<void, ReleaseWalletFundsParams> {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        final bookingRef =
-            _db.collection('bookings').doc(params.bookingId);
+        final bookingRef = _db.collection('bookings').doc(params.bookingId);
         tx.update(bookingRef, {'heldAmount': 0.0});
       });
       return const Right(null);

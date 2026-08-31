@@ -13,9 +13,9 @@ class DayAvailability extends Equatable {
   }
 
   Map<String, dynamic> toJson() => {
-        'day': day,
-        'slots': slots.map((s) => s.toJson()).toList(),
-      };
+    'day': day,
+    'slots': slots.map((s) => s.toJson()).toList(),
+  };
 
   factory DayAvailability.fromJson(Map<String, dynamic> json) =>
       DayAvailability(
@@ -32,7 +32,7 @@ class DayAvailability extends Equatable {
 /// A contiguous time window (HH:mm 24-hour format)
 class TimeSlot extends Equatable {
   final String start; // e.g. "08:00"
-  final String end;   // e.g. "13:00"
+  final String end; // e.g. "13:00"
 
   const TimeSlot({required this.start, required this.end});
 
@@ -61,7 +61,7 @@ class TimeSlot extends Equatable {
 class WorkerCalendar extends Equatable {
   final String workerId;
   final Map<String, DayAvailability> recurring; // key = 'monday' etc.
-  final Map<String, String> exceptions;          // 'YYYY-MM-DD' → 'booked'|'unavailable'
+  final Map<String, String> exceptions; // 'YYYY-MM-DD' → 'booked'|'unavailable'
   final DateTime? updatedAt;
 
   const WorkerCalendar({
@@ -71,10 +71,8 @@ class WorkerCalendar extends Equatable {
     this.updatedAt,
   });
 
-  static WorkerCalendar empty(String workerId) => WorkerCalendar(
-        workerId: workerId,
-        recurring: {},
-      );
+  static WorkerCalendar empty(String workerId) =>
+      WorkerCalendar(workerId: workerId, recurring: {});
 
   bool get hasSchedule => recurring.isNotEmpty;
 
@@ -95,9 +93,8 @@ class WorkerCalendar extends Equatable {
   }
 
   /// Block a date (mark as booked)
-  WorkerCalendar withBookedDate(DateTime date) => copyWith(
-        exceptions: {...exceptions, _dateKey(date): 'booked'},
-      );
+  WorkerCalendar withBookedDate(DateTime date) =>
+      copyWith(exceptions: {...exceptions, _dateKey(date): 'booked'});
 
   /// Unblock a date
   WorkerCalendar withReleasedDate(DateTime date) {
@@ -110,50 +107,49 @@ class WorkerCalendar extends Equatable {
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   static String _dayName(DateTime d) => const [
-        '',
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-        'sunday'
-      ][d.weekday];
+    '',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ][d.weekday];
 
   WorkerCalendar copyWith({
     String? workerId,
     Map<String, DayAvailability>? recurring,
     Map<String, String>? exceptions,
     DateTime? updatedAt,
-  }) =>
-      WorkerCalendar(
-        workerId: workerId ?? this.workerId,
-        recurring: recurring ?? this.recurring,
-        exceptions: exceptions ?? this.exceptions,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  }) => WorkerCalendar(
+    workerId: workerId ?? this.workerId,
+    recurring: recurring ?? this.recurring,
+    exceptions: exceptions ?? this.exceptions,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'workerId': workerId,
-        'recurring':
-            recurring.map((k, v) => MapEntry(k, v.toJson())),
-        'exceptions': exceptions,
-        'updatedAt':
-            updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
-      };
+    'workerId': workerId,
+    'recurring': recurring.map((k, v) => MapEntry(k, v.toJson())),
+    'exceptions': exceptions,
+    'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+  };
 
-  factory WorkerCalendar.fromJson(Map<String, dynamic> json,
-      {required String workerId}) {
-    final recurringRaw =
-        json['recurring'] as Map<String, dynamic>? ?? {};
+  factory WorkerCalendar.fromJson(
+    Map<String, dynamic> json, {
+    required String workerId,
+  }) {
+    final recurringRaw = json['recurring'] as Map<String, dynamic>? ?? {};
     return WorkerCalendar(
       workerId: workerId,
       recurring: recurringRaw.map(
-        (k, v) => MapEntry(
-            k, DayAvailability.fromJson(v as Map<String, dynamic>)),
+        (k, v) =>
+            MapEntry(k, DayAvailability.fromJson(v as Map<String, dynamic>)),
       ),
-      exceptions: (json['exceptions'] as Map<String, dynamic>? ?? {})
-          .map((k, v) => MapEntry(k, v as String)),
+      exceptions: (json['exceptions'] as Map<String, dynamic>? ?? {}).map(
+        (k, v) => MapEntry(k, v as String),
+      ),
       updatedAt: json['updatedAt'] != null
           ? (json['updatedAt'] as Timestamp).toDate()
           : null,

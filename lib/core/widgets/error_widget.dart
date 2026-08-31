@@ -21,18 +21,11 @@ class AppErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: Colors.red.shade300,
-            ),
+            Icon(icon, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
               message,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -59,7 +52,8 @@ class NetworkErrorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppErrorWidget(
-      message: 'No internet connection. Please check your network and try again.',
+      message:
+          'No internet connection. Please check your network and try again.',
       icon: Icons.wifi_off,
       onRetry: onRetry,
     );
@@ -89,26 +83,16 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            Icon(icon, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               message,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: onAction,
-                child: Text(actionLabel!),
-              ),
+              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],
         ),

@@ -15,7 +15,7 @@ import 'features/payment/presentation/bloc/payment_bloc.dart';
 import 'injection_container.dart';
 
 /// Main application widget
-/// 
+///
 /// Phase 3: Essential Features - Added localization support
 class HelaServiceApp extends StatelessWidget {
   const HelaServiceApp({super.key});
@@ -37,7 +37,7 @@ class HelaServiceApp extends StatelessWidget {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => sl<LocalizationService>()),
-          ChangeNotifierProvider(create: (_) => sl<ThemeProvider>())
+          ChangeNotifierProvider(create: (_) => sl<ThemeProvider>()),
         ],
         child: Consumer2<LocalizationService, ThemeProvider>(
           builder: (context, localizationService, themeProvider, child) {
@@ -47,7 +47,7 @@ class HelaServiceApp extends StatelessWidget {
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
               themeMode: themeProvider.themeMode,
-              
+
               // Localization configuration
               localizationsDelegates: const [
                 AppLocalizations.delegate,
@@ -57,7 +57,7 @@ class HelaServiceApp extends StatelessWidget {
               ],
               supportedLocales: LocalizationService.supportedLocales,
               locale: localizationService.currentLocale,
-              
+
               routerConfig: appRouter,
               builder: (context, child) {
                 // Add error boundary
@@ -67,7 +67,11 @@ class HelaServiceApp extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'Something went wrong',

@@ -1,13 +1,13 @@
 /// Performance Optimization Library
-/// 
+///
 /// Sprint 4: Performance Optimization for HelaService
-/// 
+///
 /// This library provides utilities for:
 /// - Image optimization with caching
 /// - List pagination and lazy loading
 /// - Firestore query pagination
 /// - BLoC state optimization
-/// 
+///
 /// Usage:
 /// ```dart
 /// import 'package:home_service_app/core/performance/index.dart';

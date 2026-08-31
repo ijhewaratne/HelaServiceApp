@@ -82,17 +82,16 @@ class _BankAccountPageState extends State<BankAccountPage> {
           .collection('private_data')
           .doc('bank_account')
           .set({
-        'bankName': _bankName,
-        'accountHolder': _holderController.text.trim(),
-        'accountNumber': _accountController.text.trim(),
-        'branchName': _branchName.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'bankName': _bankName,
+            'accountHolder': _holderController.text.trim(),
+            'accountNumber': _accountController.text.trim(),
+            'branchName': _branchName.trim(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
       // Mirror bank name to main worker doc for payout processing
-      await sl<FirebaseFirestore>()
-          .collection('workers')
-          .doc(uid)
-          .update({'bankAccountSet': true});
+      await sl<FirebaseFirestore>().collection('workers').doc(uid).update({
+        'bankAccountSet': true,
+      });
       setState(() => _saved = true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -104,9 +103,9 @@ class _BankAccountPageState extends State<BankAccountPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Save failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -138,22 +137,25 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   color: AppTheme.infoColor.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppTheme.infoColor.withValues(alpha: 0.3)),
+                    color: AppTheme.infoColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.lock_outline,
-                        color: AppTheme.infoColor, size: 18),
+                    const Icon(
+                      Icons.lock_outline,
+                      color: AppTheme.infoColor,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Your bank details are encrypted and stored securely. '
                         'They are only used for weekly payout transfers (every Monday, min LKR 1,000).',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: AppTheme.infoColor),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.infoColor,
+                        ),
                       ),
                     ),
                   ],
@@ -197,9 +199,8 @@ class _BankAccountPageState extends State<BankAccountPage> {
                   prefixIcon: Icon(Icons.person_outline),
                 ),
                 textCapitalization: TextCapitalization.words,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Required'
-                    : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 16),
 
@@ -221,25 +222,34 @@ class _BankAccountPageState extends State<BankAccountPage> {
 
               if (_saved)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     color: AppTheme.successColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: AppTheme.successColor.withValues(alpha: 0.3)),
+                      color: AppTheme.successColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.check_circle,
-                          color: AppTheme.successColor, size: 16),
+                      Icon(
+                        Icons.check_circle,
+                        color: AppTheme.successColor,
+                        size: 16,
+                      ),
                       SizedBox(width: 8),
-                      Text('Bank account on file',
-                          style: TextStyle(
-                              color: AppTheme.successColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13)),
+                      Text(
+                        'Bank account on file',
+                        style: TextStyle(
+                          color: AppTheme.successColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -254,9 +264,13 @@ class _BankAccountPageState extends State<BankAccountPage> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
-                      : Text(_saved ? 'Update Bank Account' : 'Save Bank Account'),
+                      : Text(
+                          _saved ? 'Update Bank Account' : 'Save Bank Account',
+                        ),
                 ),
               ),
             ],

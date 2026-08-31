@@ -15,7 +15,11 @@ class TrainingPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.play_circle_outline, size: 100, color: Colors.blue),
+            const Icon(
+              Icons.play_circle_outline,
+              size: 100,
+              color: Colors.blue,
+            ),
             const SizedBox(height: 24),
             const Text(
               'Training Videos',

@@ -13,7 +13,7 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
   final FirebaseFirestore _db;
 
   SplitPayment({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<Either<Failure, Payout>> call(SplitPaymentParams params) async {
@@ -27,8 +27,7 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
 
       await _db.runTransaction((tx) async {
         // 1. Read customer wallet
-        final walletRef =
-            _db.collection('wallets').doc(params.customerId);
+        final walletRef = _db.collection('wallets').doc(params.customerId);
         final walletSnap = await tx.get(walletRef);
 
         if (!walletSnap.exists) {
@@ -41,7 +40,8 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
 
         if (held < amountCents) {
           throw Exception(
-              'Held amount ($held) less than requested ($amountCents)');
+            'Held amount ($held) less than requested ($amountCents)',
+          );
         }
 
         // 2. Debit customer: release hold and debit from balance
@@ -79,8 +79,7 @@ class SplitPayment implements UseCase<Payout, SplitPaymentParams> {
         tx.set(payoutRef, payout.toJson());
 
         // 5. Mark booking as paid
-        final bookingRef =
-            _db.collection('bookings').doc(params.bookingId);
+        final bookingRef = _db.collection('bookings').doc(params.bookingId);
         tx.update(bookingRef, {
           'finalPrice': params.amount,
           'heldAmount': 0.0,

@@ -9,8 +9,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
   final CustomerRepository _customerRepository;
 
   CustomerBloc({required CustomerRepository customerRepository})
-      : _customerRepository = customerRepository,
-        super(CustomerInitial()) {
+    : _customerRepository = customerRepository,
+      super(CustomerInitial()) {
     on<LoadCustomerProfile>(_onLoadCustomerProfile);
     on<CreateCustomerProfile>(_onCreateCustomerProfile);
     on<UpdateCustomerProfile>(_onUpdateCustomerProfile);
@@ -27,7 +27,9 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     Emitter<CustomerState> emit,
   ) async {
     emit(CustomerLoading());
-    final result = await _customerRepository.getCustomerProfile(event.customerId);
+    final result = await _customerRepository.getCustomerProfile(
+      event.customerId,
+    );
     result.fold(
       (failure) => emit(CustomerError(message: failure.message)),
       (profile) => emit(CustomerProfileLoaded(profile: profile)),
@@ -69,7 +71,9 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     Emitter<CustomerState> emit,
   ) async {
     emit(CustomerLoading());
-    final result = await _customerRepository.deleteCustomerProfile(event.customerId);
+    final result = await _customerRepository.deleteCustomerProfile(
+      event.customerId,
+    );
     result.fold(
       (failure) => emit(CustomerError(message: failure.message)),
       (_) => emit(CustomerProfileDeleted()),
@@ -81,7 +85,9 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     Emitter<CustomerState> emit,
   ) async {
     emit(CustomerLoading());
-    final result = await _customerRepository.getCustomerBookings(event.customerId);
+    final result = await _customerRepository.getCustomerBookings(
+      event.customerId,
+    );
     result.fold(
       (failure) => emit(CustomerError(message: failure.message)),
       (bookings) => emit(CustomerBookingsLoaded(bookings: bookings)),
@@ -93,7 +99,9 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     Emitter<CustomerState> emit,
   ) async {
     emit(CustomerLoading());
-    final result = await _customerRepository.getSavedAddresses(event.customerId);
+    final result = await _customerRepository.getSavedAddresses(
+      event.customerId,
+    );
     result.fold(
       (failure) => emit(CustomerError(message: failure.message)),
       (addresses) => emit(SavedAddressesLoaded(addresses: addresses)),

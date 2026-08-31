@@ -22,12 +22,15 @@ class LocationService {
   /// [workerMetadata] is merged into every worker_locations write so the
   /// dispatch function can read skills/isVerified/homeLocation without an
   /// extra Firestore read.
-  Future<void> startTracking(String workerId, {Map<String, dynamic>? workerMetadata}) async {
+  Future<void> startTracking(
+    String workerId, {
+    Map<String, dynamic>? workerMetadata,
+  }) async {
     if (_isTracking) return;
 
     _workerId = workerId;
     _workerMetadata = workerMetadata ?? await _loadWorkerMetadata(workerId);
-    
+
     // Check permissions
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -52,13 +55,14 @@ class LocationService {
     await _updateLocation(position);
 
     // Start listening
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: _locationSettings,
-    ).listen(
-      _updateLocation,
-      onError: (e) => debugPrint('Location stream error: $e'),
-    );
-    
+    _positionStream =
+        Geolocator.getPositionStream(
+          locationSettings: _locationSettings,
+        ).listen(
+          _updateLocation,
+          onError: (e) => debugPrint('Location stream error: $e'),
+        );
+
     _isTracking = true;
   }
 
@@ -66,11 +70,8 @@ class LocationService {
     if (_workerId == null) return;
 
     // Generate geohash for efficient querying
-    final geohash = GeohashHelper.encode(
-      position.latitude,
-      position.longitude,
-    );
-    
+    final geohash = GeohashHelper.encode(position.latitude, position.longitude);
+
     await _firestore.collection('worker_locations').doc(_workerId).set({
       'lat': position.latitude,
       'lng': position.longitude,
@@ -97,25 +98,29 @@ class LocationService {
       });
     }
   }
-  
+
   bool get isTracking => _isTracking;
-  
+
   Future<Position> getCurrentPosition() async {
     return await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
   }
-  
+
   Stream<Position> getPositionStream() {
     return Geolocator.getPositionStream(locationSettings: _locationSettings);
   }
 
   Future<Map<String, dynamic>> _loadWorkerMetadata(String workerId) async {
-    final workerDoc = await _firestore.collection('workers').doc(workerId).get();
+    final workerDoc = await _firestore
+        .collection('workers')
+        .doc(workerId)
+        .get();
     final data = workerDoc.data();
     if (data == null) return const {};
 
-    final services = (data['services'] as List<dynamic>?)
+    final services =
+        (data['services'] as List<dynamic>?)
             ?.map((service) => service as String)
             .toList() ??
         const <String>[];
@@ -129,10 +134,7 @@ class LocationService {
     final homeLat = (data['homeLat'] as num?)?.toDouble();
     final homeLng = (data['homeLng'] as num?)?.toDouble();
     if (homeLat != null && homeLng != null) {
-      metadata['homeLocation'] = {
-        'latitude': homeLat,
-        'longitude': homeLng,
-      };
+      metadata['homeLocation'] = {'latitude': homeLat, 'longitude': homeLng};
     }
 
     final lastJobCompletedAt = data['lastJobCompletedAt'];
@@ -154,7 +156,7 @@ class LocationService {
 class LocationException implements Exception {
   final String message;
   LocationException(this.message);
-  
+
   @override
   String toString() => 'LocationException: $message';
 }

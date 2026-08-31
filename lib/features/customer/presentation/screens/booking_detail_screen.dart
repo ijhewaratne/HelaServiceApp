@@ -37,8 +37,7 @@ class BookingDetailScreen extends StatelessWidget {
           if (!snap.hasData || !snap.data!.exists) {
             return const Center(child: Text('Booking not found'));
           }
-          return _BookingDetailBody(
-              booking: Booking.fromFirestore(snap.data!));
+          return _BookingDetailBody(booking: Booking.fromFirestore(snap.data!));
         },
       ),
     );
@@ -82,27 +81,42 @@ class _StatusCard extends StatelessWidget {
 
   Color _statusColor(BookingStatus s) {
     switch (s) {
-      case BookingStatus.completed: return Colors.green;
-      case BookingStatus.cancelled: return Colors.red;
-      case BookingStatus.disputed:  return Colors.orange;
+      case BookingStatus.completed:
+        return Colors.green;
+      case BookingStatus.cancelled:
+        return Colors.red;
+      case BookingStatus.disputed:
+        return Colors.orange;
       case BookingStatus.inProgress:
-      case BookingStatus.workerArrived: return Colors.blue;
-      default: return const Color(0xFF1B5E20);
+      case BookingStatus.workerArrived:
+        return Colors.blue;
+      default:
+        return const Color(0xFF1B5E20);
     }
   }
 
   String _statusLabel(BookingStatus s) {
     switch (s) {
-      case BookingStatus.draft:          return 'Draft';
-      case BookingStatus.pending:        return 'Pending Confirmation';
-      case BookingStatus.confirmed:      return 'Confirmed';
-      case BookingStatus.workerAssigned: return 'Provider Assigned';
-      case BookingStatus.workerEnRoute:  return 'Provider En Route';
-      case BookingStatus.workerArrived:  return 'Provider Arrived';
-      case BookingStatus.inProgress:     return 'In Progress';
-      case BookingStatus.completed:      return 'Completed';
-      case BookingStatus.cancelled:      return 'Cancelled';
-      case BookingStatus.disputed:       return 'Under Review';
+      case BookingStatus.draft:
+        return 'Draft';
+      case BookingStatus.pending:
+        return 'Pending Confirmation';
+      case BookingStatus.confirmed:
+        return 'Confirmed';
+      case BookingStatus.workerAssigned:
+        return 'Provider Assigned';
+      case BookingStatus.workerEnRoute:
+        return 'Provider En Route';
+      case BookingStatus.workerArrived:
+        return 'Provider Arrived';
+      case BookingStatus.inProgress:
+        return 'In Progress';
+      case BookingStatus.completed:
+        return 'Completed';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
+      case BookingStatus.disputed:
+        return 'Under Review';
     }
   }
 
@@ -124,7 +138,10 @@ class _StatusCard extends StatelessWidget {
           Text(
             _statusLabel(booking.status),
             style: TextStyle(
-                color: color, fontSize: 18, fontWeight: FontWeight.bold),
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -138,13 +155,20 @@ class _StatusCard extends StatelessWidget {
 
   IconData _statusIcon(BookingStatus s) {
     switch (s) {
-      case BookingStatus.completed: return Icons.check_circle;
-      case BookingStatus.cancelled: return Icons.cancel;
-      case BookingStatus.disputed:  return Icons.report_problem;
-      case BookingStatus.inProgress: return Icons.play_circle;
-      case BookingStatus.workerEnRoute: return Icons.directions_car;
-      case BookingStatus.workerArrived: return Icons.home;
-      default: return Icons.schedule;
+      case BookingStatus.completed:
+        return Icons.check_circle;
+      case BookingStatus.cancelled:
+        return Icons.cancel;
+      case BookingStatus.disputed:
+        return Icons.report_problem;
+      case BookingStatus.inProgress:
+        return Icons.play_circle;
+      case BookingStatus.workerEnRoute:
+        return Icons.directions_car;
+      case BookingStatus.workerArrived:
+        return Icons.home;
+      default:
+        return Icons.schedule;
     }
   }
 }
@@ -166,28 +190,47 @@ class _DetailsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Booking Details',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Booking Details',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const Divider(height: 20),
-            _DetailRow(Icons.home_repair_service, 'Service',
-                serviceLabel[0].toUpperCase() + serviceLabel.substring(1)),
-            _DetailRow(Icons.calendar_today, 'Scheduled',
-                booking.formattedScheduledTime),
-            _DetailRow(Icons.location_on, 'Location',
-                booking.address.fullAddress),
-            _DetailRow(Icons.payments, 'Estimated Price',
-                booking.formattedPrice),
+            _DetailRow(
+              Icons.home_repair_service,
+              'Service',
+              serviceLabel[0].toUpperCase() + serviceLabel.substring(1),
+            ),
+            _DetailRow(
+              Icons.calendar_today,
+              'Scheduled',
+              booking.formattedScheduledTime,
+            ),
+            _DetailRow(
+              Icons.location_on,
+              'Location',
+              booking.address.fullAddress,
+            ),
+            _DetailRow(
+              Icons.payments,
+              'Estimated Price',
+              booking.formattedPrice,
+            ),
             if (booking.finalPrice != null)
-              _DetailRow(Icons.receipt, 'Final Price',
-                  'LKR ${booking.finalPrice!.toStringAsFixed(2)}'),
+              _DetailRow(
+                Icons.receipt,
+                'Final Price',
+                'LKR ${booking.finalPrice!.toStringAsFixed(2)}',
+              ),
             if (booking.notes != null && booking.notes!.isNotEmpty)
               _DetailRow(Icons.notes, 'Notes', booking.notes!),
             if (booking.cancellationReason != null)
-              _DetailRow(Icons.info_outline, 'Cancellation Reason',
-                  booking.cancellationReason!),
+              _DetailRow(
+                Icons.info_outline,
+                'Cancellation Reason',
+                booking.cancellationReason!,
+              ),
           ],
         ),
       ),
@@ -214,12 +257,18 @@ class _DetailRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value,
-                    style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                Text(
+                  value,
+                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -237,39 +286,54 @@ class _StatusTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final events = <_TimelineEvent>[];
 
-    events.add(_TimelineEvent(
-      label: 'Booking Created',
-      time: booking.createdAt,
-      done: true,
-    ));
+    events.add(
+      _TimelineEvent(
+        label: 'Booking Created',
+        time: booking.createdAt,
+        done: true,
+      ),
+    );
     if (booking.status.index >= BookingStatus.confirmed.index &&
         booking.status != BookingStatus.cancelled) {
-      events.add(_TimelineEvent(
-          label: 'Booking Confirmed', time: null, done: true));
+      events.add(
+        _TimelineEvent(label: 'Booking Confirmed', time: null, done: true),
+      );
     }
     if (booking.checkIn != null) {
-      events.add(_TimelineEvent(
+      events.add(
+        _TimelineEvent(
           label: 'Provider Checked In',
           time: booking.checkIn!.timestamp,
-          done: true));
+          done: true,
+        ),
+      );
     }
     if (booking.checkOut != null) {
-      events.add(_TimelineEvent(
+      events.add(
+        _TimelineEvent(
           label: 'Service Completed',
           time: booking.checkOut!.timestamp,
-          done: true));
+          done: true,
+        ),
+      );
     } else if (booking.completedAt != null) {
-      events.add(_TimelineEvent(
+      events.add(
+        _TimelineEvent(
           label: 'Service Completed',
           time: booking.completedAt,
-          done: true));
+          done: true,
+        ),
+      );
     }
     if (booking.cancelledAt != null) {
-      events.add(_TimelineEvent(
+      events.add(
+        _TimelineEvent(
           label: 'Booking Cancelled',
           time: booking.cancelledAt,
           done: true,
-          isError: true));
+          isError: true,
+        ),
+      );
     }
 
     if (events.length <= 1) return const SizedBox.shrink();
@@ -281,16 +345,19 @@ class _StatusTimeline extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Timeline',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Timeline',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            ...events.asMap().entries.map((e) => _TimelineTile(
-                  event: e.value,
-                  isLast: e.key == events.length - 1,
-                )),
+            ...events.asMap().entries.map(
+              (e) => _TimelineTile(
+                event: e.value,
+                isLast: e.key == events.length - 1,
+              ),
+            ),
           ],
         ),
       ),
@@ -303,8 +370,12 @@ class _TimelineEvent {
   final DateTime? time;
   final bool done;
   final bool isError;
-  _TimelineEvent(
-      {required this.label, required this.time, required this.done, this.isError = false});
+  _TimelineEvent({
+    required this.label,
+    required this.time,
+    required this.done,
+    this.isError = false,
+  });
 }
 
 class _TimelineTile extends StatelessWidget {
@@ -324,13 +395,13 @@ class _TimelineTile extends StatelessWidget {
               radius: 10,
               backgroundColor: event.done ? color : Colors.grey[300],
               child: Icon(
-                  event.done ? Icons.check : Icons.circle,
-                  size: 12,
-                  color: Colors.white),
+                event.done ? Icons.check : Icons.circle,
+                size: 12,
+                color: Colors.white,
+              ),
             ),
             if (!isLast)
-              Container(
-                  width: 2, height: 32, color: color.withOpacity(0.3)),
+              Container(width: 2, height: 32, color: color.withOpacity(0.3)),
           ],
         ),
         const SizedBox(width: 12),
@@ -339,8 +410,10 @@ class _TimelineTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(event.label,
-                  style: const TextStyle(fontWeight: FontWeight.w500)),
+              Text(
+                event.label,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
               if (event.time != null)
                 Text(
                   '${event.time!.day}/${event.time!.month}/${event.time!.year} ${event.time!.hour.toString().padLeft(2, '0')}:${event.time!.minute.toString().padLeft(2, '0')}',
@@ -370,16 +443,19 @@ class _ActionButtonsState extends State<_ActionButtons> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancel Booking'),
-        content: const Text(
-            'Are you sure you want to cancel this booking?'),
+        content: const Text('Are you sure you want to cancel this booking?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('No')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Yes, Cancel',
-                  style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Yes, Cancel',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
         ],
       ),
     );
@@ -391,21 +467,21 @@ class _ActionButtonsState extends State<_ActionButtons> {
           .collection('bookings')
           .doc(widget.booking.id)
           .update({
-        'status': 'cancelled',
-        'cancelledAt': FieldValue.serverTimestamp(),
-        'cancellationReason': 'Cancelled by customer',
-      });
+            'status': 'cancelled',
+            'cancelledAt': FieldValue.serverTimestamp(),
+            'cancellationReason': 'Cancelled by customer',
+          });
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking cancelled')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Booking cancelled')));
         context.go('/customer/bookings');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -423,8 +499,7 @@ class _ActionButtonsState extends State<_ActionButtons> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () =>
-                  context.go('/customer/review/${b.id}', extra: b),
+              onPressed: () => context.go('/customer/review/${b.id}', extra: b),
               icon: const Icon(Icons.star),
               label: const Text('Leave a Review'),
               style: ElevatedButton.styleFrom(
@@ -432,7 +507,8 @@ class _ActionButtonsState extends State<_ActionButtons> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -444,13 +520,16 @@ class _ActionButtonsState extends State<_ActionButtons> {
             child: OutlinedButton.icon(
               onPressed: () => _cancelBooking(context),
               icon: const Icon(Icons.cancel, color: Colors.red),
-              label: const Text('Cancel Booking',
-                  style: TextStyle(color: Colors.red)),
+              label: const Text(
+                'Cancel Booking',
+                style: TextStyle(color: Colors.red),
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.red),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -458,19 +537,25 @@ class _ActionButtonsState extends State<_ActionButtons> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => context.go('/incident/report', extra: {
-                'reporterId': b.customerId,
-                'reporterType': 'customer',
-                'jobId': b.id,
-              }),
+              onPressed: () => context.go(
+                '/incident/report',
+                extra: {
+                  'reporterId': b.customerId,
+                  'reporterType': 'customer',
+                  'jobId': b.id,
+                },
+              ),
               icon: const Icon(Icons.report_problem, color: Colors.orange),
-              label: const Text('Raise a Dispute',
-                  style: TextStyle(color: Colors.orange)),
+              label: const Text(
+                'Raise a Dispute',
+                style: TextStyle(color: Colors.orange),
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.orange),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),

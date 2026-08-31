@@ -29,8 +29,7 @@ void main() {
         final mockDocRef = MockDocumentReference();
         final mockCollection = MockCollectionReference();
 
-        when(mockFirestore.collection('chatRooms'))
-            .thenReturn(mockCollection);
+        when(mockFirestore.collection('chatRooms')).thenReturn(mockCollection);
         when(mockCollection.doc('room_404')).thenReturn(mockDocRef);
         when(mockDocRef.get()).thenAnswer((_) async => mockDocSnap);
 

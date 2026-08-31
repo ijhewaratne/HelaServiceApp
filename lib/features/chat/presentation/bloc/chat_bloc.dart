@@ -103,8 +103,14 @@ class ChatLoaded extends ChatState {
   }
 
   @override
-  List<Object?> get props =>
-      [chatRoomId, currentUserId, otherPartyId, messages, isSending, sendError];
+  List<Object?> get props => [
+    chatRoomId,
+    currentUserId,
+    otherPartyId,
+    messages,
+    isSending,
+    sendError,
+  ];
 }
 
 class ChatError extends ChatState {
@@ -128,10 +134,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required ChatRepository chatRepository,
     required BookingRepository bookingRepository,
     FirebaseAuth? firebaseAuth,
-  })  : _chatRepository = chatRepository,
-        _bookingRepository = bookingRepository,
-        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        super(ChatInitial()) {
+  }) : _chatRepository = chatRepository,
+       _bookingRepository = bookingRepository,
+       _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+       super(ChatInitial()) {
     on<LoadChat>(_onLoadChat);
     on<SendMessage>(_onSendMessage);
     on<ChatMessagesUpdated>(_onMessagesUpdated);
@@ -156,13 +162,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     final workerId = booking.workerId;
     if (workerId == null) {
-      emit(const ChatError(
-          'Chat becomes available once a worker is assigned to this booking.'));
+      emit(
+        const ChatError(
+          'Chat becomes available once a worker is assigned to this booking.',
+        ),
+      );
       return;
     }
 
-    final existingRoomResult =
-        await _chatRepository.getChatRoomByBooking(event.bookingId);
+    final existingRoomResult = await _chatRepository.getChatRoomByBooking(
+      event.bookingId,
+    );
     var room = existingRoomResult.fold((_) => null, (room) => room);
 
     if (room == null) {
@@ -179,24 +189,28 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
 
     final chatRoomId = room['id'] as String? ?? event.bookingId;
-    final otherPartyId =
-        currentUserId == booking.customerId ? workerId : booking.customerId;
+    final otherPartyId = currentUserId == booking.customerId
+        ? workerId
+        : booking.customerId;
 
     await _messagesSubscription?.cancel();
-    _messagesSubscription =
-        _chatRepository.watchMessages(chatRoomId).listen((either) {
+    _messagesSubscription = _chatRepository.watchMessages(chatRoomId).listen((
+      either,
+    ) {
       either.fold(
         (failure) => add(ChatStreamFailed(failure.message)),
         (messages) => add(ChatMessagesUpdated(messages)),
       );
     });
 
-    emit(ChatLoaded(
-      chatRoomId: chatRoomId,
-      currentUserId: currentUserId,
-      otherPartyId: otherPartyId,
-      messages: const [],
-    ));
+    emit(
+      ChatLoaded(
+        chatRoomId: chatRoomId,
+        currentUserId: currentUserId,
+        otherPartyId: otherPartyId,
+        messages: const [],
+      ),
+    );
 
     await _chatRepository.markMessagesAsRead(
       chatRoomId: chatRoomId,
@@ -236,10 +250,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
   }
 
-  void _onMessagesUpdated(
-    ChatMessagesUpdated event,
-    Emitter<ChatState> emit,
-  ) {
+  void _onMessagesUpdated(ChatMessagesUpdated event, Emitter<ChatState> emit) {
     final current = state;
     if (current is ChatLoaded) {
       emit(current.copyWith(messages: event.messages));

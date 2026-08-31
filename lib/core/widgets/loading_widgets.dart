@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 /// Phase 5: UI/UX Polish - Custom Loading States
-/// 
+///
 /// Beautiful loading indicators with HelaService branding
 
 /// Animated loading indicator with brand colors
@@ -110,10 +110,7 @@ class LoadingOverlay extends StatelessWidget {
 class PullToRefreshIndicator extends StatelessWidget {
   final double progress;
 
-  const PullToRefreshIndicator({
-    super.key,
-    required this.progress,
-  });
+  const PullToRefreshIndicator({super.key, required this.progress});
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +200,8 @@ class AnimatedProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bgColor = backgroundColor ?? theme.colorScheme.surfaceContainerHighest;
+    final bgColor =
+        backgroundColor ?? theme.colorScheme.surfaceContainerHighest;
     final fgColor = progressColor ?? theme.colorScheme.primary;
     final clampedProgress = progress.clamp(0.0, 1.0);
 
@@ -229,10 +227,7 @@ class AnimatedProgressBar extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        fgColor,
-                        fgColor.withOpacity(0.8),
-                      ],
+                      colors: [fgColor, fgColor.withOpacity(0.8)],
                     ),
                     borderRadius: BorderRadius.circular(height / 2),
                   ),
@@ -436,10 +431,7 @@ class _AnimatedCircularProgressState extends State<AnimatedCircularProgress>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _animateToProgress(widget.progress);
   }
 
@@ -456,10 +448,7 @@ class _AnimatedCircularProgressState extends State<AnimatedCircularProgress>
     _animation = Tween<double>(
       begin: _previousProgress,
       end: progress,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.forward(from: 0);
   }
 
@@ -560,10 +549,7 @@ class LoadingButton extends StatelessWidget {
     }
 
     if (fullWidth) {
-      return SizedBox(
-        width: double.infinity,
-        child: button,
-      );
+      return SizedBox(width: double.infinity, child: button);
     }
 
     return button;
@@ -578,12 +564,7 @@ class PulsingDots extends StatefulWidget {
   final double size;
   final Color? color;
 
-  const PulsingDots({
-    super.key,
-    this.dotCount = 3,
-    this.size = 8,
-    this.color,
-  });
+  const PulsingDots({super.key, this.dotCount = 3, this.size = 8, this.color});
 
   @override
   State<PulsingDots> createState() => _PulsingDotsState();
@@ -606,12 +587,11 @@ class _PulsingDotsState extends State<PulsingDots>
     );
 
     _animations = _controllers
-        .map((controller) => Tween(begin: 0.5, end: 1.0).animate(
-              CurvedAnimation(
-                parent: controller,
-                curve: Curves.easeInOut,
-              ),
-            ))
+        .map(
+          (controller) => Tween(begin: 0.5, end: 1.0).animate(
+            CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+          ),
+        )
         .toList();
 
     // Start animations with delays
@@ -688,10 +668,7 @@ class LoadingState extends StatelessWidget {
               const HelaLoadingIndicator.large(),
               if (message != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  message!,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text(message!, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ],
           ),

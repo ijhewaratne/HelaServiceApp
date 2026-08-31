@@ -44,10 +44,7 @@ class _SupportTicketPageState extends State<SupportTicketPage>
       ),
       body: TabBarView(
         controller: _tabs,
-        children: const [
-          _NewTicketTab(),
-          _MyTicketsTab(),
-        ],
+        children: const [_NewTicketTab(), _MyTicketsTab()],
       ),
     );
   }
@@ -103,14 +100,19 @@ class _NewTicketTabState extends State<_NewTicketTab> {
       if (!mounted) return;
       result.fold(
         (f) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${f.message}'),
-              backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: ${f.message}'),
+            backgroundColor: Colors.red,
+          ),
         ),
         (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Ticket submitted. We\'ll respond within 24 hours.'),
-                backgroundColor: Colors.green),
+              content: Text(
+                'Ticket submitted. We\'ll respond within 24 hours.',
+              ),
+              backgroundColor: Colors.green,
+            ),
           );
           _subjectCtrl.clear();
           _descCtrl.clear();
@@ -128,55 +130,63 @@ class _NewTicketTabState extends State<_NewTicketTab> {
       padding: const EdgeInsets.all(20),
       child: Form(
         key: _formKey,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('How can we help you?',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<TicketCategory>(
-            value: _category,
-            decoration: const InputDecoration(labelText: 'Category *'),
-            items: _categories
-                .map((c) => DropdownMenuItem(value: c, child: Text(c.label)))
-                .toList(),
-            onChanged: (v) => setState(() => _category = v ?? TicketCategory.other),
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _subjectCtrl,
-            decoration: const InputDecoration(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'How can we help you?',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<TicketCategory>(
+              value: _category,
+              decoration: const InputDecoration(labelText: 'Category *'),
+              items: _categories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c.label)))
+                  .toList(),
+              onChanged: (v) =>
+                  setState(() => _category = v ?? TicketCategory.other),
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: _subjectCtrl,
+              decoration: const InputDecoration(
                 labelText: 'Subject *',
-                hintText: 'Brief summary of the issue'),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Required' : null,
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _descCtrl,
-            decoration: const InputDecoration(
+                hintText: 'Brief summary of the issue',
+              ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: _descCtrl,
+              decoration: const InputDecoration(
                 labelText: 'Description *',
                 hintText:
-                    'Describe the issue in detail. Include booking ID if relevant.'),
-            maxLines: 5,
-            validator: (v) =>
-                (v == null || v.trim().length < 20)
-                    ? 'Please provide at least 20 characters.'
-                    : null,
-          ),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _submitting ? null : _submit,
-              child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Submit Support Request'),
+                    'Describe the issue in detail. Include booking ID if relevant.',
+              ),
+              maxLines: 5,
+              validator: (v) => (v == null || v.trim().length < 20)
+                  ? 'Please provide at least 20 characters.'
+                  : null,
             ),
-          ),
-        ]),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _submitting ? null : _submit,
+                child: _submitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Submit Support Request'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -218,8 +228,11 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
         final tickets = snap.data ?? [];
         if (tickets.isEmpty) {
           return Center(
-              child: Text('No tickets yet.',
-                  style: TextStyle(color: Colors.grey.shade600)));
+            child: Text(
+              'No tickets yet.',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          );
         }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -253,56 +266,79 @@ class _TicketCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(
-                color: _statusColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(ticket.status.label,
-                  style: TextStyle(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    ticket.status.label,
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: _statusColor)),
+                      color: _statusColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  ticket.category.label,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(ticket.category.label,
-                style: TextStyle(
-                    fontSize: 11, color: Colors.grey.shade600)),
-          ]),
-          const SizedBox(height: 6),
-          Text(ticket.subject,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 14)),
-          const SizedBox(height: 4),
-          Text(ticket.description,
+            const SizedBox(height: 6),
+            Text(
+              ticket.subject,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              ticket.description,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
               maxLines: 2,
-              overflow: TextOverflow.ellipsis),
-          if (ticket.adminResponse != null) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Support Response:',
-                    style: TextStyle(
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (ticket.adminResponse != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Support Response:',
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
-                        color: Colors.green)),
-                const SizedBox(height: 4),
-                Text(ticket.adminResponse!,
-                    style: const TextStyle(fontSize: 12)),
-              ]),
-            ),
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      ticket.adminResponse!,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }

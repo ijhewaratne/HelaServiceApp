@@ -62,8 +62,11 @@ class _ReviewList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.rate_review_outlined,
-                    size: 64, color: Colors.grey[400]),
+                Icon(
+                  Icons.rate_review_outlined,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
                 const SizedBox(height: 16),
                 Text(
                   statusFilter == 'pending'
@@ -84,7 +87,8 @@ class _ReviewList extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           itemCount: reviews.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, i) => _ReviewModerationCard(review: reviews[i]),
+          itemBuilder: (context, i) =>
+              _ReviewModerationCard(review: reviews[i]),
         );
       },
     );
@@ -96,8 +100,7 @@ class _ReviewModerationCard extends StatefulWidget {
   const _ReviewModerationCard({required this.review});
 
   @override
-  State<_ReviewModerationCard> createState() =>
-      _ReviewModerationCardState();
+  State<_ReviewModerationCard> createState() => _ReviewModerationCardState();
 }
 
 class _ReviewModerationCardState extends State<_ReviewModerationCard> {
@@ -128,15 +131,17 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
 
       // Recalculate rating any time the approved-review set changes
       final prevStatus = widget.review.moderationStatus;
-      final affectsRating = newStatus == 'approved' ||
+      final affectsRating =
+          newStatus == 'approved' ||
           prevStatus == ReviewModerationStatus.approved;
       if (affectsRating) {
         await _updateProviderRating(widget.review.providerId);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -150,8 +155,7 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
         .where('moderationStatus', isEqualTo: 'approved')
         .get();
     final ratings = snap.docs
-        .map((d) =>
-            (d.data() as Map<String, dynamic>)['rating'] as int? ?? 0)
+        .map((d) => (d.data() as Map<String, dynamic>)['rating'] as int? ?? 0)
         .where((r) => r > 0)
         .toList();
     final avg = ratings.isEmpty
@@ -171,35 +175,40 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
         title: const Text('Hide Review'),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(
-              hintText: 'Admin note (optional)'),
+          decoration: const InputDecoration(hintText: 'Admin note (optional)'),
           maxLines: 2,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Hide',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Hide', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
     if (confirmed == true) {
-      await _updateStatus('hidden',
-          note: ctrl.text.trim().isEmpty ? null : ctrl.text.trim());
+      await _updateStatus(
+        'hidden',
+        note: ctrl.text.trim().isEmpty ? null : ctrl.text.trim(),
+      );
     }
   }
 
   Color _statusColor(ReviewModerationStatus s) {
     switch (s) {
-      case ReviewModerationStatus.approved: return Colors.green;
-      case ReviewModerationStatus.hidden:   return Colors.red;
-      case ReviewModerationStatus.flagged:  return Colors.orange;
-      case ReviewModerationStatus.pending:  return Colors.blue;
+      case ReviewModerationStatus.approved:
+        return Colors.green;
+      case ReviewModerationStatus.hidden:
+        return Colors.red;
+      case ReviewModerationStatus.flagged:
+        return Colors.orange;
+      case ReviewModerationStatus.pending:
+        return Colors.blue;
     }
   }
 
@@ -215,15 +224,20 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
           children: [
             Row(
               children: [
-                ...List.generate(5, (i) => Icon(Icons.star,
+                ...List.generate(
+                  5,
+                  (i) => Icon(
+                    Icons.star,
                     size: 16,
-                    color: i < r.rating
-                        ? Colors.amber
-                        : Colors.grey[300])),
+                    color: i < r.rating ? Colors.amber : Colors.grey[300],
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: _statusColor(r.moderationStatus).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -231,27 +245,28 @@ class _ReviewModerationCardState extends State<_ReviewModerationCard> {
                   child: Text(
                     r.moderationStatus.name,
                     style: TextStyle(
-                        color: _statusColor(r.moderationStatus),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
+                      color: _statusColor(r.moderationStatus),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${r.createdAt.day}/${r.createdAt.month}/${r.createdAt.year}',
-                  style:
-                      TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ],
             ),
             if (r.reviewText != null && r.reviewText!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(r.reviewText!,
-                  style: TextStyle(color: Colors.grey[700])),
+              Text(r.reviewText!, style: TextStyle(color: Colors.grey[700])),
             ],
             const SizedBox(height: 6),
-            Text('Provider: ${r.providerId.substring(0, 8)}...',
-                style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+            Text(
+              'Provider: ${r.providerId.substring(0, 8)}...',
+              style: TextStyle(color: Colors.grey[500], fontSize: 11),
+            ),
             if (_busy)
               const Padding(
                 padding: EdgeInsets.only(top: 8),
@@ -297,11 +312,12 @@ class _ActionBtn extends StatelessWidget {
   final Color color;
   final IconData icon;
   final VoidCallback onTap;
-  const _ActionBtn(
-      {required this.label,
-      required this.color,
-      required this.icon,
-      required this.onTap});
+  const _ActionBtn({
+    required this.label,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

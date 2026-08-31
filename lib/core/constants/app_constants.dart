@@ -1,7 +1,8 @@
 class AppConstants {
   // Legal & Compliance
   static const String appName = 'HelaService';
-  static const String companySolePropName = 'Your Name'; // Update until PLC formed
+  static const String companySolePropName =
+      'Your Name'; // Update until PLC formed
 
   // Bump these when the corresponding document materially changes — each
   // bump requires re-acceptance from every user (see ConsentRepository).
@@ -36,10 +37,11 @@ class AppConstants {
   // PDPA Compliance
   static const int dataRetentionDays = 30;
   static const bool allowMedicalDataStorage = false; // v1 safety gate
-  
+
   // WhatsApp Operator Hotline (for emergency incident reporting)
-  static const String operatorWhatsApp = '+94770000000'; // Replace before launch
-  
+  static const String operatorWhatsApp =
+      '+94770000000'; // Replace before launch
+
   // Emergency Phone Hotline (for direct calls)
   static const String emergencyPhone = '0112345678'; // Replace before launch
 

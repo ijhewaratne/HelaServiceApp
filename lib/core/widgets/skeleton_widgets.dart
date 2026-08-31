@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Phase 5: UI/UX Polish - Skeleton Loading States
-/// 
+///
 /// Skeleton widgets provide visual feedback during data loading,
 /// improving perceived performance and reducing user anxiety.
 
@@ -21,13 +21,10 @@ class Skeleton extends StatelessWidget {
     this.margin,
   });
 
-  const Skeleton.circle({
-    super.key,
-    required double size,
-    this.margin,
-  })  : width = size,
-        height = size,
-        borderRadius = 1000;
+  const Skeleton.circle({super.key, required double size, this.margin})
+    : width = size,
+      height = size,
+      borderRadius = 1000;
 
   const Skeleton.text({
     super.key,
@@ -146,11 +143,7 @@ class SkeletonListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (showImage) ...[
-            Skeleton(
-              width: 80,
-              height: 80,
-              borderRadius: 12,
-            ),
+            Skeleton(width: 80, height: 80, borderRadius: 12),
             const SizedBox(width: 12),
           ],
           Expanded(
@@ -159,9 +152,7 @@ class SkeletonListItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Expanded(
-                      child: Skeleton.text(height: 18),
-                    ),
+                    const Expanded(child: Skeleton.text(height: 18)),
                     if (showRating) ...[
                       const SizedBox(width: 8),
                       const Skeleton(width: 40, height: 16),
@@ -200,10 +191,7 @@ class SkeletonListItem extends StatelessWidget {
 class SkeletonCategory extends StatelessWidget {
   final int itemCount;
 
-  const SkeletonCategory({
-    super.key,
-    this.itemCount = 6,
-  });
+  const SkeletonCategory({super.key, this.itemCount = 6});
 
   @override
   Widget build(BuildContext context) {
@@ -274,13 +262,9 @@ class SkeletonBookingCard extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: const [
-                Expanded(
-                  child: Skeleton(width: double.infinity, height: 40),
-                ),
+                Expanded(child: Skeleton(width: double.infinity, height: 40)),
                 SizedBox(width: 8),
-                Expanded(
-                  child: Skeleton(width: double.infinity, height: 40),
-                ),
+                Expanded(child: Skeleton(width: double.infinity, height: 40)),
               ],
             ),
           ],
@@ -336,10 +320,7 @@ class SkeletonProfileHeader extends StatelessWidget {
 class SkeletonSearchResults extends StatelessWidget {
   final int itemCount;
 
-  const SkeletonSearchResults({
-    super.key,
-    this.itemCount = 5,
-  });
+  const SkeletonSearchResults({super.key, this.itemCount = 5});
 
   @override
   Widget build(BuildContext context) {
@@ -358,11 +339,7 @@ class SkeletonGrid extends StatelessWidget {
   final int crossAxisCount;
   final int itemCount;
 
-  const SkeletonGrid({
-    super.key,
-    this.crossAxisCount = 2,
-    this.itemCount = 6,
-  });
+  const SkeletonGrid({super.key, this.crossAxisCount = 2, this.itemCount = 6});
 
   @override
   Widget build(BuildContext context) {
@@ -380,7 +357,11 @@ class SkeletonGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Expanded(
-              child: Skeleton(width: double.infinity, height: double.infinity, borderRadius: 12),
+              child: Skeleton(
+                width: double.infinity,
+                height: double.infinity,
+                borderRadius: 12,
+              ),
             ),
             const SizedBox(height: 8),
             const Skeleton.text(width: double.infinity, height: 16),
@@ -426,12 +407,8 @@ class SkeletonPage extends StatelessWidget {
           ],
           ...List.generate(
             contentSections,
-            (index) => Column(
-              children: const [
-                SkeletonCard(),
-                SizedBox(height: 8),
-              ],
-            ),
+            (index) =>
+                Column(children: const [SkeletonCard(), SizedBox(height: 8)]),
           ),
         ],
       ),

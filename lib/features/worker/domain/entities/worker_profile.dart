@@ -15,13 +15,13 @@ class WorkerProfile {
   final double rating;
   final int completedJobs;
   bool isAvailable;
-  
+
   // Location Tracking
   final double? homeLat; // Home loc for PickMe logic
   final double? homeLng;
   double? currentLat;
   double? currentLng;
-  
+
   final WorkerType workerType; // Classification
   final String availabilityMode;
   final String? badge;
@@ -67,7 +67,9 @@ class WorkerProfile {
       name: json['name'] as String? ?? '',
       phone: json['phone'] as String? ?? '',
       district: json['district'] as String? ?? '',
-      serviceTypes: List<String>.from(json['serviceTypes'] as List<dynamic>? ?? []),
+      serviceTypes: List<String>.from(
+        json['serviceTypes'] as List<dynamic>? ?? [],
+      ),
       languages: List<String>.from(json['languages'] as List<dynamic>? ?? []),
       verificationStatus: json['verificationStatus'] as String? ?? 'pending',
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
@@ -77,7 +79,9 @@ class WorkerProfile {
       homeLng: (json['homeLng'] as num?)?.toDouble(),
       currentLat: (json['currentLat'] as num?)?.toDouble(),
       currentLng: (json['currentLng'] as num?)?.toDouble(),
-      workerType: (json['workerType'] as String?) == 'employee' ? WorkerType.employee : WorkerType.independentContractor,
+      workerType: (json['workerType'] as String?) == 'employee'
+          ? WorkerType.employee
+          : WorkerType.independentContractor,
       availabilityMode: json['availabilityMode'] as String? ?? 'part_time',
       badge: json['badge'] as String?,
     );
@@ -100,7 +104,9 @@ class WorkerProfile {
       'homeLng': homeLng,
       'currentLat': currentLat,
       'currentLng': currentLng,
-      'workerType': workerType == WorkerType.employee ? 'employee' : 'independent_contractor',
+      'workerType': workerType == WorkerType.employee
+          ? 'employee'
+          : 'independent_contractor',
       'availabilityMode': availabilityMode,
       'badge': badge,
     };

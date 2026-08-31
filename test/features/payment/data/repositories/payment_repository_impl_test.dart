@@ -32,8 +32,10 @@ void main() {
           'currency': 'LKR',
         },
       );
-      
-      when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
+
+      when(
+        mockFirestore.collection('payments'),
+      ).thenReturn(MockCollectionReference());
       when(mockDocRef.get()).thenAnswer((_) async => mockDocSnap);
 
       // Act
@@ -51,8 +53,10 @@ void main() {
         data: null,
         exists: false,
       );
-      
-      when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
+
+      when(
+        mockFirestore.collection('payments'),
+      ).thenReturn(MockCollectionReference());
       when(mockDocRef.get()).thenAnswer((_) async => mockDocSnap);
 
       // Act
@@ -80,8 +84,10 @@ void main() {
           },
         ),
       ]);
-      
-      when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
+
+      when(
+        mockFirestore.collection('payments'),
+      ).thenReturn(MockCollectionReference());
 
       // Act
       final result = await repository.getCustomerPaymentHistory(customerId);
@@ -93,8 +99,10 @@ void main() {
     test('should return empty list when no payments', () async {
       // Arrange
       final mockQuerySnap = createMockQuerySnapshot([]);
-      
-      when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
+
+      when(
+        mockFirestore.collection('payments'),
+      ).thenReturn(MockCollectionReference());
 
       // Act
       final result = await repository.getCustomerPaymentHistory(customerId);
@@ -114,9 +122,12 @@ void main() {
     test('should process refund successfully', () async {
       // Arrange
       final mockDocRef = MockDocumentReference();
-      when(mockFirestore.collection('payments')).thenReturn(MockCollectionReference());
-      when(mockDocRef.update({'status': anyOf(isA<String>())}))
-          .thenAnswer((_) async {});
+      when(
+        mockFirestore.collection('payments'),
+      ).thenReturn(MockCollectionReference());
+      when(
+        mockDocRef.update({'status': anyOf(isA<String>())}),
+      ).thenAnswer((_) async {});
 
       // Act
       final result = await repository.refundPayment(

@@ -36,9 +36,9 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
         setState(() => _isOnline = false);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -47,10 +47,7 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Go Online'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Go Online'), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -62,7 +59,9 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _isOnline ? Colors.green.shade100 : Colors.grey.shade200,
+                  color: _isOnline
+                      ? Colors.green.shade100
+                      : Colors.grey.shade200,
                   border: Border.all(
                     color: _isOnline ? Colors.green : Colors.grey,
                     width: 4,
@@ -85,9 +84,9 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
                     ? 'You will receive job offers in your area'
                     : 'Go online to start receiving job offers',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 48),
               SizedBox(

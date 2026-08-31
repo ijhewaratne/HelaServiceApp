@@ -24,7 +24,8 @@ class CustomerProfileRepositoryImpl implements CustomerProfileRepository {
 
   @override
   Future<Either<Failure, CustomerProfile>> createProfile(
-      CustomerProfile profile) async {
+    CustomerProfile profile,
+  ) async {
     try {
       await _col.doc(profile.userId).set(profile.toJson());
       return Right(profile);
@@ -35,7 +36,8 @@ class CustomerProfileRepositoryImpl implements CustomerProfileRepository {
 
   @override
   Future<Either<Failure, CustomerProfile>> updateProfile(
-      CustomerProfile profile) async {
+    CustomerProfile profile,
+  ) async {
     try {
       final data = profile.toJson()
         ..['updatedAt'] = FieldValue.serverTimestamp();
@@ -50,8 +52,7 @@ class CustomerProfileRepositoryImpl implements CustomerProfileRepository {
   Future<Either<Failure, List<CustomerProfile>>> getAllCustomers() async {
     try {
       final snap = await _col.orderBy('createdAt', descending: true).get();
-      final profiles =
-          snap.docs.map(CustomerProfile.fromFirestore).toList();
+      final profiles = snap.docs.map(CustomerProfile.fromFirestore).toList();
       return Right(profiles);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -61,10 +62,9 @@ class CustomerProfileRepositoryImpl implements CustomerProfileRepository {
   @override
   Future<Either<Failure, void>> suspendCustomer(String userId) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .update({'status': 'suspended'});
+      await _firestore.collection('users').doc(userId).update({
+        'status': 'suspended',
+      });
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -74,10 +74,9 @@ class CustomerProfileRepositoryImpl implements CustomerProfileRepository {
   @override
   Future<Either<Failure, void>> reactivateCustomer(String userId) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .update({'status': 'active'});
+      await _firestore.collection('users').doc(userId).update({
+        'status': 'active',
+      });
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

@@ -23,13 +23,20 @@ class SubmitPersonalInfo extends WorkerOnboardingEvent {
   });
 
   @override
-  List<Object?> get props => [nic, fullName, mobileNumber, address, emergencyContactName, emergencyContactPhone];
+  List<Object?> get props => [
+    nic,
+    fullName,
+    mobileNumber,
+    address,
+    emergencyContactName,
+    emergencyContactPhone,
+  ];
 }
 
 class SelectServices extends WorkerOnboardingEvent {
   final List<ServiceType> services;
   SelectServices(this.services);
-  
+
   @override
   List<Object?> get props => [services];
 }
@@ -37,7 +44,7 @@ class SelectServices extends WorkerOnboardingEvent {
 class UploadNICFront extends WorkerOnboardingEvent {
   final File file;
   UploadNICFront(this.file);
-  
+
   @override
   List<Object?> get props => [file];
 }
@@ -45,7 +52,7 @@ class UploadNICFront extends WorkerOnboardingEvent {
 class UploadNICBack extends WorkerOnboardingEvent {
   final File file;
   UploadNICBack(this.file);
-  
+
   @override
   List<Object?> get props => [file];
 }

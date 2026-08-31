@@ -43,8 +43,9 @@ void main() {
     });
 
     test('authStateChanges returns a stream', () {
-      when(mockRepository.authStateChanges)
-          .thenAnswer((_) => Stream.value(null));
+      when(
+        mockRepository.authStateChanges,
+      ).thenAnswer((_) => Stream.value(null));
       final stream = mockRepository.authStateChanges;
       expect(stream, isA<Stream>());
     });

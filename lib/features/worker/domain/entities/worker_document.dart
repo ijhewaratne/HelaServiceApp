@@ -28,7 +28,9 @@ class WorkerDocument {
       addressProofUrl: json['addressProofUrl'] as String?,
       status: json['status'] as String? ?? 'pending',
       reviewedBy: json['reviewedBy'] as String?,
-      reviewedAt: json['reviewedAt'] != null ? DateTime.parse(json['reviewedAt'] as String) : null,
+      reviewedAt: json['reviewedAt'] != null
+          ? DateTime.parse(json['reviewedAt'] as String)
+          : null,
     );
   }
 

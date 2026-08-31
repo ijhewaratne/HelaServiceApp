@@ -59,32 +59,26 @@ class HelaButton extends StatelessWidget {
 
     final buttonText = label ?? text;
     final buttonAction = onPressed ?? onTap;
-    
+
     final buttonStyle = switch (type) {
       ButtonType.primary => ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? theme.primaryColor,
-          foregroundColor: Colors.white,
-          minimumSize: Size(width ?? double.infinity, height),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
+        backgroundColor: backgroundColor ?? theme.primaryColor,
+        foregroundColor: Colors.white,
+        minimumSize: Size(width ?? double.infinity, height),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
       ButtonType.secondary => ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Colors.grey[200],
-          foregroundColor: Colors.black87,
-          minimumSize: Size(width ?? double.infinity, height),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
+        backgroundColor: backgroundColor ?? Colors.grey[200],
+        foregroundColor: Colors.black87,
+        minimumSize: Size(width ?? double.infinity, height),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
       ButtonType.outline => OutlinedButton.styleFrom(
-          foregroundColor: backgroundColor ?? theme.primaryColor,
-          side: BorderSide(color: backgroundColor ?? theme.primaryColor),
-          minimumSize: Size(width ?? double.infinity, height),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
+        foregroundColor: backgroundColor ?? theme.primaryColor,
+        side: BorderSide(color: backgroundColor ?? theme.primaryColor),
+        minimumSize: Size(width ?? double.infinity, height),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
     };
 
     if (type == ButtonType.outline) {
@@ -159,9 +153,7 @@ class HelaTextField extends StatelessWidget {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         errorText: errorText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -176,7 +168,10 @@ class HelaTextField extends StatelessWidget {
         ),
         filled: true,
         fillColor: readOnly ? Colors.grey[100] : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }
@@ -211,10 +206,7 @@ class HelaPhoneField extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 12),
         child: Text(
           '+94',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       inputFormatters: [
@@ -230,11 +222,7 @@ class HelaOtpField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onCompleted;
 
-  const HelaOtpField({
-    super.key,
-    this.controller,
-    this.onCompleted,
-  });
+  const HelaOtpField({super.key, this.controller, this.onCompleted});
 
   @override
   Widget build(BuildContext context) {
@@ -254,10 +242,11 @@ class HelaOtpField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: 'Verification Code',
         hintText: 'Enter 6-digit OTP',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       onChanged: onCompleted,
     );
@@ -281,22 +270,14 @@ class HelaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: onTap != null
           ? InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: padding,
-                child: child,
-              ),
+              child: Padding(padding: padding, child: child),
             )
-          : Padding(
-              padding: padding,
-              child: child,
-            ),
+          : Padding(padding: padding, child: child),
     );
   }
 }
@@ -306,11 +287,7 @@ class HelaStatusBadge extends StatelessWidget {
   final String text;
   final StatusType type;
 
-  const HelaStatusBadge({
-    super.key,
-    required this.text,
-    required this.type,
-  });
+  const HelaStatusBadge({super.key, required this.text, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -373,10 +350,7 @@ class GlassCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -412,10 +386,7 @@ class HelaLoadingOverlay extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       message!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
                 ],

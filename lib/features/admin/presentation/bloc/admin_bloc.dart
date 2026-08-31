@@ -30,7 +30,9 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       return null;
     });
     if (workersFailure != null) {
-      emit(state.copyWith(isLoading: false, errorMessage: workersFailure.message));
+      emit(
+        state.copyWith(isLoading: false, errorMessage: workersFailure.message),
+      );
       return;
     }
 
@@ -40,7 +42,9 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       return null;
     });
     if (bookingsFailure != null) {
-      emit(state.copyWith(isLoading: false, errorMessage: bookingsFailure.message));
+      emit(
+        state.copyWith(isLoading: false, errorMessage: bookingsFailure.message),
+      );
       return;
     }
 
@@ -50,19 +54,23 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       return null;
     });
     if (incidentsFailure != null) {
-      emit(state.copyWith(isLoading: false, errorMessage: incidentsFailure.message));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: incidentsFailure.message,
+        ),
+      );
       return;
     }
 
-    final blueTierResult =
-        await _adminRepository.getBlueTierPendingVerifications();
+    final blueTierResult = await _adminRepository
+        .getBlueTierPendingVerifications();
     blueTierResult.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (verifications) => emit(state.copyWith(
-        isLoading: false,
-        blueTierPending: verifications,
-      )),
+      (verifications) => emit(
+        state.copyWith(isLoading: false, blueTierPending: verifications),
+      ),
     );
   }
 
@@ -85,15 +93,14 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       return;
     }
 
-    final refreshResult =
-        await _adminRepository.getBlueTierPendingVerifications();
+    final refreshResult = await _adminRepository
+        .getBlueTierPendingVerifications();
     refreshResult.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (verifications) => emit(state.copyWith(
-        isLoading: false,
-        blueTierPending: verifications,
-      )),
+      (verifications) => emit(
+        state.copyWith(isLoading: false, blueTierPending: verifications),
+      ),
     );
   }
 
@@ -102,16 +109,20 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     Emitter<AdminState> emit,
   ) async {
     emit(state.copyWith(isLoading: true, clearError: true));
-    final result = await _adminRepository.approveBlueTierUpgrade(event.workerId);
+    final result = await _adminRepository.approveBlueTierUpgrade(
+      event.workerId,
+    );
     result.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (_) => emit(state.copyWith(
-        isLoading: false,
-        blueTierPending: state.blueTierPending
-            .where((v) => v.workerId != event.workerId)
-            .toList(),
-      )),
+      (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          blueTierPending: state.blueTierPending
+              .where((v) => v.workerId != event.workerId)
+              .toList(),
+        ),
+      ),
     );
   }
 
@@ -127,12 +138,14 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     result.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (_) => emit(state.copyWith(
-        isLoading: false,
-        blueTierPending: state.blueTierPending
-            .where((v) => v.workerId != event.workerId)
-            .toList(),
-      )),
+      (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          blueTierPending: state.blueTierPending
+              .where((v) => v.workerId != event.workerId)
+              .toList(),
+        ),
+      ),
     );
   }
 
@@ -141,17 +154,21 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     Emitter<AdminState> emit,
   ) async {
     emit(state.copyWith(isLoading: true, clearError: true));
-    final result =
-        await _adminRepository.updateWorkerStatus(event.workerId, 'approved');
+    final result = await _adminRepository.updateWorkerStatus(
+      event.workerId,
+      'approved',
+    );
     result.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (_) => emit(state.copyWith(
-        isLoading: false,
-        pendingWorkers: state.pendingWorkers
-            .where((w) => w.uid != event.workerId)
-            .toList(),
-      )),
+      (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          pendingWorkers: state.pendingWorkers
+              .where((w) => w.uid != event.workerId)
+              .toList(),
+        ),
+      ),
     );
   }
 
@@ -175,10 +192,8 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     bookingsResult.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (bookings) => emit(state.copyWith(
-        isLoading: false,
-        activeBookings: bookings,
-      )),
+      (bookings) =>
+          emit(state.copyWith(isLoading: false, activeBookings: bookings)),
     );
   }
 
@@ -204,10 +219,8 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     incidentsResult.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (incidents) => emit(state.copyWith(
-        isLoading: false,
-        openIncidents: incidents,
-      )),
+      (incidents) =>
+          emit(state.copyWith(isLoading: false, openIncidents: incidents)),
     );
   }
 }

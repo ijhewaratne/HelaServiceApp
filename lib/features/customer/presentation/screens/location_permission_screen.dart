@@ -29,23 +29,25 @@ class LocationPermissionScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.location_on, size: 100, color: Color(0xFF1B5E20)),
+              const Icon(
+                Icons.location_on,
+                size: 100,
+                color: Color(0xFF1B5E20),
+              ),
               const SizedBox(height: 32),
               Text(
                 'Allow Location Access',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 'Sevana uses your location to show nearby verified service providers and estimate availability in your area.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey[600]),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
@@ -57,20 +59,26 @@ class LocationPermissionScreen extends StatelessWidget {
                     backgroundColor: const Color(0xFF1B5E20),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Allow Location',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    'Allow Location',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => context.go('/customer/home'),
-                child: const Text('Enter Address Manually',
-                    style: TextStyle(color: Color(0xFF1B5E20))),
+                child: const Text(
+                  'Enter Address Manually',
+                  style: TextStyle(color: Color(0xFF1B5E20)),
+                ),
               ),
             ],
           ),

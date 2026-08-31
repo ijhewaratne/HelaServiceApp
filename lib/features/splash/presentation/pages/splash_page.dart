@@ -141,20 +141,14 @@ class _SplashPageState extends State<SplashPage> {
             SizedBox(height: 8),
             Text(
               'Trusted Home Services in Sri Lanka',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             SizedBox(height: 48),
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
             SizedBox(height: 24),
-            Text(
-              'Loading...',
-              style: TextStyle(color: Colors.white70),
-            ),
+            Text('Loading...', style: TextStyle(color: Colors.white70)),
           ],
         ),
       ),

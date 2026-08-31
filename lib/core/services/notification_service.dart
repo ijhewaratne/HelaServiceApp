@@ -9,22 +9,21 @@ class NotificationService {
   final FirebaseMessaging _messaging;
   final FirebaseFirestore _firestore;
   // flutter_local_notifications is not supported on web
-  final FlutterLocalNotificationsPlugin? _localNotifications =
-      kIsWeb ? null : FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin? _localNotifications = kIsWeb
+      ? null
+      : FlutterLocalNotificationsPlugin();
 
   NotificationService(this._messaging, this._firestore);
 
   Future<void> initialize() async {
     // Request permissions
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
     // Local notifications setup — not supported on web
     if (!kIsWeb) {
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const iosSettings = DarwinInitializationSettings();
       const initSettings = InitializationSettings(
         android: androidSettings,
@@ -47,10 +46,12 @@ class NotificationService {
 
     // Background message handler — not supported on web
     if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
     }
   }
-  
+
   Future<void> _saveToken(String token) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
@@ -60,7 +61,7 @@ class NotificationService {
       });
     }
   }
-  
+
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     final notification = message.notification;
     if (notification != null) {
@@ -72,7 +73,7 @@ class NotificationService {
       );
     }
   }
-  
+
   Future<void> _showLocalNotification({
     required int id,
     required String title,
@@ -93,7 +94,7 @@ class NotificationService {
     );
     await _localNotifications!.show(id, title, body, details, payload: payload);
   }
-  
+
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
     await _messaging.subscribeToTopic(topic);

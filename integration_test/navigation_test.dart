@@ -30,7 +30,7 @@ void main() {
       if (backButton.evaluate().isNotEmpty) {
         await tester.tap(backButton.first);
         await tester.pumpAndSettle();
-        
+
         // Should navigate back
         expect(find.byType(Scaffold), findsWidgets);
       }
@@ -45,7 +45,7 @@ void main() {
       if (scrollable.evaluate().isNotEmpty) {
         await tester.fling(scrollable.first, const Offset(0, -300), 1000);
         await tester.pumpAndSettle();
-        
+
         // Should have scrolled without errors
         expect(tester.takeException(), isNull);
       }
@@ -60,7 +60,7 @@ void main() {
       if (menuIcon.evaluate().isNotEmpty) {
         await tester.tap(menuIcon.first);
         await tester.pumpAndSettle();
-        
+
         // Drawer should open
         expect(find.byType(Drawer), findsOneWidget);
       }
@@ -74,7 +74,7 @@ void main() {
 
       // App should still be running
       expect(find.byType(MaterialApp), findsOneWidget);
-      
+
       // No error indicators should be visible initially
       expect(find.text('Something went wrong'), findsNothing);
     });
@@ -85,7 +85,7 @@ void main() {
 
       // Perform action that might trigger network error
       // Most errors are handled gracefully with SnackBars
-      
+
       // Check that error boundary exists
       final errorWidget = find.byType(ErrorWidget);
       // Should not find ErrorWidget initially
@@ -100,19 +100,19 @@ void main() {
 
       // Get initial screen size
       final size = tester.binding.window.physicalSize;
-      
+
       // App should render at any reasonable size
       expect(find.byType(MaterialApp), findsOneWidget);
-      
+
       // Test at different sizes
       await tester.binding.setSurfaceSize(const Size(360, 640)); // Small phone
       await tester.pumpAndSettle();
       expect(find.byType(Scaffold), findsWidgets);
-      
+
       await tester.binding.setSurfaceSize(const Size(412, 732)); // Medium phone
       await tester.pumpAndSettle();
       expect(find.byType(Scaffold), findsWidgets);
-      
+
       // Reset to original
       await tester.binding.setSurfaceSize(size);
     });

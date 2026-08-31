@@ -53,8 +53,10 @@ class _EmergencyDashboardBody extends StatelessWidget {
           listener: (ctx, state) {
             if (state is SafetyError) {
               ScaffoldMessenger.of(ctx).showSnackBar(
-                SnackBar(content: Text(state.message),
-                    backgroundColor: Colors.red),
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
               );
             }
           },
@@ -62,11 +64,23 @@ class _EmergencyDashboardBody extends StatelessWidget {
             if (state is SafetyLoading || state is SafetyInitial) {
               return const Center(child: CircularProgressIndicator());
             }
-            final alerts = state is OpenAlertsLoaded ? state.alerts : <SafetyAlert>[];
+            final alerts = state is OpenAlertsLoaded
+                ? state.alerts
+                : <SafetyAlert>[];
 
-            final open = alerts.where((a) => a.status == AlertStatus.open || a.status == AlertStatus.acknowledged).toList();
-            final escalated = alerts.where((a) => a.status == AlertStatus.escalated).toList();
-            final resolved = alerts.where((a) => a.status == AlertStatus.resolved).toList();
+            final open = alerts
+                .where(
+                  (a) =>
+                      a.status == AlertStatus.open ||
+                      a.status == AlertStatus.acknowledged,
+                )
+                .toList();
+            final escalated = alerts
+                .where((a) => a.status == AlertStatus.escalated)
+                .toList();
+            final resolved = alerts
+                .where((a) => a.status == AlertStatus.resolved)
+                .toList();
 
             return TabBarView(
               children: [
@@ -97,8 +111,8 @@ class _AlertList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (alerts.isEmpty) {
       return Center(
-          child: Text('No alerts',
-              style: TextStyle(color: Colors.grey.shade600)));
+        child: Text('No alerts', style: TextStyle(color: Colors.grey.shade600)),
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.all(12),
@@ -168,100 +182,117 @@ class _AlertCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: _severityColor,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                alert.severity.name.toUpperCase(),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold),
-              ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _severityColor,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    alert.severity.name.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _typeLabel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  _elapsed(alert.createdAt),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(_typeLabel,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 14)),
-            const Spacer(),
-            Text(_elapsed(alert.createdAt),
-                style: TextStyle(
-                    fontSize: 11, color: Colors.grey.shade600)),
-          ]),
-          const SizedBox(height: 8),
-          Text(alert.message,
-              style: const TextStyle(fontSize: 13)),
-          const SizedBox(height: 6),
-          Text(
-            'Booking: ${alert.bookingId.isEmpty ? '-' : alert.bookingId.substring(0, alert.bookingId.length.clamp(0, 12))}… '
-            '| Worker: ${alert.workerId.isEmpty ? '-' : alert.workerId.substring(0, alert.workerId.length.clamp(0, 8))}…',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-          ),
-          if (showEscalateAction || showLogContactAction) ...[
-            const SizedBox(height: 10),
-            const Divider(height: 1),
             const SizedBox(height: 8),
-            Row(children: [
-              if (showEscalateAction) ...[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text('Acknowledge'),
-                    style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 6)),
-                    onPressed: () => context
-                        .read<SafetyBloc>()
-                        .add(AcknowledgeAlert(alert.id)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.escalator_warning, size: 16),
-                    label: const Text('Escalate'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 6)),
-                    onPressed: () => context
-                        .read<SafetyBloc>()
-                        .add(EscalateAlert(alert.id)),
-                  ),
-                ),
-              ],
-              if (showLogContactAction) ...[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.phone, size: 16),
-                    label: const Text('Log contact'),
-                    style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 6)),
-                    onPressed: () =>
-                        _showLogContactDialog(context, alert),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.task_alt, size: 16),
-                    label: const Text('Resolve'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 6)),
-                    onPressed: () =>
-                        _showResolveDialog(context, alert),
-                  ),
-                ),
-              ],
-            ]),
+            Text(alert.message, style: const TextStyle(fontSize: 13)),
+            const SizedBox(height: 6),
+            Text(
+              'Booking: ${alert.bookingId.isEmpty ? '-' : alert.bookingId.substring(0, alert.bookingId.length.clamp(0, 12))}… '
+              '| Worker: ${alert.workerId.isEmpty ? '-' : alert.workerId.substring(0, alert.workerId.length.clamp(0, 8))}…',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            ),
+            if (showEscalateAction || showLogContactAction) ...[
+              const SizedBox(height: 10),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (showEscalateAction) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.check, size: 16),
+                        label: const Text('Acknowledge'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                        ),
+                        onPressed: () => context.read<SafetyBloc>().add(
+                          AcknowledgeAlert(alert.id),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.escalator_warning, size: 16),
+                        label: const Text('Escalate'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                        ),
+                        onPressed: () => context.read<SafetyBloc>().add(
+                          EscalateAlert(alert.id),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (showLogContactAction) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.phone, size: 16),
+                        label: const Text('Log contact'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                        ),
+                        onPressed: () => _showLogContactDialog(context, alert),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.task_alt, size: 16),
+                        label: const Text('Resolve'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                        ),
+                        onPressed: () => _showResolveDialog(context, alert),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -275,42 +306,52 @@ class _AlertCard extends StatelessWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: const Text('Log Manual Contact'),
-          content: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('Record a contact attempt for this escalation.'),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: contactType,
-              decoration: const InputDecoration(labelText: 'Contact type'),
-              items: const [
-                DropdownMenuItem(value: 'phone', child: Text('Phone call')),
-                DropdownMenuItem(value: 'sms', child: Text('SMS sent')),
-                DropdownMenuItem(value: 'police', child: Text('Police notified')),
-              ],
-              onChanged: (v) => setS(() => contactType = v ?? 'phone'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: notesCtrl,
-              decoration: const InputDecoration(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Record a contact attempt for this escalation.'),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: contactType,
+                decoration: const InputDecoration(labelText: 'Contact type'),
+                items: const [
+                  DropdownMenuItem(value: 'phone', child: Text('Phone call')),
+                  DropdownMenuItem(value: 'sms', child: Text('SMS sent')),
+                  DropdownMenuItem(
+                    value: 'police',
+                    child: Text('Police notified'),
+                  ),
+                ],
+                onChanged: (v) => setS(() => contactType = v ?? 'phone'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: notesCtrl,
+                decoration: const InputDecoration(
                   labelText: 'Notes',
-                  hintText: 'Spoke to contact, confirmed worker safe...'),
-              maxLines: 3,
-            ),
-          ]),
+                  hintText: 'Spoke to contact, confirmed worker safe...',
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 final adminId =
                     FirebaseAuth.instance.currentUser?.uid ?? 'admin';
-                context.read<SafetyBloc>().add(LogManualContact(
-                      alertId: alert.id,
-                      adminId: adminId,
-                      contactType: contactType,
-                      notes: notesCtrl.text.trim(),
-                    ));
+                context.read<SafetyBloc>().add(
+                  LogManualContact(
+                    alertId: alert.id,
+                    adminId: adminId,
+                    contactType: contactType,
+                    notes: notesCtrl.text.trim(),
+                  ),
+                );
                 Navigator.pop(ctx);
               },
               child: const Text('Save'),
@@ -330,28 +371,33 @@ class _AlertCard extends StatelessWidget {
         content: TextField(
           controller: notesCtrl,
           decoration: const InputDecoration(
-              labelText: 'Resolution notes',
-              hintText: 'Confirmed safe, no further action needed...'),
+            labelText: 'Resolution notes',
+            hintText: 'Confirmed safe, no further action needed...',
+          ),
           maxLines: 3,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
-              final adminId =
-                  FirebaseAuth.instance.currentUser?.uid ?? 'admin';
-              context.read<SafetyBloc>().add(ResolveAlert(
-                    alertId: alert.id,
-                    adminId: adminId,
-                    notes: notesCtrl.text.trim(),
-                  ));
+              final adminId = FirebaseAuth.instance.currentUser?.uid ?? 'admin';
+              context.read<SafetyBloc>().add(
+                ResolveAlert(
+                  alertId: alert.id,
+                  adminId: adminId,
+                  notes: notesCtrl.text.trim(),
+                ),
+              );
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Mark Resolved',
-                style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Mark Resolved',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

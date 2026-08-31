@@ -39,12 +39,16 @@ class PayoutHistoryPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.account_balance_wallet_outlined,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline),
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   const SizedBox(height: 16),
-                  Text('No payouts yet',
-                      style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    'No payouts yet',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Payouts are processed every Monday.\nMinimum payout: LKR 1,000.',
@@ -71,13 +75,10 @@ class PayoutHistoryPage extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (ctx, i) {
-                      final data = docs[i].data() as Map<String, dynamic>;
-                      return _PayoutCard(data: data);
-                    },
-                    childCount: docs.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((ctx, i) {
+                    final data = docs[i].data() as Map<String, dynamic>;
+                    return _PayoutCard(data: data);
+                  }, childCount: docs.length),
                 ),
               ),
             ],
@@ -108,15 +109,18 @@ class _SummaryBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Total Lifetime Earnings',
-              style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const Text(
+            'Total Lifetime Earnings',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
           const SizedBox(height: 6),
           Text(
             'LKR ${totalEarned.toStringAsFixed(0)}',
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           const Text(
@@ -137,13 +141,11 @@ class _PayoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = data['status'] as String? ?? 'pending';
     final amount = (data['workerAmount'] as num?)?.toDouble() ?? 0;
-    final gross  = (data['grossAmount'] as num?)?.toDouble() ?? 0;
-    final fee    = (data['platformFee'] as num?)?.toDouble() ?? 0;
+    final gross = (data['grossAmount'] as num?)?.toDouble() ?? 0;
+    final fee = (data['platformFee'] as num?)?.toDouble() ?? 0;
     final jobCount = (data['bookingIds'] as List?)?.length ?? 0;
     final createdTs = data['createdAt'] as Timestamp?;
-    final dateStr = createdTs != null
-        ? _formatDate(createdTs.toDate())
-        : '—';
+    final dateStr = createdTs != null ? _formatDate(createdTs.toDate()) : '—';
 
     final statusColor = _statusColor(status);
     final isBelowThreshold = status == 'below_threshold';
@@ -165,10 +167,14 @@ class _PayoutCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(dateStr,
-                        style: Theme.of(context).textTheme.titleSmall),
-                    Text('$jobCount job${jobCount != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      dateStr,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      '$jobCount job${jobCount != 1 ? 's' : ''}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
@@ -180,15 +186,17 @@ class _PayoutCard extends StatelessWidget {
                         ? 'Carried over'
                         : 'LKR ${amount.toStringAsFixed(0)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: isBelowThreshold
-                              ? Theme.of(context).colorScheme.outline
-                              : AppTheme.successColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      color: isBelowThreshold
+                          ? Theme.of(context).colorScheme.outline
+                          : AppTheme.successColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
@@ -196,9 +204,10 @@ class _PayoutCard extends StatelessWidget {
                     child: Text(
                       _statusLabel(status),
                       style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: statusColor),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
                     ),
                   ),
                 ],
@@ -213,21 +222,26 @@ class _PayoutCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Gross', style: Theme.of(context).textTheme.bodySmall),
-                Text('LKR ${gross.toStringAsFixed(0)}',
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  'LKR ${gross.toStringAsFixed(0)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Platform fee (20%)',
-                    style: Theme.of(context).textTheme.bodySmall),
-                Text('– LKR ${fee.toStringAsFixed(0)}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppTheme.errorColor)),
+                Text(
+                  'Platform fee (20%)',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(
+                  '– LKR ${fee.toStringAsFixed(0)}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppTheme.errorColor),
+                ),
               ],
             ),
           ],
@@ -236,12 +250,10 @@ class _PayoutCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'Below LKR 1,000 threshold — will be added to next payout.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
-                        fontStyle: FontStyle.italic),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
         ],
@@ -281,8 +293,19 @@ class _PayoutCard extends StatelessWidget {
 
   static String _formatDate(DateTime d) {
     const months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${d.day} ${months[d.month]} ${d.year}';
   }

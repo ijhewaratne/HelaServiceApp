@@ -15,11 +15,11 @@ void main() {
 
       // Step 1: Auth Screen
       expect(find.text('Welcome to HelaService'), findsOneWidget);
-      
+
       // Enter phone number
       await tester.enterText(find.byType(TextFormField).first, '771234567');
       await tester.pumpAndSettle();
-      
+
       // Tap send code
       await tester.tap(find.text('SEND CODE'));
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -42,18 +42,18 @@ void main() {
 
         // Step 4: Booking Form
         expect(find.text('Book Service'), findsOneWidget);
-        
+
         // Select date (simplified - just verify UI)
         expect(find.text('Date'), findsOneWidget);
-        
+
         // Enter address
         await tester.enterText(
           find.widgetWithText(TextFormField, 'House/Apartment Number *'),
           '123',
         );
-        
+
         await tester.pumpAndSettle();
-        
+
         // Verify booking can be initiated
         expect(find.text('FIND A HELPER'), findsOneWidget);
       }
@@ -65,7 +65,7 @@ void main() {
 
       // Navigate to worker dashboard (assuming already logged in as worker)
       // This test assumes pre-authenticated state or specific navigation
-      
+
       // Check for worker dashboard elements
       if (find.text('HelaService Worker').evaluate().isNotEmpty) {
         // Verify offline state
@@ -87,7 +87,7 @@ void main() {
 
       // Verify app didn't crash
       expect(find.byType(MaterialApp), findsOneWidget);
-      
+
       // Check for splash or auth screen
       final hasSplash = find.byType(Scaffold).evaluate().isNotEmpty;
       expect(hasSplash, true);

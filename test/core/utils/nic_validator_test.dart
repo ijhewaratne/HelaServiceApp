@@ -21,7 +21,10 @@ void main() {
         expect(NICValidator.isValid('12345678901V'), false); // 11 chars
         expect(NICValidator.isValid('invalid'), false);
         expect(NICValidator.isValid(''), false);
-        expect(NICValidator.isValid('853202937A'), false); // Invalid check digit
+        expect(
+          NICValidator.isValid('853202937A'),
+          false,
+        ); // Invalid check digit
       });
 
       test('handles whitespace correctly', () {

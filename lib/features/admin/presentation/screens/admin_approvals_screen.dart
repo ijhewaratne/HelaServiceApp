@@ -35,7 +35,8 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
   String _describe(PendingApproval approval) {
     switch (approval.type) {
       case ApprovalType.categoryDeactivation:
-        final name = approval.payload['categoryName'] as String? ?? 'a category';
+        final name =
+            approval.payload['categoryName'] as String? ?? 'a category';
         return 'Deactivate "$name"';
       case ApprovalType.permissionGrant:
         final name = approval.payload['adminName'] as String? ?? 'an admin';
@@ -63,8 +64,11 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
           final approvals = snap.data ?? [];
           if (approvals.isEmpty) {
             return Center(
-              child: Text('No pending approvals',
-                  style: TextStyle(color: Colors.grey.shade600)));
+              child: Text(
+                'No pending approvals',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -75,30 +79,40 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
               final isOwnProposal = approval.proposedBy == currentUid;
               return Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_describe(approval),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        _describe(approval),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         'Proposed by ${approval.proposedBy.substring(0, approval.proposedBy.length.clamp(0, 8))}… '
-                        'on ${approval.proposedAt.toLocal()}'.split('.').first,
+                                'on ${approval.proposedAt.toLocal()}'
+                            .split('.')
+                            .first,
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       if (isOwnProposal)
                         Text(
                           'Waiting for a different admin to decide — you cannot approve your own proposal.',
                           style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.orange.shade800),
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.orange.shade800,
+                          ),
                         )
                       else
                         Row(
@@ -107,7 +121,8 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
                               child: OutlinedButton(
                                 onPressed: () => _decide(approval, false),
                                 style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red.shade700),
+                                  foregroundColor: Colors.red.shade700,
+                                ),
                                 child: const Text('Reject'),
                               ),
                             ),
@@ -116,7 +131,8 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
                               child: ElevatedButton(
                                 onPressed: () => _decide(approval, true),
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.successColor),
+                                  backgroundColor: AppTheme.successColor,
+                                ),
                                 child: const Text('Approve'),
                               ),
                             ),
@@ -143,10 +159,12 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
     if (!mounted) return;
 
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: ${failure.message}'))),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(approve ? 'Approved' : 'Rejected'))),
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed: ${failure.message}'))),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(approve ? 'Approved' : 'Rejected')),
+      ),
     );
     _refresh();
   }

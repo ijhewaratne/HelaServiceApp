@@ -27,52 +27,56 @@ void main() {
       expect(doc.data()?.containsKey('availableBalance'), isFalse);
     });
 
-    test('reads back an existing wallet stored in cents, including heldBalance',
-        () async {
-      await firestore.collection('wallets').doc('user_2').set({
-        'balance': 150000, // LKR 1,500.00
-        'heldBalance': 50000, // LKR 500.00
-        'totalCredited': 150000,
-        'totalDebited': 0,
-        'isActive': true,
-        'isFrozen': false,
-        'createdAt': DateTime(2026, 1, 1),
-      });
+    test(
+      'reads back an existing wallet stored in cents, including heldBalance',
+      () async {
+        await firestore.collection('wallets').doc('user_2').set({
+          'balance': 150000, // LKR 1,500.00
+          'heldBalance': 50000, // LKR 500.00
+          'totalCredited': 150000,
+          'totalDebited': 0,
+          'isActive': true,
+          'isFrozen': false,
+          'createdAt': DateTime(2026, 1, 1),
+        });
 
-      final result = await repository.getWallet('user_2');
+        final result = await repository.getWallet('user_2');
 
-      result.fold((_) => fail('expected wallet'), (wallet) {
-        expect(wallet.balance, 150000);
-        expect(wallet.heldBalance, 50000);
-        // This is the bug fix: heldBalance used to never be mapped from
-        // Firestore at all, so availableBalance was always wrong.
-        expect(wallet.availableBalance, 100000);
-        expect(wallet.availableBalanceLKR, 1000.0);
-        expect(wallet.formattedBalance, 'LKR 1500.00');
-      });
-    });
+        result.fold((_) => fail('expected wallet'), (wallet) {
+          expect(wallet.balance, 150000);
+          expect(wallet.heldBalance, 50000);
+          // This is the bug fix: heldBalance used to never be mapped from
+          // Firestore at all, so availableBalance was always wrong.
+          expect(wallet.availableBalance, 100000);
+          expect(wallet.availableBalanceLKR, 1000.0);
+          expect(wallet.formattedBalance, 'LKR 1500.00');
+        });
+      },
+    );
   });
 
   group('topUp', () {
-    test('credits balance and totalCredited in cents for a new wallet',
-        () async {
-      final result = await repository.topUp(
-        userId: 'user_3',
-        amount: 100000, // LKR 1,000.00
-        method: WalletPaymentMethod.payhere,
-      );
+    test(
+      'credits balance and totalCredited in cents for a new wallet',
+      () async {
+        final result = await repository.topUp(
+          userId: 'user_3',
+          amount: 100000, // LKR 1,000.00
+          method: WalletPaymentMethod.payhere,
+        );
 
-      expect(result.isRight(), isTrue);
+        expect(result.isRight(), isTrue);
 
-      final doc = await firestore.collection('wallets').doc('user_3').get();
-      expect(doc.data()?['balance'], 100000);
-      expect(doc.data()?['totalCredited'], 100000);
+        final doc = await firestore.collection('wallets').doc('user_3').get();
+        expect(doc.data()?['balance'], 100000);
+        expect(doc.data()?['totalCredited'], 100000);
 
-      final txSnap = await firestore.collection('wallet_transactions').get();
-      expect(txSnap.docs, hasLength(1));
-      expect(txSnap.docs.first.data()['amount'], 100000);
-      expect(txSnap.docs.first.data()['balanceAfter'], 100000);
-    });
+        final txSnap = await firestore.collection('wallet_transactions').get();
+        expect(txSnap.docs, hasLength(1));
+        expect(txSnap.docs.first.data()['amount'], 100000);
+        expect(txSnap.docs.first.data()['balanceAfter'], 100000);
+      },
+    );
 
     test('accumulates across repeated top-ups without float drift', () async {
       // 1/3 of a rupee repeated many times would visibly drift under doubles;

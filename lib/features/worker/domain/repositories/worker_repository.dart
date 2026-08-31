@@ -44,10 +44,14 @@ abstract class WorkerRepository {
   Future<Either<Failure, bool>> checkNICExists(String nic);
 
   /// Submit worker application
-  Future<Either<Failure, WorkerApplication>> submitApplication(WorkerApplication application);
+  Future<Either<Failure, WorkerApplication>> submitApplication(
+    WorkerApplication application,
+  );
 
   /// Get application status by worker ID
-  Future<Either<Failure, WorkerApplication>> getApplicationStatus(String workerId);
+  Future<Either<Failure, WorkerApplication>> getApplicationStatus(
+    String workerId,
+  );
 
   /// Mark training as completed
   Future<Either<Failure, void>> completeTraining(String workerId);

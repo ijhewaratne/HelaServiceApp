@@ -15,9 +15,9 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   PaymentBloc({
     required PaymentRepository paymentRepository,
     AnalyticsService? analytics,
-  })  : _paymentRepository = paymentRepository,
-        _analytics = analytics ?? AnalyticsService(),
-        super(PaymentInitial()) {
+  }) : _paymentRepository = paymentRepository,
+       _analytics = analytics ?? AnalyticsService(),
+       super(PaymentInitial()) {
     on<ProcessPayment>(_onProcessPayment);
     on<CheckPaymentStatus>(_onCheckPaymentStatus);
     on<LoadPaymentHistory>(_onLoadPaymentHistory);
@@ -39,10 +39,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
 
     // Get user details for payment, falling back to Firebase user fields.
     final customerName =
-        event.customerName ?? currentUser?.displayName ?? 'HelaService Customer';
+        event.customerName ??
+        currentUser?.displayName ??
+        'HelaService Customer';
     final customerPhone = event.customerPhone ?? currentUser?.phoneNumber ?? '';
-    final customerEmail =
-        event.customerEmail ?? currentUser?.email ?? '';
+    final customerEmail = event.customerEmail ?? currentUser?.email ?? '';
 
     final result = await _paymentRepository.processPayment(
       bookingId: event.bookingId,
@@ -71,10 +72,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     if (paymentResult.success) {
       if (paymentResult.status == PaymentStatus.pending &&
           paymentResult.checkoutUrl != null) {
-        emit(PaymentInitiated(
-          checkoutUrl: paymentResult.checkoutUrl!,
-          orderId: paymentResult.orderId ?? event.bookingId,
-        ));
+        emit(
+          PaymentInitiated(
+            checkoutUrl: paymentResult.checkoutUrl!,
+            orderId: paymentResult.orderId ?? event.bookingId,
+          ),
+        );
       } else {
         await _analytics.logPaymentSuccess(
           paymentId: paymentResult.paymentId ?? 'unknown',
@@ -92,10 +95,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         errorCode: paymentResult.status.toString(),
       );
       if (!emit.isDone) {
-        emit(PaymentFailed(
-          message: paymentResult.message ?? 'Payment failed',
-          status: paymentResult.status,
-        ));
+        emit(
+          PaymentFailed(
+            message: paymentResult.message ?? 'Payment failed',
+            status: paymentResult.status,
+          ),
+        );
       }
     }
   }
@@ -188,15 +193,15 @@ class ProcessPayment extends PaymentEvent {
 
   @override
   List<Object?> get props => [
-        bookingId,
-        amount,
-        customerName,
-        customerPhone,
-        customerEmail,
-        customerAddress,
-        customerCity,
-        description,
-      ];
+    bookingId,
+    amount,
+    customerName,
+    customerPhone,
+    customerEmail,
+    customerAddress,
+    customerCity,
+    description,
+  ];
 }
 
 /// Check status of a payment
@@ -225,11 +230,7 @@ class RequestRefund extends PaymentEvent {
   final int? amount;
   final String? reason;
 
-  RequestRefund({
-    required this.paymentId,
-    this.amount,
-    this.reason,
-  });
+  RequestRefund({required this.paymentId, this.amount, this.reason});
 
   @override
   List<Object?> get props => [paymentId, amount, reason];
@@ -278,10 +279,7 @@ class PaymentFailed extends PaymentState {
   final String message;
   final PaymentStatus status;
 
-  PaymentFailed({
-    required this.message,
-    required this.status,
-  });
+  PaymentFailed({required this.message, required this.status});
 
   @override
   List<Object?> get props => [message, status];

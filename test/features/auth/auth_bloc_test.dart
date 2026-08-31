@@ -5,7 +5,8 @@ import 'package:mockito/annotations.dart';
 import 'package:dartz/dartz.dart';
 import 'package:home_service_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:home_service_app/features/auth/domain/repositories/auth_repository.dart';
-import 'package:home_service_app/features/auth/domain/entities/user.dart' as app;
+import 'package:home_service_app/features/auth/domain/entities/user.dart'
+    as app;
 import 'package:home_service_app/core/errors/failures.dart';
 import 'package:home_service_app/core/services/analytics_service.dart';
 import 'package:home_service_app/core/monitoring/crash_reporting.dart';
@@ -25,21 +26,32 @@ void main() {
     mockCrashReporting = MockCrashReportingService();
 
     // Stub AuthBloc startup dependencies.
-    when(mockRepository.authStateChanges)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockRepository.authStateChanges,
+    ).thenAnswer((_) => const Stream.empty());
 
     // Stub analytics calls used in OTP/login flows.
-    when(mockAnalytics.logLogin(
-            method: anyNamed('method'), userType: anyNamed('userType')))
-        .thenAnswer((_) async {});
-    when(mockAnalytics.logSignUp(
-            method: anyNamed('method'), userType: anyNamed('userType')))
-        .thenAnswer((_) async {});
-    when(mockAnalytics.logError(
-            error: anyNamed('error'), context: anyNamed('context')))
-        .thenAnswer((_) async {});
-    when(mockAnalytics.setUserProperties(userId: anyNamed('userId')))
-        .thenAnswer((_) async {});
+    when(
+      mockAnalytics.logLogin(
+        method: anyNamed('method'),
+        userType: anyNamed('userType'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      mockAnalytics.logSignUp(
+        method: anyNamed('method'),
+        userType: anyNamed('userType'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      mockAnalytics.logError(
+        error: anyNamed('error'),
+        context: anyNamed('context'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      mockAnalytics.setUserProperties(userId: anyNamed('userId')),
+    ).thenAnswer((_) async {});
     when(mockAnalytics.logLogout()).thenAnswer((_) async {});
 
     authBloc = AuthBloc(
@@ -68,42 +80,47 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthOtpSent] when phone number is submitted',
       build: () {
-        when(mockRepository.verifyPhone(
-          phoneNumber: anyNamed('phoneNumber'),
-          onCodeSent: anyNamed('onCodeSent'),
-          onVerificationCompleted: anyNamed('onVerificationCompleted'),
-          onVerificationFailed: anyNamed('onVerificationFailed'),
-        )).thenAnswer((invocation) async {
-          final onCodeSent = invocation.namedArguments[#onCodeSent] as Function(String);
+        when(
+          mockRepository.verifyPhone(
+            phoneNumber: anyNamed('phoneNumber'),
+            onCodeSent: anyNamed('onCodeSent'),
+            onVerificationCompleted: anyNamed('onVerificationCompleted'),
+            onVerificationFailed: anyNamed('onVerificationFailed'),
+          ),
+        ).thenAnswer((invocation) async {
+          final onCodeSent =
+              invocation.namedArguments[#onCodeSent] as Function(String);
           onCodeSent(testVerificationId);
           return const Right(null);
         });
         return authBloc;
       },
-      act: (bloc) => bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber)),
-      expect: () => [
-        AuthLoading(),
-        AuthOtpSent(phoneNumber: testPhoneNumber),
-      ],
+      act: (bloc) =>
+          bloc.add(PhoneNumberSubmitted(phoneNumber: testPhoneNumber)),
+      expect: () => [AuthLoading(), AuthOtpSent(phoneNumber: testPhoneNumber)],
     );
 
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthAuthenticated] when OTP is verified successfully',
       build: () {
-        when(mockRepository.verifyPhone(
-          phoneNumber: anyNamed('phoneNumber'),
-          onCodeSent: anyNamed('onCodeSent'),
-          onVerificationCompleted: anyNamed('onVerificationCompleted'),
-          onVerificationFailed: anyNamed('onVerificationFailed'),
-        )).thenAnswer((inv) async {
+        when(
+          mockRepository.verifyPhone(
+            phoneNumber: anyNamed('phoneNumber'),
+            onCodeSent: anyNamed('onCodeSent'),
+            onVerificationCompleted: anyNamed('onVerificationCompleted'),
+            onVerificationFailed: anyNamed('onVerificationFailed'),
+          ),
+        ).thenAnswer((inv) async {
           final cb = inv.namedArguments[#onCodeSent] as Function(String);
           cb(testVerificationId);
           return const Right(null);
         });
-        when(mockRepository.verifyOTP(
-          verificationId: testVerificationId,
-          smsCode: testSmsCode,
-        )).thenAnswer((_) async => Right(testUser));
+        when(
+          mockRepository.verifyOTP(
+            verificationId: testVerificationId,
+            smsCode: testSmsCode,
+          ),
+        ).thenAnswer((_) async => Right(testUser));
         return authBloc;
       },
       act: (bloc) async {
@@ -122,20 +139,24 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthError] when OTP verification fails',
       build: () {
-        when(mockRepository.verifyPhone(
-          phoneNumber: anyNamed('phoneNumber'),
-          onCodeSent: anyNamed('onCodeSent'),
-          onVerificationCompleted: anyNamed('onVerificationCompleted'),
-          onVerificationFailed: anyNamed('onVerificationFailed'),
-        )).thenAnswer((inv) async {
+        when(
+          mockRepository.verifyPhone(
+            phoneNumber: anyNamed('phoneNumber'),
+            onCodeSent: anyNamed('onCodeSent'),
+            onVerificationCompleted: anyNamed('onVerificationCompleted'),
+            onVerificationFailed: anyNamed('onVerificationFailed'),
+          ),
+        ).thenAnswer((inv) async {
           final cb = inv.namedArguments[#onCodeSent] as Function(String);
           cb(testVerificationId);
           return const Right(null);
         });
-        when(mockRepository.verifyOTP(
-          verificationId: testVerificationId,
-          smsCode: 'wrong_code',
-        )).thenAnswer((_) async => Left(AuthFailure('Invalid OTP')));
+        when(
+          mockRepository.verifyOTP(
+            verificationId: testVerificationId,
+            smsCode: 'wrong_code',
+          ),
+        ).thenAnswer((_) async => Left(AuthFailure('Invalid OTP')));
         return authBloc;
       },
       act: (bloc) async {
@@ -154,20 +175,24 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits AuthMfaRequired (not AuthError) when the account has a second factor enrolled',
       build: () {
-        when(mockRepository.verifyPhone(
-          phoneNumber: anyNamed('phoneNumber'),
-          onCodeSent: anyNamed('onCodeSent'),
-          onVerificationCompleted: anyNamed('onVerificationCompleted'),
-          onVerificationFailed: anyNamed('onVerificationFailed'),
-        )).thenAnswer((inv) async {
+        when(
+          mockRepository.verifyPhone(
+            phoneNumber: anyNamed('phoneNumber'),
+            onCodeSent: anyNamed('onCodeSent'),
+            onVerificationCompleted: anyNamed('onVerificationCompleted'),
+            onVerificationFailed: anyNamed('onVerificationFailed'),
+          ),
+        ).thenAnswer((inv) async {
           final cb = inv.namedArguments[#onCodeSent] as Function(String);
           cb(testVerificationId);
           return const Right(null);
         });
-        when(mockRepository.verifyOTP(
-          verificationId: testVerificationId,
-          smsCode: testSmsCode,
-        )).thenAnswer((_) async => const Left(MfaRequiredFailure()));
+        when(
+          mockRepository.verifyOTP(
+            verificationId: testVerificationId,
+            smsCode: testSmsCode,
+          ),
+        ).thenAnswer((_) async => const Left(MfaRequiredFailure()));
         return authBloc;
       },
       act: (bloc) async {
@@ -186,29 +211,25 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthAuthenticated] when the authenticator code completes sign-in',
       build: () {
-        when(mockRepository.completeMfaChallenge(totpCode: '654321'))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          mockRepository.completeMfaChallenge(totpCode: '654321'),
+        ).thenAnswer((_) async => Right(testUser));
         return authBloc;
       },
       act: (bloc) => bloc.add(MfaCodeSubmitted(totpCode: '654321')),
-      expect: () => [
-        AuthLoading(),
-        isA<AuthAuthenticated>(),
-      ],
+      expect: () => [AuthLoading(), isA<AuthAuthenticated>()],
     );
 
     blocTest<AuthBloc, AuthState>(
       'emits AuthError when the authenticator code is wrong',
       build: () {
-        when(mockRepository.completeMfaChallenge(totpCode: '000000'))
-            .thenAnswer((_) async => Left(AuthFailure('Invalid code')));
+        when(
+          mockRepository.completeMfaChallenge(totpCode: '000000'),
+        ).thenAnswer((_) async => Left(AuthFailure('Invalid code')));
         return authBloc;
       },
       act: (bloc) => bloc.add(MfaCodeSubmitted(totpCode: '000000')),
-      expect: () => [
-        AuthLoading(),
-        AuthError(message: 'Invalid code'),
-      ],
+      expect: () => [AuthLoading(), AuthError(message: 'Invalid code')],
     );
 
     blocTest<AuthBloc, AuthState>(
@@ -219,10 +240,7 @@ void main() {
       },
       seed: () => AuthAuthenticated(user: testUser),
       act: (bloc) => bloc.add(LoggedOut()),
-      expect: () => [
-        AuthLoading(),
-        AuthUnauthenticated(),
-      ],
+      expect: () => [AuthLoading(), AuthUnauthenticated()],
     );
 
     blocTest<AuthBloc, AuthState>(
@@ -234,20 +252,24 @@ void main() {
           userType: app.UserType.unknown,
           isOnboarded: false,
         );
-        when(mockRepository.verifyPhone(
-          phoneNumber: anyNamed('phoneNumber'),
-          onCodeSent: anyNamed('onCodeSent'),
-          onVerificationCompleted: anyNamed('onVerificationCompleted'),
-          onVerificationFailed: anyNamed('onVerificationFailed'),
-        )).thenAnswer((inv) async {
+        when(
+          mockRepository.verifyPhone(
+            phoneNumber: anyNamed('phoneNumber'),
+            onCodeSent: anyNamed('onCodeSent'),
+            onVerificationCompleted: anyNamed('onVerificationCompleted'),
+            onVerificationFailed: anyNamed('onVerificationFailed'),
+          ),
+        ).thenAnswer((inv) async {
           final cb = inv.namedArguments[#onCodeSent] as Function(String);
           cb(testVerificationId);
           return const Right(null);
         });
-        when(mockRepository.verifyOTP(
-          verificationId: testVerificationId,
-          smsCode: testSmsCode,
-        )).thenAnswer((_) async => Right(newUser));
+        when(
+          mockRepository.verifyOTP(
+            verificationId: testVerificationId,
+            smsCode: testSmsCode,
+          ),
+        ).thenAnswer((_) async => Right(newUser));
         return authBloc;
       },
       act: (bloc) async {

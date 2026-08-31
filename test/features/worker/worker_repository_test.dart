@@ -37,47 +37,44 @@ void main() {
 
     test('should create worker successfully', () async {
       // Arrange
-      when(mockRepository.createWorker(any))
-          .thenAnswer((_) async => Right(testWorker));
+      when(
+        mockRepository.createWorker(any),
+      ).thenAnswer((_) async => Right(testWorker));
 
       // Act
       final result = await mockRepository.createWorker(testWorker);
 
       // Assert
       expect(result.isRight(), true);
-      result.fold(
-        (failure) => fail('Should not return failure'),
-        (worker) {
-          expect(worker.id, testWorkerId);
-          expect(worker.nic, '853202937V');
-          expect(worker.status, WorkerStatus.approved);
-        },
-      );
+      result.fold((failure) => fail('Should not return failure'), (worker) {
+        expect(worker.id, testWorkerId);
+        expect(worker.nic, '853202937V');
+        expect(worker.status, WorkerStatus.approved);
+      });
     });
 
     test('should get worker by ID', () async {
       // Arrange
-      when(mockRepository.getWorker(testWorkerId))
-          .thenAnswer((_) async => Right(testWorker));
+      when(
+        mockRepository.getWorker(testWorkerId),
+      ).thenAnswer((_) async => Right(testWorker));
 
       // Act
       final result = await mockRepository.getWorker(testWorkerId);
 
       // Assert
       expect(result.isRight(), true);
-      result.fold(
-        (failure) => fail('Should not return failure'),
-        (worker) {
-          expect(worker.id, testWorkerId);
-          expect(worker.fullName, 'John Doe');
-        },
-      );
+      result.fold((failure) => fail('Should not return failure'), (worker) {
+        expect(worker.id, testWorkerId);
+        expect(worker.fullName, 'John Doe');
+      });
     });
 
     test('should return NotFoundFailure for non-existent worker', () async {
       // Arrange
-      when(mockRepository.getWorker('non_existent'))
-          .thenAnswer((_) async => const Left(NotFoundFailure('Worker not found')));
+      when(mockRepository.getWorker('non_existent')).thenAnswer(
+        (_) async => const Left(NotFoundFailure('Worker not found')),
+      );
 
       // Act
       final result = await mockRepository.getWorker('non_existent');
@@ -92,12 +89,14 @@ void main() {
 
     test('should update online status', () async {
       // Arrange
-      when(mockRepository.updateOnlineStatus(
-        workerId: anyNamed('workerId'),
-        isOnline: anyNamed('isOnline'),
-        lat: anyNamed('lat'),
-        lng: anyNamed('lng'),
-      )).thenAnswer((_) async => const Right(null));
+      when(
+        mockRepository.updateOnlineStatus(
+          workerId: anyNamed('workerId'),
+          isOnline: anyNamed('isOnline'),
+          lat: anyNamed('lat'),
+          lng: anyNamed('lng'),
+        ),
+      ).thenAnswer((_) async => const Right(null));
 
       // Act
       final result = await mockRepository.updateOnlineStatus(
@@ -113,8 +112,9 @@ void main() {
 
     test('should accept contract', () async {
       // Arrange
-      when(mockRepository.acceptContract(any))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        mockRepository.acceptContract(any),
+      ).thenAnswer((_) async => const Right(null));
 
       // Act
       final result = await mockRepository.acceptContract(testWorkerId);
@@ -126,11 +126,13 @@ void main() {
     test('should upload NIC document', () async {
       // Arrange
       const testUrl = 'https://storage.example.com/nic_front.jpg';
-      when(mockRepository.uploadNICDocument(
-        workerId: anyNamed('workerId'),
-        file: anyNamed('file'),
-        isFront: anyNamed('isFront'),
-      )).thenAnswer((_) async => const Right(testUrl));
+      when(
+        mockRepository.uploadNICDocument(
+          workerId: anyNamed('workerId'),
+          file: anyNamed('file'),
+          isFront: anyNamed('isFront'),
+        ),
+      ).thenAnswer((_) async => const Right(testUrl));
 
       // Act
       final result = await mockRepository.uploadNICDocument(
@@ -150,10 +152,12 @@ void main() {
     test('should upload profile photo', () async {
       // Arrange
       const testUrl = 'https://storage.example.com/profile.jpg';
-      when(mockRepository.uploadProfilePhoto(
-        workerId: anyNamed('workerId'),
-        file: anyNamed('file'),
-      )).thenAnswer((_) async => const Right(testUrl));
+      when(
+        mockRepository.uploadProfilePhoto(
+          workerId: anyNamed('workerId'),
+          file: anyNamed('file'),
+        ),
+      ).thenAnswer((_) async => const Right(testUrl));
 
       // Act
       final result = await mockRepository.uploadProfilePhoto(

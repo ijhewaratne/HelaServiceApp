@@ -32,12 +32,14 @@ class HelaAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation,
       backgroundColor: backgroundColor ?? Theme.of(context).primaryColor,
       foregroundColor: Colors.white,
-      leading: leading ?? (showBackButton && Navigator.canPop(context)
-          ? IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: onBackPressed ?? () => context.pop(),
-            )
-          : null),
+      leading:
+          leading ??
+          (showBackButton && Navigator.canPop(context)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: onBackPressed ?? () => context.pop(),
+                )
+              : null),
       actions: actions,
     );
   }
@@ -51,11 +53,7 @@ class TransparentAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final VoidCallback? onBackPressed;
 
-  const TransparentAppBar({
-    super.key,
-    this.actions,
-    this.onBackPressed,
-  });
+  const TransparentAppBar({super.key, this.actions, this.onBackPressed});
 
   @override
   Widget build(BuildContext context) {

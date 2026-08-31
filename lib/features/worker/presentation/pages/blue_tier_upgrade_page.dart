@@ -91,7 +91,9 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
     if (!_formKey.currentState!.validate()) return;
     if (_clearanceFront == null || _clearanceExpiry == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload police clearance and set expiry date.')),
+        const SnackBar(
+          content: Text('Please upload police clearance and set expiry date.'),
+        ),
       );
       return;
     }
@@ -99,49 +101,50 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
       final frontUrl = await _uploadFile(
-          _clearanceFront!, 'workers/$uid/police_clearance_front.jpg');
+        _clearanceFront!,
+        'workers/$uid/police_clearance_front.jpg',
+      );
       final backUrl = _clearanceBack != null
           ? await _uploadFile(
-              _clearanceBack!, 'workers/$uid/police_clearance_back.jpg')
+              _clearanceBack!,
+              'workers/$uid/police_clearance_back.jpg',
+            )
           : null;
 
       await sl<FirebaseFirestore>()
           .collection('worker_verifications')
           .doc(uid)
           .set({
-        'workerId': uid,
-        'requestedTier': 'blue',
-        'status': 'pending_review',
-        'policeClearance': {
-          'frontUrl': frontUrl,
-          'backUrl': backUrl,
-          'expiryDate': _clearanceExpiry != null
-              ? _clearanceExpiry!.toIso8601String()
-              : null,
-          'uploadedAt': FieldValue.serverTimestamp(),
-        },
-        'references': [
-          {
-            'name': _ref1NameCtrl.text.trim(),
-            'phone': _ref1PhoneCtrl.text.trim(),
-            'relation': _ref1RelationCtrl.text.trim(),
-            'verificationStatus': 'pending',
-          },
-          {
-            'name': _ref2NameCtrl.text.trim(),
-            'phone': _ref2PhoneCtrl.text.trim(),
-            'relation': _ref2RelationCtrl.text.trim(),
-            'verificationStatus': 'pending',
-          },
-        ],
-        'submittedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'workerId': uid,
+            'requestedTier': 'blue',
+            'status': 'pending_review',
+            'policeClearance': {
+              'frontUrl': frontUrl,
+              'backUrl': backUrl,
+              'expiryDate': _clearanceExpiry != null
+                  ? _clearanceExpiry!.toIso8601String()
+                  : null,
+              'uploadedAt': FieldValue.serverTimestamp(),
+            },
+            'references': [
+              {
+                'name': _ref1NameCtrl.text.trim(),
+                'phone': _ref1PhoneCtrl.text.trim(),
+                'relation': _ref1RelationCtrl.text.trim(),
+                'verificationStatus': 'pending',
+              },
+              {
+                'name': _ref2NameCtrl.text.trim(),
+                'phone': _ref2PhoneCtrl.text.trim(),
+                'relation': _ref2RelationCtrl.text.trim(),
+                'verificationStatus': 'pending',
+              },
+            ],
+            'submittedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       // Update main worker doc
-      await sl<FirebaseFirestore>()
-          .collection('workers')
-          .doc(uid)
-          .update({
+      await sl<FirebaseFirestore>().collection('workers').doc(uid).update({
         'verificationStatus': 'pending_review',
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -154,7 +157,8 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'Application submitted. Admin will review within 3–5 business days.'),
+              'Application submitted. Admin will review within 3–5 business days.',
+            ),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -162,8 +166,9 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
     } catch (e) {
       setState(() => _submitting = false);
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -297,10 +302,9 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
               child: Text(
                 'By submitting, you consent to HelaService contacting your references to verify your background. '
                 'All documents are stored securely and used only for verification purposes.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppTheme.warningColor),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppTheme.warningColor),
               ),
             ),
 
@@ -315,7 +319,9 @@ class _BlueTierUpgradePageState extends State<BlueTierUpgradePage> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Submit for Blue Tier Review'),
               ),
@@ -340,31 +346,37 @@ class _TierInfoBanner extends StatelessWidget {
         color: const Color(0xFF3B82F6).withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.workspace_premium,
-              color: Color(0xFF3B82F6), size: 28),
+          const Icon(
+            Icons.workspace_premium,
+            color: Color(0xFF3B82F6),
+            size: 28,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Blue Tier Benefits',
-                    style: TextStyle(
-                        color: Color(0xFF3B82F6),
-                        fontWeight: FontWeight.bold)),
+                const Text(
+                  'Blue Tier Benefits',
+                  style: TextStyle(
+                    color: Color(0xFF3B82F6),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   '• +10% hourly rate multiplier\n'
                   '• Access to Elder Companionship & Babysitting services\n'
                   '• Blue badge on your worker profile',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: const Color(0xFF3B82F6)),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF3B82F6),
+                  ),
                 ),
               ],
             ),
@@ -395,11 +407,12 @@ class _SectionHeader extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
             Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
@@ -453,8 +466,11 @@ class _PhotoUploadBox extends StatelessWidget {
                           color: AppTheme.successColor,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.check,
-                            size: 12, color: Colors.white),
+                        child: const Icon(
+                          Icons.check,
+                          size: 12,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -463,15 +479,18 @@ class _PhotoUploadBox extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add_a_photo_outlined,
-                      color: AppTheme.primaryColor),
+                  const Icon(
+                    Icons.add_a_photo_outlined,
+                    color: AppTheme.primaryColor,
+                  ),
                   const SizedBox(height: 4),
-                  Text(label,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: AppTheme.primaryColor),
-                      textAlign: TextAlign.center),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.primaryColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
       ),
@@ -503,8 +522,7 @@ class _ReferenceFields extends StatelessWidget {
             prefixIcon: const Icon(Icons.person_outline),
           ),
           textCapitalization: TextCapitalization.words,
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Required' : null,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
         ),
         const SizedBox(height: 10),
         TextFormField(
@@ -544,12 +562,17 @@ class _SubmittedView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.hourglass_top_rounded,
-                size: 72, color: AppTheme.warningColor),
+            const Icon(
+              Icons.hourglass_top_rounded,
+              size: 72,
+              color: AppTheme.warningColor,
+            ),
             const SizedBox(height: 20),
-            Text('Application Under Review',
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center),
+            Text(
+              'Application Under Review',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 12),
             Text(
               'Your Blue Tier application has been submitted.\n\n'

@@ -54,18 +54,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
           _BookingList(
             customerId: uid,
             statuses: const [
-              'pending', 'confirmed', 'workerAssigned', 'workerEnRoute',
-              'workerArrived', 'inProgress', 'disputed'
+              'pending',
+              'confirmed',
+              'workerAssigned',
+              'workerEnRoute',
+              'workerArrived',
+              'inProgress',
+              'disputed',
             ],
           ),
-          _BookingList(
-            customerId: uid,
-            statuses: const ['completed'],
-          ),
-          _BookingList(
-            customerId: uid,
-            statuses: const ['cancelled'],
-          ),
+          _BookingList(customerId: uid, statuses: const ['completed']),
+          _BookingList(customerId: uid, statuses: const ['cancelled']),
         ],
       ),
     );
@@ -98,8 +97,10 @@ class _BookingList extends StatelessWidget {
               children: [
                 Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
-                Text('No bookings here',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+                Text(
+                  'No bookings here',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                ),
               ],
             ),
           );
@@ -124,27 +125,42 @@ class _BookingTile extends StatelessWidget {
 
   Color _statusColor(BookingStatus s) {
     switch (s) {
-      case BookingStatus.completed: return Colors.green;
-      case BookingStatus.cancelled: return Colors.red;
-      case BookingStatus.disputed:  return Colors.orange;
+      case BookingStatus.completed:
+        return Colors.green;
+      case BookingStatus.cancelled:
+        return Colors.red;
+      case BookingStatus.disputed:
+        return Colors.orange;
       case BookingStatus.inProgress:
-      case BookingStatus.workerArrived: return Colors.blue;
-      default: return const Color(0xFF1B5E20);
+      case BookingStatus.workerArrived:
+        return Colors.blue;
+      default:
+        return const Color(0xFF1B5E20);
     }
   }
 
   String _statusLabel(BookingStatus s) {
     switch (s) {
-      case BookingStatus.draft:          return 'Draft';
-      case BookingStatus.pending:        return 'Pending';
-      case BookingStatus.confirmed:      return 'Confirmed';
-      case BookingStatus.workerAssigned: return 'Provider Assigned';
-      case BookingStatus.workerEnRoute:  return 'Provider En Route';
-      case BookingStatus.workerArrived:  return 'Provider Arrived';
-      case BookingStatus.inProgress:     return 'In Progress';
-      case BookingStatus.completed:      return 'Completed';
-      case BookingStatus.cancelled:      return 'Cancelled';
-      case BookingStatus.disputed:       return 'Disputed';
+      case BookingStatus.draft:
+        return 'Draft';
+      case BookingStatus.pending:
+        return 'Pending';
+      case BookingStatus.confirmed:
+        return 'Confirmed';
+      case BookingStatus.workerAssigned:
+        return 'Provider Assigned';
+      case BookingStatus.workerEnRoute:
+        return 'Provider En Route';
+      case BookingStatus.workerArrived:
+        return 'Provider Arrived';
+      case BookingStatus.inProgress:
+        return 'In Progress';
+      case BookingStatus.completed:
+        return 'Completed';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
+      case BookingStatus.disputed:
+        return 'Disputed';
     }
   }
 
@@ -154,8 +170,8 @@ class _BookingTile extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => context.go('/customer/bookings/${booking.id}',
-            extra: booking),
+        onTap: () =>
+            context.go('/customer/bookings/${booking.id}', extra: booking),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -166,31 +182,41 @@ class _BookingTile extends StatelessWidget {
                   Expanded(
                     child: Text(
                       booking.serviceType.name
-                          .replaceAllMapped(RegExp(r'([A-Z])'),
-                              (m) => ' ${m[0]}')
+                          .replaceAllMapped(
+                            RegExp(r'([A-Z])'),
+                            (m) => ' ${m[0]}',
+                          )
                           .trim()
                           .replaceFirst(
-                              booking.serviceType.name[0],
-                              booking.serviceType.name[0].toUpperCase()),
+                            booking.serviceType.name[0],
+                            booking.serviceType.name[0].toUpperCase(),
+                          ),
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _statusColor(booking.status).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: _statusColor(booking.status), width: 1),
+                        color: _statusColor(booking.status),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       _statusLabel(booking.status),
                       style: TextStyle(
-                          color: _statusColor(booking.status),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600),
+                        color: _statusColor(booking.status),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -198,8 +224,11 @@ class _BookingTile extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today,
-                      size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     booking.formattedScheduledTime,
@@ -217,15 +246,15 @@ class _BookingTile extends StatelessWidget {
                       booking.address.fullAddress,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ),
                   Text(
                     booking.formattedPrice,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1B5E20)),
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1B5E20),
+                    ),
                   ),
                 ],
               ),

@@ -34,17 +34,19 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
     if (!currentlyOnline) {
       try {
         final position = await sl<LocationService>().getCurrentPosition();
-        _workerBloc.add(UpdateOnlineStatus(
-          workerId: uid,
-          isOnline: true,
-          lat: position.latitude,
-          lng: position.longitude,
-        ));
+        _workerBloc.add(
+          UpdateOnlineStatus(
+            workerId: uid,
+            isOnline: true,
+            lat: position.latitude,
+            lng: position.longitude,
+          ),
+        );
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not get location: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Could not get location: $e')));
         }
       }
     } else {
@@ -58,9 +60,9 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
       bloc: _workerBloc,
       listener: (context, state) {
         if (state is WorkerError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       builder: (context, state) {
@@ -71,16 +73,16 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
 
         return Scaffold(
           backgroundColor: isOnline ? Colors.indigo.shade50 : Colors.white,
-          appBar: AppBar(
-            title: const Text('Dispatch Dashboard'),
-          ),
+          appBar: AppBar(title: const Text('Dispatch Dashboard')),
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isOnline
                         ? Colors.green.shade100
@@ -109,8 +111,8 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
                       color: isLoading
                           ? Colors.grey
                           : isOnline
-                              ? Colors.green
-                              : Colors.indigo,
+                          ? Colors.green
+                          : Colors.indigo,
                       boxShadow: [
                         BoxShadow(
                           color: (isOnline ? Colors.green : Colors.indigo)
@@ -122,8 +124,7 @@ class _OnlineTogglePageState extends State<OnlineTogglePage> {
                     ),
                     child: Center(
                       child: isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white)
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : Text(
                               isOnline ? 'GO\nOFFLINE' : 'GO\nONLINE',
                               textAlign: TextAlign.center,

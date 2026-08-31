@@ -48,10 +48,7 @@ class _AdminWorkersScreenState extends State<AdminWorkersScreen>
       ),
       body: TabBarView(
         controller: _tabs,
-        children: const [
-          _NewApplicantsTab(),
-          _BlueTierTab(),
-        ],
+        children: const [_NewApplicantsTab(), _BlueTierTab()],
       ),
     );
   }
@@ -68,8 +65,11 @@ class _NewApplicantsTab extends StatelessWidget {
     if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     if (vm.pendingWorkers.isEmpty) {
       return Center(
-          child: Text('No pending workers',
-              style: TextStyle(color: Colors.grey.shade600)));
+        child: Text(
+          'No pending workers',
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -77,43 +77,69 @@ class _NewApplicantsTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final worker = vm.pendingWorkers[index];
         return GlassCard(
-          child: Row(children: [
-            CircleAvatar(
-              backgroundColor: Colors.orange.shade100,
-              child: Icon(Icons.person, color: Colors.orange.shade800),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(worker.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(
-                    'ID: ${worker.uid.substring(0, 8)}… | ${worker.verificationStatus.toUpperCase()}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-              ]),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final confirm = await showConfirmDialog(context,
-                    title: 'Approve Worker',
-                    message: 'Approve ${worker.name}?');
-                if (confirm && context.mounted) {
-                  context.read<AdminBloc>().add(ApproveWorker(worker.uid));
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.orange.shade100,
+                    child: Icon(Icons.person, color: Colors.orange.shade800),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          worker.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'ID: ${worker.uid.substring(0, 8)}… | ${worker.verificationStatus.toUpperCase()}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final confirm = await showConfirmDialog(
+                        context,
+                        title: 'Approve Worker',
+                        message: 'Approve ${worker.name}?',
+                      );
+                      if (confirm && context.mounted) {
+                        context.read<AdminBloc>().add(
+                          ApproveWorker(worker.uid),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Approve',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
               ),
-              child: const Text('Approve', style: TextStyle(fontSize: 13)),
-            ),
-          ]),
-        ).animate().fadeIn(delay: Duration(milliseconds: 100 * index)).slideX(begin: 0.1);
+            )
+            .animate()
+            .fadeIn(delay: Duration(milliseconds: 100 * index))
+            .slideX(begin: 0.1);
       },
     );
   }
@@ -130,8 +156,11 @@ class _BlueTierTab extends StatelessWidget {
     if (vm.isLoading) return const Center(child: CircularProgressIndicator());
     if (vm.blueTierPending.isEmpty) {
       return Center(
-          child: Text('No pending blue-tier reviews',
-              style: TextStyle(color: Colors.grey.shade600)));
+        child: Text(
+          'No pending blue-tier reviews',
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -149,95 +178,136 @@ class _BlueTierCard extends StatelessWidget {
   final BlueTierVerification verification;
   const _BlueTierCard({required this.verification});
 
-  bool get _allRefsCalled => verification.references.every(
-      (r) => r.verificationStatus != 'pending');
+  bool get _allRefsCalled =>
+      verification.references.every((r) => r.verificationStatus != 'pending');
 
   @override
   Widget build(BuildContext context) {
     final v = verification;
     return GlassCard(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.12),
-            child: const Icon(Icons.workspace_premium,
-                color: Color(0xFF3B82F6)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: const Color(
+                  0xFF3B82F6,
+                ).withValues(alpha: 0.12),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  color: Color(0xFF3B82F6),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      v.workerName ?? 'Worker ${v.workerId.substring(0, 8)}…',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Submitted ${_daysAgo(v.submittedAt)} · Blue Tier Request',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (v.policeClearanceFrontUrl != null)
+                Tooltip(
+                  message: 'Police clearance uploaded',
+                  child: Icon(
+                    Icons.verified_user_outlined,
+                    color: Colors.green.shade600,
+                    size: 20,
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(v.workerName ?? 'Worker ${v.workerId.substring(0, 8)}…',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('Submitted ${_daysAgo(v.submittedAt)} · Blue Tier Request',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-            ]),
+          const SizedBox(height: 14),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          Text(
+            'References',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
-          if (v.policeClearanceFrontUrl != null)
-            Tooltip(
-              message: 'Police clearance uploaded',
-              child: Icon(Icons.verified_user_outlined,
-                  color: Colors.green.shade600, size: 20),
+          const SizedBox(height: 8),
+          ...v.references.asMap().entries.map(
+            (e) => _ReferenceRow(
+              verification: v,
+              reference: e.value,
+              index: e.key,
             ),
-        ]),
-        const SizedBox(height: 14),
-        const Divider(height: 1),
-        const SizedBox(height: 12),
-        Text('References',
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        ...v.references.asMap().entries.map((e) =>
-            _ReferenceRow(
-                verification: v, reference: e.value, index: e.key)),
-        const SizedBox(height: 14),
-        Row(children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => _showRejectDialog(context, v),
-              style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade700),
-              child: const Text('Reject'),
-            ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _allRefsCalled
-                  ? () => _approveWithConfirm(context, v)
-                  : null,
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6)),
-              child: const Text('Approve Blue Tier'),
-            ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _showRejectDialog(context, v),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                  ),
+                  child: const Text('Reject'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _allRefsCalled
+                      ? () => _approveWithConfirm(context, v)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                  ),
+                  child: const Text('Approve Blue Tier'),
+                ),
+              ),
+            ],
           ),
-        ]),
-        if (!_allRefsCalled)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text('Log all reference calls before approving.',
+          if (!_allRefsCalled)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'Log all reference calls before approving.',
                 style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
-                textAlign: TextAlign.center),
-          ),
-      ]),
+                textAlign: TextAlign.center,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Future<void> _approveWithConfirm(
-      BuildContext context, BlueTierVerification v) async {
-    final ok = await showConfirmDialog(context,
-        title: 'Approve Blue Tier',
-        message:
-            'Grant Blue Tier status to ${v.workerName ?? v.workerId}? This cannot be reversed without admin CLI.');
+    BuildContext context,
+    BlueTierVerification v,
+  ) async {
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Approve Blue Tier',
+      message:
+          'Grant Blue Tier status to ${v.workerName ?? v.workerId}? This cannot be reversed without admin CLI.',
+    );
     if (ok && context.mounted) {
       context.read<AdminBloc>().add(ApproveBlueTierUpgrade(v.workerId));
     }
   }
 
   Future<void> _showRejectDialog(
-      BuildContext context, BlueTierVerification v) async {
+    BuildContext context,
+    BlueTierVerification v,
+  ) async {
     final reasonCtrl = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
@@ -246,24 +316,27 @@ class _BlueTierCard extends StatelessWidget {
         content: TextField(
           controller: reasonCtrl,
           decoration: const InputDecoration(
-              labelText: 'Rejection reason', hintText: 'e.g. Reference refused'),
+            labelText: 'Rejection reason',
+            hintText: 'e.g. Reference refused',
+          ),
           maxLines: 3,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Reject',
-                  style: TextStyle(color: Colors.red.shade700))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Reject', style: TextStyle(color: Colors.red.shade700)),
+          ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      context
-          .read<AdminBloc>()
-          .add(RejectBlueTierUpgrade(v.workerId, reasonCtrl.text.trim()));
+      context.read<AdminBloc>().add(
+        RejectBlueTierUpgrade(v.workerId, reasonCtrl.text.trim()),
+      );
     }
   }
 
@@ -322,47 +395,71 @@ class _ReferenceRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: _statusColor.withValues(alpha: 0.3)),
       ),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Ref ${index + 1}: ${reference.name}',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-            Text('${reference.phone} · ${reference.relation}',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-            if (reference.callNotes != null && reference.callNotes!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text('Notes: ${reference.callNotes}',
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade700,
-                        fontStyle: FontStyle.italic)),
-              ),
-          ]),
-        ),
-        Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-            decoration: BoxDecoration(
-              color: _statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ref ${index + 1}: ${reference.name}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  '${reference.phone} · ${reference.relation}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+                if (reference.callNotes != null &&
+                    reference.callNotes!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Notes: ${reference.callNotes}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade700,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            child: Text(_statusLabel,
-                style: TextStyle(
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _statusLabel,
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: _statusColor)),
+                    color: _statusColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(60, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => _showLogCallDialog(context),
+                child: const Text('Log call', style: TextStyle(fontSize: 12)),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          TextButton(
-            style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(60, 28),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-            onPressed: () => _showLogCallDialog(context),
-            child: const Text('Log call', style: TextStyle(fontSize: 12)),
-          ),
-        ]),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -374,12 +471,14 @@ class _ReferenceRow extends StatelessWidget {
         onSubmit: (outcome, notes) async {
           final bloc = context.read<AdminBloc>();
           final done = bloc.stream.firstWhere((s) => !s.isLoading);
-          bloc.add(LogReferenceCallOutcome(
-            workerId: verification.workerId,
-            referenceIndex: index,
-            outcome: outcome,
-            notes: notes,
-          ));
+          bloc.add(
+            LogReferenceCallOutcome(
+              workerId: verification.workerId,
+              referenceIndex: index,
+              outcome: outcome,
+              notes: notes,
+            ),
+          );
           await done;
         },
       ),
@@ -421,30 +520,36 @@ class _LogCallDialogState extends State<_LogCallDialog> {
     return AlertDialog(
       title: Text('Log call: ${widget.reference.name}'),
       content: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('${widget.reference.phone} · ${widget.reference.relation}',
-              style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 16),
-          ..._outcomes.map((o) {
-            final (value, label) = o;
-            return RadioListTile<String>(
-              title: Text(label, style: const TextStyle(fontSize: 13)),
-              value: value,
-              groupValue: _outcome,
-              onChanged: (v) => setState(() => _outcome = v!),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-            );
-          }),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _notesCtrl,
-            decoration: const InputDecoration(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${widget.reference.phone} · ${widget.reference.relation}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            ..._outcomes.map((o) {
+              final (value, label) = o;
+              return RadioListTile<String>(
+                title: Text(label, style: const TextStyle(fontSize: 13)),
+                value: value,
+                groupValue: _outcome,
+                onChanged: (v) => setState(() => _outcome = v!),
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              );
+            }),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _notesCtrl,
+              decoration: const InputDecoration(
                 labelText: 'Call notes (optional)',
-                hintText: 'What did they say?'),
-            maxLines: 3,
-          ),
-        ]),
+                hintText: 'What did they say?',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -467,7 +572,8 @@ class _LogCallDialogState extends State<_LogCallDialog> {
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Text('Save'),
         ),
       ],

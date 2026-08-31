@@ -65,11 +65,13 @@ class _EmptyProfile extends StatelessWidget {
   }
 
   void _showEditDialog(
-      BuildContext context, CustomerProfile? profile, String uid) {
+    BuildContext context,
+    CustomerProfile? profile,
+    String uid,
+  ) {
     showDialog(
       context: context,
-      builder: (ctx) =>
-          _EditProfileDialog(profile: profile, uid: uid),
+      builder: (ctx) => _EditProfileDialog(profile: profile, uid: uid),
     );
   }
 }
@@ -94,32 +96,41 @@ class _ProfileBody extends StatelessWidget {
                 if (profile.email != null && profile.email!.isNotEmpty)
                   _InfoTile(Icons.email, 'Email', profile.email!),
                 if (profile.defaultAddress != null)
-                  _InfoTile(Icons.home, 'Default Address',
-                      profile.defaultAddress!.fullAddress),
+                  _InfoTile(
+                    Icons.home,
+                    'Default Address',
+                    profile.defaultAddress!.fullAddress,
+                  ),
                 if (profile.notes != null && profile.notes!.isNotEmpty)
                   _InfoTile(Icons.notes, 'Notes', profile.notes!),
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 8),
                 ListTile(
-                  leading: const Icon(Icons.book_online,
-                      color: Color(0xFF1B5E20)),
+                  leading: const Icon(
+                    Icons.book_online,
+                    color: Color(0xFF1B5E20),
+                  ),
                   title: const Text('My Bookings'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/customer/bookings'),
                   contentPadding: EdgeInsets.zero,
                 ),
                 ListTile(
-                  leading: const Icon(Icons.support_agent,
-                      color: Color(0xFF1B5E20)),
+                  leading: const Icon(
+                    Icons.support_agent,
+                    color: Color(0xFF1B5E20),
+                  ),
                   title: const Text('Support'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/support'),
                   contentPadding: EdgeInsets.zero,
                 ),
                 ListTile(
-                  leading: const Icon(Icons.devices_outlined,
-                      color: Color(0xFF1B5E20)),
+                  leading: const Icon(
+                    Icons.devices_outlined,
+                    color: Color(0xFF1B5E20),
+                  ),
                   title: const Text('Active Sessions'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/account/sessions'),
@@ -128,10 +139,11 @@ class _ProfileBody extends StatelessWidget {
                 const Divider(),
                 const SizedBox(height: 8),
                 ListTile(
-                  leading:
-                      const Icon(Icons.logout, color: Colors.red),
-                  title: const Text('Sign Out',
-                      style: TextStyle(color: Colors.red)),
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: Colors.red),
+                  ),
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
                     if (context.mounted) context.go('/auth');
@@ -170,9 +182,10 @@ class _ProfileHeader extends StatelessWidget {
                         ? profile.fullName[0].toUpperCase()
                         : '?',
                     style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1B5E20)),
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1B5E20),
+                    ),
                   )
                 : null,
           ),
@@ -180,13 +193,16 @@ class _ProfileHeader extends StatelessWidget {
           Text(
             profile.fullName,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(profile.mobileNumber,
-              style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          Text(
+            profile.mobileNumber,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => showDialog(
@@ -194,14 +210,14 @@ class _ProfileHeader extends StatelessWidget {
               builder: (ctx) =>
                   _EditProfileDialog(profile: profile, uid: profile.userId),
             ),
-            icon:
-                const Icon(Icons.edit, size: 16, color: Colors.white),
-            label: const Text('Edit Profile',
-                style: TextStyle(color: Colors.white)),
+            icon: const Icon(Icons.edit, size: 16, color: Colors.white),
+            label: const Text(
+              'Edit Profile',
+              style: TextStyle(color: Colors.white),
+            ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Colors.white54),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             ),
           ),
         ],
@@ -229,13 +245,16 @@ class _InfoTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 12,
-                        color: Colors.grey)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value,
-                    style: const TextStyle(fontSize: 15)),
+                Text(value, style: const TextStyle(fontSize: 15)),
               ],
             ),
           ),
@@ -284,8 +303,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           'id': widget.uid,
           'userId': widget.uid,
           'fullName': _nameCtrl.text.trim(),
-          'mobileNumber':
-              FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
+          'mobileNumber': FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
           'email': _emailCtrl.text.trim().isEmpty
               ? null
               : _emailCtrl.text.trim(),
@@ -304,8 +322,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -315,8 +334,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-          widget.profile == null ? 'Create Profile' : 'Edit Profile'),
+      title: Text(widget.profile == null ? 'Create Profile' : 'Edit Profile'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -334,8 +352,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
@@ -347,7 +366,10 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : const Text('Save'),
         ),
       ],

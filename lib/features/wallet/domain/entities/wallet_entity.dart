@@ -11,12 +11,7 @@ enum TransactionType {
 }
 
 /// Transaction status
-enum TransactionStatus {
-  pending,
-  completed,
-  failed,
-  cancelled,
-}
+enum TransactionStatus { pending, completed, failed, cancelled }
 
 /// Transaction entity
 ///
@@ -120,14 +115,7 @@ class TransactionEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        userId,
-        type,
-        amount,
-        status,
-        createdAt,
-      ];
+  List<Object?> get props => [id, userId, type, amount, status, createdAt];
 }
 
 /// Wallet entity
@@ -211,20 +199,24 @@ class WalletEntity extends Equatable {
   /// Get total credits for a period (cents)
   int getTotalCreditsForPeriod(DateTime start, DateTime end) {
     return getTransactionsForPeriod(start, end)
-        .where((t) =>
-            t.type == TransactionType.topUp ||
-            t.type == TransactionType.refund ||
-            t.type == TransactionType.referralReward ||
-            t.type == TransactionType.promoCredit)
+        .where(
+          (t) =>
+              t.type == TransactionType.topUp ||
+              t.type == TransactionType.refund ||
+              t.type == TransactionType.referralReward ||
+              t.type == TransactionType.promoCredit,
+        )
         .fold(0, (sum, t) => sum + t.amount);
   }
 
   /// Get total debits for a period (cents)
   int getTotalDebitsForPeriod(DateTime start, DateTime end) {
     return getTransactionsForPeriod(start, end)
-        .where((t) =>
-            t.type == TransactionType.payment ||
-            t.type == TransactionType.withdrawal)
+        .where(
+          (t) =>
+              t.type == TransactionType.payment ||
+              t.type == TransactionType.withdrawal,
+        )
         .fold(0, (sum, t) => sum + t.amount.abs());
   }
 
@@ -255,13 +247,7 @@ class WalletEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        userId,
-        balance,
-        heldBalance,
-        isActive,
-        isFrozen,
-      ];
+  List<Object?> get props => [userId, balance, heldBalance, isActive, isFrozen];
 }
 
 /// Extension for wallet operations

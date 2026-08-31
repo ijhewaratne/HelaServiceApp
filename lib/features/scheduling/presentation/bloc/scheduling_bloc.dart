@@ -128,11 +128,11 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
     required CheckWorkerAvailability checkAvailability,
     required FindAvailableWorkers findAvailableWorkers,
     required GenerateRecurringBookings generateRecurringBookings,
-  })  : _repository = repository,
-        _checkAvailability = checkAvailability,
-        _findAvailableWorkers = findAvailableWorkers,
-        _generateRecurringBookings = generateRecurringBookings,
-        super(SchedulingInitial()) {
+  }) : _repository = repository,
+       _checkAvailability = checkAvailability,
+       _findAvailableWorkers = findAvailableWorkers,
+       _generateRecurringBookings = generateRecurringBookings,
+       super(SchedulingInitial()) {
     on<LoadWorkerCalendar>(_onLoadCalendar);
     on<SaveWorkerCalendar>(_onSaveCalendar);
     on<CheckAvailability>(_onCheckAvailability);
@@ -141,7 +141,9 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
   }
 
   Future<void> _onLoadCalendar(
-      LoadWorkerCalendar event, Emitter<SchedulingState> emit) async {
+    LoadWorkerCalendar event,
+    Emitter<SchedulingState> emit,
+  ) async {
     emit(SchedulingLoading());
     final result = await _repository.getWorkerCalendar(event.workerId);
     result.fold(
@@ -151,7 +153,9 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
   }
 
   Future<void> _onSaveCalendar(
-      SaveWorkerCalendar event, Emitter<SchedulingState> emit) async {
+    SaveWorkerCalendar event,
+    Emitter<SchedulingState> emit,
+  ) async {
     emit(SchedulingLoading());
     final result = await _repository.setWorkerCalendar(event.calendar);
     result.fold(
@@ -161,7 +165,9 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
   }
 
   Future<void> _onCheckAvailability(
-      CheckAvailability event, Emitter<SchedulingState> emit) async {
+    CheckAvailability event,
+    Emitter<SchedulingState> emit,
+  ) async {
     emit(SchedulingLoading());
     final result = await _checkAvailability(
       CheckWorkerAvailabilityParams(
@@ -171,13 +177,15 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
     );
     result.fold(
       (f) => emit(SchedulingError(f.message)),
-      (ok) => emit(AvailabilityResult(
-          isAvailable: ok, workerId: event.workerId)),
+      (ok) =>
+          emit(AvailabilityResult(isAvailable: ok, workerId: event.workerId)),
     );
   }
 
   Future<void> _onFindWorkers(
-      FindWorkers event, Emitter<SchedulingState> emit) async {
+    FindWorkers event,
+    Emitter<SchedulingState> emit,
+  ) async {
     emit(SchedulingLoading());
     final result = await _findAvailableWorkers(
       FindAvailableWorkersParams(
@@ -194,7 +202,9 @@ class SchedulingBloc extends Bloc<SchedulingEvent, SchedulingState> {
   }
 
   Future<void> _onExpandRecurring(
-      ExpandRecurringBooking event, Emitter<SchedulingState> emit) async {
+    ExpandRecurringBooking event,
+    Emitter<SchedulingState> emit,
+  ) async {
     emit(SchedulingLoading());
     final result = await _generateRecurringBookings(
       GenerateRecurringBookingsParams(

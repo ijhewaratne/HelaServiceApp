@@ -22,7 +22,7 @@ class _ContractAcceptancePageState extends State<ContractAcceptancePage> {
     //   type: AuditEventType.contractAccepted,
     //   payload: {'timestamp': DateTime.now().toIso8601String(), 'ipAddress': '192.168.1.1'},
     // );
-    
+
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {

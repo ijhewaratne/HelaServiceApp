@@ -9,11 +9,7 @@ enum ReferralStatus {
 }
 
 /// Referral reward type
-enum RewardType {
-  walletCredit,
-  discountCode,
-  freeService,
-}
+enum RewardType { walletCredit, discountCode, freeService }
 
 /// Referral entity
 ///
@@ -114,12 +110,12 @@ class ReferralEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        referrerId,
-        referredUserId,
-        referralCode,
-        status,
-      ];
+    id,
+    referrerId,
+    referredUserId,
+    referralCode,
+    status,
+  ];
 }
 
 /// User referral info
@@ -175,12 +171,12 @@ class UserReferralInfo extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        referralCode,
-        totalReferrals,
-        successfulReferrals,
-        totalRewardsEarned,
-      ];
+    userId,
+    referralCode,
+    totalReferrals,
+    successfulReferrals,
+    totalRewardsEarned,
+  ];
 }
 
 /// Referral leaderboard entry
@@ -221,10 +217,12 @@ class ReferralStatistics {
 
   factory ReferralStatistics.fromReferrals(List<ReferralEntity> referrals) {
     final total = referrals.length;
-    final successful =
-        referrals.where((r) => r.status == ReferralStatus.completed).length;
-    final pending =
-        referrals.where((r) => r.status == ReferralStatus.pending).length;
+    final successful = referrals
+        .where((r) => r.status == ReferralStatus.completed)
+        .length;
+    final pending = referrals
+        .where((r) => r.status == ReferralStatus.pending)
+        .length;
     final totalRewards = referrals
         .where((r) => r.isRewarded)
         .fold(0.0, (sum, r) => sum + r.rewardAmount);

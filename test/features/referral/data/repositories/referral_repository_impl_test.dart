@@ -35,8 +35,7 @@ void main() {
 
   group('ReferralRepositoryImpl', () {
     group('applyReferralCode', () {
-      test(
-          'returns a failure even when a valid referral code document exists '
+      test('returns a failure even when a valid referral code document exists '
           '(not yet implemented)', () async {
         await firestore.collection('referral_codes').doc('HELREFCODE1').set({
           'referrerId': 'referrer_user_1',
@@ -49,37 +48,35 @@ void main() {
         );
 
         expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<GenericFailure>());
-            expect(failure.message, 'Not implemented');
-          },
-          (_) => fail('Expected a failure since applyReferralCode is a stub'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<GenericFailure>());
+          expect(failure.message, 'Not implemented');
+        }, (_) => fail('Expected a failure since applyReferralCode is a stub'));
 
         // No referral document should have been created as a side effect.
         final referrals = await firestore.collection('referrals').get();
         expect(referrals.docs, isEmpty);
       });
 
-      test('returns a failure for a nonexistent/invalid referral code',
-          () async {
-        final result = await repository.applyReferralCode(
-          referralCode: 'DOES_NOT_EXIST',
-          newUserId: 'new_user_2',
-        );
+      test(
+        'returns a failure for a nonexistent/invalid referral code',
+        () async {
+          final result = await repository.applyReferralCode(
+            referralCode: 'DOES_NOT_EXIST',
+            newUserId: 'new_user_2',
+          );
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<GenericFailure>()),
-          (_) => fail('Expected a failure for an invalid referral code'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<GenericFailure>()),
+            (_) => fail('Expected a failure for an invalid referral code'),
+          );
+        },
+      );
     });
 
     group('isReferralCodeValid', () {
-      test(
-          'returns false for a seeded, existing referral code '
+      test('returns false for a seeded, existing referral code '
           '(lookup not yet implemented)', () async {
         await firestore.collection('referral_codes').doc('HELVALID123').set({
           'referrerId': 'referrer_user_2',
@@ -102,8 +99,7 @@ void main() {
     });
 
     group('getReferrerId', () {
-      test(
-          'returns null for a seeded referral code '
+      test('returns null for a seeded referral code '
           '(reverse lookup not yet implemented)', () async {
         await firestore.collection('referral_codes').doc('HELVALID123').set({
           'referrerId': 'referrer_user_2',
@@ -131,10 +127,8 @@ void main() {
     });
 
     group('getUserReferralInfo', () {
-      test(
-          'returns a failure even when the user already has referral '
-          'documents in Firestore (aggregation not yet implemented)',
-          () async {
+      test('returns a failure even when the user already has referral '
+          'documents in Firestore (aggregation not yet implemented)', () async {
         await firestore.collection('users').doc('user_1').set({
           'referralCode': 'HELUSER1000',
         });
@@ -175,8 +169,7 @@ void main() {
     });
 
     group('getReferralStatistics', () {
-      test(
-          'returns a failure even with realistic seeded referral data '
+      test('returns a failure even with realistic seeded referral data '
           '(statistics aggregation not yet implemented)', () async {
         // Seed a realistic mix of referral outcomes for the user.
         await firestore.collection('referrals').doc('ref_a').set({
@@ -220,34 +213,37 @@ void main() {
     });
 
     group('getUserReferrals', () {
-      test('returns an empty list even when referrals exist for the user',
-          () async {
-        await firestore.collection('referrals').doc('ref_1').set({
-          'referrerId': 'user_1',
-          'status': 'pending',
-        });
+      test(
+        'returns an empty list even when referrals exist for the user',
+        () async {
+          await firestore.collection('referrals').doc('ref_1').set({
+            'referrerId': 'user_1',
+            'status': 'pending',
+          });
 
-        final result = await repository.getUserReferrals('user_1');
+          final result = await repository.getUserReferrals('user_1');
 
-        expect(result.isRight(), isTrue);
-        expect(result.getOrElse(() => [ReferralEntity.empty]), isEmpty);
-      });
+          expect(result.isRight(), isTrue);
+          expect(result.getOrElse(() => [ReferralEntity.empty]), isEmpty);
+        },
+      );
     });
 
     group('getLeaderboard', () {
-      test('returns an empty list regardless of Firestore contents',
-          () async {
+      test('returns an empty list regardless of Firestore contents', () async {
         final result = await repository.getLeaderboard();
 
         expect(result.isRight(), isTrue);
         expect(
-          result.getOrElse(() => [
-                const ReferralLeaderboardEntry(
-                  userId: 'x',
-                  referralCount: 1,
-                  totalRewards: 1,
-                ),
-              ]),
+          result.getOrElse(
+            () => [
+              const ReferralLeaderboardEntry(
+                userId: 'x',
+                referralCount: 1,
+                totalRewards: 1,
+              ),
+            ],
+          ),
           isEmpty,
         );
       });
@@ -295,22 +291,23 @@ void main() {
     });
 
     group('processPendingRewards', () {
-      test('returns 0 processed rewards regardless of pending referrals',
-          () async {
-        await firestore.collection('referrals').doc('ref_1').set({
-          'status': 'completed',
-        });
+      test(
+        'returns 0 processed rewards regardless of pending referrals',
+        () async {
+          await firestore.collection('referrals').doc('ref_1').set({
+            'status': 'completed',
+          });
 
-        final result = await repository.processPendingRewards();
+          final result = await repository.processPendingRewards();
 
-        expect(result.isRight(), isTrue);
-        expect(result.getOrElse(() => -1), 0);
-      });
+          expect(result.isRight(), isTrue);
+          expect(result.getOrElse(() => -1), 0);
+        },
+      );
     });
 
     group('getAllReferrals', () {
-      test('returns an empty list regardless of Firestore contents',
-          () async {
+      test('returns an empty list regardless of Firestore contents', () async {
         await firestore.collection('referrals').doc('ref_1').set({
           'referrerId': 'user_1',
         });

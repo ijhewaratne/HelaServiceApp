@@ -37,20 +37,20 @@ class CheckRecord extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'timestamp': Timestamp.fromDate(timestamp),
-        'latitude': latitude,
-        'longitude': longitude,
-        'photoUrl': photoUrl,
-        'notes': notes,
-      };
+    'timestamp': Timestamp.fromDate(timestamp),
+    'latitude': latitude,
+    'longitude': longitude,
+    'photoUrl': photoUrl,
+    'notes': notes,
+  };
 
   factory CheckRecord.fromJson(Map<String, dynamic> json) => CheckRecord(
-        timestamp: (json['timestamp'] as Timestamp).toDate(),
-        latitude: (json['latitude'] as num?)?.toDouble(),
-        longitude: (json['longitude'] as num?)?.toDouble(),
-        photoUrl: json['photoUrl'] as String?,
-        notes: json['notes'] as String?,
-      );
+    timestamp: (json['timestamp'] as Timestamp).toDate(),
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+    photoUrl: json['photoUrl'] as String?,
+    notes: json['notes'] as String?,
+  );
 
   @override
   List<Object?> get props => [timestamp, latitude, longitude];
@@ -72,7 +72,7 @@ class Booking extends Equatable {
   final int? durationHours;
   final double estimatedPrice;
   final double? finalPrice;
-  final double heldAmount;      // amount locked in wallet pending completion
+  final double heldAmount; // amount locked in wallet pending completion
   final String? notes;
   final String? cancellationReason;
   // Check-in / check-out
@@ -220,10 +220,12 @@ class Booking extends Equatable {
       'checkIn': checkIn?.toJson(),
       'checkOut': checkOut?.toJson(),
       'startedAt': startedAt != null ? Timestamp.fromDate(startedAt!) : null,
-      'completedAt':
-          completedAt != null ? Timestamp.fromDate(completedAt!) : null,
-      'cancelledAt':
-          cancelledAt != null ? Timestamp.fromDate(cancelledAt!) : null,
+      'completedAt': completedAt != null
+          ? Timestamp.fromDate(completedAt!)
+          : null,
+      'cancelledAt': cancelledAt != null
+          ? Timestamp.fromDate(cancelledAt!)
+          : null,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'metadata': metadata,
@@ -243,21 +245,19 @@ class Booking extends Equatable {
       serviceType: _parseServiceType(json['serviceType'] as String?),
       serviceCatalogId: json['serviceCatalogId'] as String?,
       status: _parseBookingStatus(json['status'] as String?),
-      address:
-          Address.fromJson(json['address'] as Map<String, dynamic>? ?? {}),
+      address: Address.fromJson(json['address'] as Map<String, dynamic>? ?? {}),
       schedule: json['schedule'] != null
-          ? BookingSchedule.fromJson(
-              json['schedule'] as Map<String, dynamic>)
+          ? BookingSchedule.fromJson(json['schedule'] as Map<String, dynamic>)
           : null,
       scheduledDate: json['scheduledDate'] is Timestamp
           ? (json['scheduledDate'] as Timestamp).toDate()
           : DateTime.parse(
               json['scheduledDate'] as String? ??
-                  DateTime.now().toIso8601String()),
+                  DateTime.now().toIso8601String(),
+            ),
       scheduledTime: json['scheduledTime'] as String?,
       durationHours: json['durationHours'] as int?,
-      estimatedPrice:
-          (json['estimatedPrice'] as num?)?.toDouble() ?? 0.0,
+      estimatedPrice: (json['estimatedPrice'] as num?)?.toDouble() ?? 0.0,
       finalPrice: (json['finalPrice'] as num?)?.toDouble(),
       heldAmount: (json['heldAmount'] as num?)?.toDouble() ?? 0.0,
       notes: json['notes'] as String?,
@@ -274,8 +274,8 @@ class Booking extends Equatable {
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
           : DateTime.parse(
-              json['createdAt'] as String? ??
-                  DateTime.now().toIso8601String()),
+              json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+            ),
       updatedAt: _parseTimestamp(json['updatedAt']),
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
@@ -290,37 +290,63 @@ class Booking extends Equatable {
 
   static ServiceType _parseServiceType(String? type) {
     switch (type) {
-      case 'cleaning':   return ServiceType.cleaning;
-      case 'plumbing':   return ServiceType.plumbing;
-      case 'electrical': return ServiceType.electrical;
-      case 'acRepair':   return ServiceType.acRepair;
-      case 'gardening':  return ServiceType.gardening;
-      case 'babysitting':return ServiceType.babysitting;
-      case 'elderlyCare':return ServiceType.elderlyCare;
-      case 'cooking':    return ServiceType.cooking;
-      case 'laundry':    return ServiceType.laundry;
-      default:           return ServiceType.other;
+      case 'cleaning':
+        return ServiceType.cleaning;
+      case 'plumbing':
+        return ServiceType.plumbing;
+      case 'electrical':
+        return ServiceType.electrical;
+      case 'acRepair':
+        return ServiceType.acRepair;
+      case 'gardening':
+        return ServiceType.gardening;
+      case 'babysitting':
+        return ServiceType.babysitting;
+      case 'elderlyCare':
+        return ServiceType.elderlyCare;
+      case 'cooking':
+        return ServiceType.cooking;
+      case 'laundry':
+        return ServiceType.laundry;
+      default:
+        return ServiceType.other;
     }
   }
 
   static BookingStatus _parseBookingStatus(String? status) {
     switch (status) {
-      case 'pending':        return BookingStatus.pending;
-      case 'confirmed':      return BookingStatus.confirmed;
-      case 'workerAssigned': return BookingStatus.workerAssigned;
-      case 'workerEnRoute':  return BookingStatus.workerEnRoute;
-      case 'workerArrived':  return BookingStatus.workerArrived;
-      case 'inProgress':     return BookingStatus.inProgress;
-      case 'completed':      return BookingStatus.completed;
-      case 'cancelled':      return BookingStatus.cancelled;
-      case 'disputed':       return BookingStatus.disputed;
-      default:               return BookingStatus.draft;
+      case 'pending':
+        return BookingStatus.pending;
+      case 'confirmed':
+        return BookingStatus.confirmed;
+      case 'workerAssigned':
+        return BookingStatus.workerAssigned;
+      case 'workerEnRoute':
+        return BookingStatus.workerEnRoute;
+      case 'workerArrived':
+        return BookingStatus.workerArrived;
+      case 'inProgress':
+        return BookingStatus.inProgress;
+      case 'completed':
+        return BookingStatus.completed;
+      case 'cancelled':
+        return BookingStatus.cancelled;
+      case 'disputed':
+        return BookingStatus.disputed;
+      default:
+        return BookingStatus.draft;
     }
   }
 
   @override
-  List<Object?> get props =>
-      [id, customerId, workerId, serviceType, status, scheduledDate];
+  List<Object?> get props => [
+    id,
+    customerId,
+    workerId,
+    serviceType,
+    status,
+    scheduledDate,
+  ];
 
   @override
   String toString() =>

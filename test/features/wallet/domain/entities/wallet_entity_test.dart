@@ -3,21 +3,22 @@ import 'package:home_service_app/features/wallet/domain/entities/wallet_entity.d
 
 void main() {
   group('WalletEntity', () {
-    test('availableBalance is derived from balance - heldBalance, in cents',
-        () {
-      final wallet = WalletEntity(
-        userId: 'u1',
-        balance: 150000,
-        heldBalance: 50000,
-        createdAt: DateTime(2026, 1, 1),
-      );
+    test(
+      'availableBalance is derived from balance - heldBalance, in cents',
+      () {
+        final wallet = WalletEntity(
+          userId: 'u1',
+          balance: 150000,
+          heldBalance: 50000,
+          createdAt: DateTime(2026, 1, 1),
+        );
 
-      expect(wallet.availableBalance, 100000);
-      expect(wallet.availableBalanceLKR, 1000.0);
-    });
+        expect(wallet.availableBalance, 100000);
+        expect(wallet.availableBalanceLKR, 1000.0);
+      },
+    );
 
-    test('formattedBalance renders cents as an LKR string with 2 decimals',
-        () {
+    test('formattedBalance renders cents as an LKR string with 2 decimals', () {
       final wallet = WalletEntity(
         userId: 'u1',
         balance: 123456,

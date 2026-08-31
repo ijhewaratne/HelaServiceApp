@@ -24,7 +24,7 @@ class ColomboZones {
     radiusKm: 2.5,
     allowedServices: ['cleaning', 'babysitting'],
   );
-  
+
   static final Zone zoneB = Zone(
     id: 'colombo_07',
     name: "Cinnamon Gardens",

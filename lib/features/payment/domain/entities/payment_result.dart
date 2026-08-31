@@ -10,6 +10,7 @@ class PaymentResult extends Equatable {
   final double? amount;
   final String? currency;
   final DateTime? processedAt;
+
   /// PayHere checkout URL returned when a payment is initiated but not yet
   /// confirmed. The UI should launch this URL and then poll for status.
   final String? checkoutUrl;
@@ -116,16 +117,16 @@ class PaymentResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        success,
-        paymentId,
-        orderId,
-        message,
-        status,
-        amount,
-        currency,
-        processedAt,
-        checkoutUrl,
-      ];
+    success,
+    paymentId,
+    orderId,
+    message,
+    status,
+    amount,
+    currency,
+    processedAt,
+    checkoutUrl,
+  ];
 }
 
 /// Payment status enumeration

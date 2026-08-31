@@ -15,22 +15,23 @@ class ServiceRequestPhoto extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'requestId': requestId,
-        'photoUrl': photoUrl,
-        'uploadedAt': Timestamp.fromDate(uploadedAt),
-      };
+    'id': id,
+    'requestId': requestId,
+    'photoUrl': photoUrl,
+    'uploadedAt': Timestamp.fromDate(uploadedAt),
+  };
 
-  factory ServiceRequestPhoto.fromJson(Map<String, dynamic> json,
-          {String? id}) =>
-      ServiceRequestPhoto(
-        id: id ?? json['id'] as String? ?? '',
-        requestId: json['requestId'] as String? ?? '',
-        photoUrl: json['photoUrl'] as String? ?? '',
-        uploadedAt: json['uploadedAt'] is Timestamp
-            ? (json['uploadedAt'] as Timestamp).toDate()
-            : DateTime.now(),
-      );
+  factory ServiceRequestPhoto.fromJson(
+    Map<String, dynamic> json, {
+    String? id,
+  }) => ServiceRequestPhoto(
+    id: id ?? json['id'] as String? ?? '',
+    requestId: json['requestId'] as String? ?? '',
+    photoUrl: json['photoUrl'] as String? ?? '',
+    uploadedAt: json['uploadedAt'] is Timestamp
+        ? (json['uploadedAt'] as Timestamp).toDate()
+        : DateTime.now(),
+  );
 
   factory ServiceRequestPhoto.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

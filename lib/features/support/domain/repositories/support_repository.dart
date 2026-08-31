@@ -4,7 +4,9 @@ import '../entities/support_ticket.dart';
 
 abstract class SupportRepository {
   Future<Either<Failure, SupportTicket>> createTicket(SupportTicket ticket);
-  Future<Either<Failure, List<SupportTicket>>> getCustomerTickets(String customerId);
+  Future<Either<Failure, List<SupportTicket>>> getCustomerTickets(
+    String customerId,
+  );
   Future<Either<Failure, List<SupportTicket>>> getAllOpenTickets();
   Future<Either<Failure, void>> respondToTicket({
     required String ticketId,

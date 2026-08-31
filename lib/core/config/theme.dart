@@ -3,20 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// App Theme Configuration
-/// 
+///
 /// Phase 5: UI/UX Polish - Dark Mode Implementation
 class AppTheme {
   // Brand Colors
   static const Color primaryColor = Color(0xFF0F7A7A);
   static const Color primaryLight = Color(0xFF14B8B8);
   static const Color primaryDark = Color(0xFF0A5252);
-  
+
   // Semantic Colors
   static const Color successColor = Color(0xFF22C55E);
   static const Color warningColor = Color(0xFFF59E0B);
   static const Color errorColor = Color(0xFFEF4444);
   static const Color infoColor = Color(0xFF3B82F6);
-  
+
   // Light Theme Colors
   static const Color lightBackground = Color(0xFFF8FAFC);
   static const Color lightSurface = Colors.white;
@@ -24,7 +24,7 @@ class AppTheme {
   static const Color lightTextPrimary = Color(0xFF1E293B);
   static const Color lightTextSecondary = Color(0xFF64748B);
   static const Color lightBorder = Color(0xFFE2E8F0);
-  
+
   // Dark Theme Colors
   static const Color darkBackground = Color(0xFF0F172A);
   static const Color darkSurface = Color(0xFF1E293B);
@@ -74,15 +74,15 @@ class AppTheme {
   }) {
     final isDark = brightness == Brightness.dark;
     final baseTextTheme = GoogleFonts.outfitTextTheme(
-      brightness == Brightness.dark 
-          ? ThemeData.dark().textTheme 
+      brightness == Brightness.dark
+          ? ThemeData.dark().textTheme
           : ThemeData.light().textTheme,
     );
 
     return ThemeData(
       brightness: brightness,
       useMaterial3: true,
-      
+
       // Color Scheme
       colorScheme: ColorScheme(
         brightness: brightness,
@@ -211,13 +211,15 @@ class AppTheme {
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           elevation: isDark ? 0 : 2,
-          shadowColor: isDark ? Colors.transparent : primaryColor.withOpacity(0.3),
+          shadowColor: isDark
+              ? Colors.transparent
+              : primaryColor.withOpacity(0.3),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           textStyle: GoogleFonts.outfit(
-            fontSize: 16, 
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -255,7 +257,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? darkSurface : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: borderColor),
@@ -286,14 +291,13 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: isDark ? 0 : 1,
-        shadowColor: isDark ? Colors.transparent : Colors.black.withOpacity(0.1),
+        shadowColor: isDark
+            ? Colors.transparent
+            : Colors.black.withOpacity(0.1),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: isDark ? darkBorder : lightBorder,
-            width: 1,
-          ),
+          side: BorderSide(color: isDark ? darkBorder : lightBorder, width: 1),
         ),
       ),
 
@@ -303,9 +307,7 @@ class AppTheme {
         selectedTileColor: primaryColor.withOpacity(0.1),
         iconColor: textSecondary,
         textColor: textPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       // Divider
@@ -331,18 +333,14 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: isDark ? 0 : 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
       // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: surfaceColor,
         elevation: isDark ? 0 : 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: GoogleFonts.outfit(
           color: textPrimary,
           fontSize: 20,
@@ -359,19 +357,17 @@ class AppTheme {
         backgroundColor: surfaceColor,
         elevation: isDark ? 0 : 8,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
       ),
 
       // Snackbar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? darkCard : lightTextPrimary,
-        contentTextStyle: GoogleFonts.outfit(color: isDark ? lightTextPrimary : Colors.white),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+        contentTextStyle: GoogleFonts.outfit(
+          color: isDark ? lightTextPrimary : Colors.white,
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),
 

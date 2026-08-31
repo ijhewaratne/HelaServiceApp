@@ -60,11 +60,11 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
               .collection('worker_locations')
               .doc(_workerId)
               .set({
-            'latitude': pos.latitude,
-            'longitude': pos.longitude,
-            'updatedAt': FieldValue.serverTimestamp(),
-            'activeJobId': widget.jobId,
-          });
+                'latitude': pos.latitude,
+                'longitude': pos.longitude,
+                'updatedAt': FieldValue.serverTimestamp(),
+                'activeJobId': widget.jobId,
+              });
         }
       } catch (_) {}
     });
@@ -111,9 +111,9 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
     if (picked == null) return null;
     final file = File(picked.path);
     try {
-      final ref = sl<FirebaseStorage>()
-          .ref()
-          .child('bookings/${widget.jobId}/$label.jpg');
+      final ref = sl<FirebaseStorage>().ref().child(
+        'bookings/${widget.jobId}/$label.jpg',
+      );
       await ref.putFile(file);
       return await ref.getDownloadURL();
     } catch (_) {
@@ -134,12 +134,11 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
           .collection('bookings')
           .doc(widget.jobId)
           .update({
-        'status': 'workerArrived',
-        'updatedAt': FieldValue.serverTimestamp(),
-        if (pos != null)
-          'actualArrivalLocation':
-              GeoPoint(pos.latitude, pos.longitude),
-      });
+            'status': 'workerArrived',
+            'updatedAt': FieldValue.serverTimestamp(),
+            if (pos != null)
+              'actualArrivalLocation': GeoPoint(pos.latitude, pos.longitude),
+          });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -155,17 +154,17 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
           .collection('bookings')
           .doc(widget.jobId)
           .update({
-        'status': 'inProgress',
-        'startedAt': Timestamp.fromDate(now),
-        'checkIn': {
-          'timestamp': Timestamp.fromDate(now),
-          'latitude': pos?.latitude,
-          'longitude': pos?.longitude,
-          'photoUrl': photoUrl,
-          'notes': null,
-        },
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'status': 'inProgress',
+            'startedAt': Timestamp.fromDate(now),
+            'checkIn': {
+              'timestamp': Timestamp.fromDate(now),
+              'latitude': pos?.latitude,
+              'longitude': pos?.longitude,
+              'photoUrl': photoUrl,
+              'notes': null,
+            },
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
       _startElapsedTimer(now);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -206,18 +205,18 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
           .collection('bookings')
           .doc(widget.jobId)
           .update({
-        'status': 'completed',
-        'completedAt': Timestamp.fromDate(now),
-        'checkOut': {
-          'timestamp': Timestamp.fromDate(now),
-          'latitude': pos?.latitude,
-          'longitude': pos?.longitude,
-          'photoUrl': photoUrl,
-          'notes': null,
-        },
-        'billableHours': billableHours,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'status': 'completed',
+            'completedAt': Timestamp.fromDate(now),
+            'checkOut': {
+              'timestamp': Timestamp.fromDate(now),
+              'latitude': pos?.latitude,
+              'longitude': pos?.longitude,
+              'photoUrl': photoUrl,
+              'notes': null,
+            },
+            'billableHours': billableHours,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
       _elapsedTimer?.cancel();
       _locationTimer?.cancel();
     } finally {
@@ -242,13 +241,12 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor),
+              backgroundColor: AppTheme.errorColor,
+            ),
             onPressed: () async {
               Navigator.pop(context);
               final pos = await _getPosition();
-              await sl<FirebaseFirestore>()
-                  .collection('safety_alerts')
-                  .add({
+              await sl<FirebaseFirestore>().collection('safety_alerts').add({
                 'workerId': _workerId,
                 'bookingId': widget.jobId,
                 'customerId': '',
@@ -256,10 +254,8 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
                 'severity': 'critical',
                 'message': 'Worker triggered SOS during an active job.',
                 'status': 'open',
-                if (pos != null)
-                  'latitude': pos.latitude,
-                if (pos != null)
-                  'longitude': pos.longitude,
+                if (pos != null) 'latitude': pos.latitude,
+                if (pos != null) 'longitude': pos.longitude,
                 'createdAt': FieldValue.serverTimestamp(),
               });
               if (mounted) {
@@ -323,7 +319,10 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
   }
 
   Widget _buildActiveView(
-      BuildContext context, Booking booking, CheckRecord? checkIn) {
+    BuildContext context,
+    Booking booking,
+    CheckRecord? checkIn,
+  ) {
     final stage = _stage(booking.status);
     final stageColor = _stageColor(stage);
 
@@ -389,8 +388,7 @@ class _ActiveJobPageState extends State<ActiveJobPage> {
                 booking: booking,
                 checkIn: checkIn,
                 isSubmitting: _isSubmitting,
-                onMarkArrived: () =>
-                    _markArrived(booking.status.name),
+                onMarkArrived: () => _markArrived(booking.status.name),
                 onCheckIn: _checkIn,
                 onCheckOut: checkIn != null ? () => _checkOut(checkIn) : null,
               ),
@@ -490,7 +488,9 @@ class _StageBar extends StatelessWidget {
                         : Text(
                             '${i + 1}',
                             style: const TextStyle(
-                                fontSize: 11, color: Colors.white),
+                              fontSize: 11,
+                              color: Colors.white,
+                            ),
                           ),
                   ),
                 ),
@@ -547,8 +547,7 @@ class _ElapsedCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.successColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border:
-            Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -557,18 +556,22 @@ class _ElapsedCard extends StatelessWidget {
             children: [
               Icon(Icons.timer, color: AppTheme.successColor, size: 20),
               SizedBox(width: 8),
-              Text('Time elapsed',
-                  style: TextStyle(
-                      color: AppTheme.successColor, fontWeight: FontWeight.w500)),
+              Text(
+                'Time elapsed',
+                style: TextStyle(
+                  color: AppTheme.successColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
           Text(
             display,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppTheme.successColor,
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+              color: AppTheme.successColor,
+              fontWeight: FontWeight.bold,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ],
       ),
@@ -597,8 +600,7 @@ class _BookingDetailsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Job Details',
-              style: Theme.of(context).textTheme.titleSmall),
+          Text('Job Details', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 12),
           _DetailRow(
             icon: Icons.home_repair_service,
@@ -653,16 +655,15 @@ class _DetailRow extends StatelessWidget {
           const SizedBox(width: 10),
           SizedBox(
             width: 80,
-            child: Text(label,
-                style: Theme.of(context).textTheme.bodySmall),
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
           ),
           Expanded(
             child: Text(
               value,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: valueColor,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: valueColor,
+              ),
             ),
           ),
         ],
@@ -695,14 +696,24 @@ class _PhotoProofCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.photo_camera, size: 16, color: AppTheme.successColor),
+              const Icon(
+                Icons.photo_camera,
+                size: 16,
+                color: AppTheme.successColor,
+              ),
               const SizedBox(width: 6),
-              Text(label,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppTheme.successColor,
-                      )),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: AppTheme.successColor),
+              ),
               const Spacer(),
-              const Icon(Icons.check_circle, size: 16, color: AppTheme.successColor),
+              const Icon(
+                Icons.check_circle,
+                size: 16,
+                color: AppTheme.successColor,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -715,7 +726,9 @@ class _PhotoProofCard extends StatelessWidget {
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 height: 80,
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.2),
                 child: const Center(child: Icon(Icons.broken_image)),
               ),
             ),
@@ -742,26 +755,29 @@ class _InstructionsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.warningColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: AppTheme.warningColor.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline,
-              color: AppTheme.warningColor, size: 18),
+          const Icon(
+            Icons.info_outline,
+            color: AppTheme.warningColor,
+            size: 18,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Customer instructions',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.warningColor,
-                        )),
+                Text(
+                  'Customer instructions',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppTheme.warningColor,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(notes,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(notes, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -838,7 +854,8 @@ class _ActionButton extends StatelessWidget {
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('Check In — Take Photo + GPS Stamp'),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.successColor),
+                  backgroundColor: AppTheme.successColor,
+                ),
                 onPressed: onCheckIn,
               ),
             ),
@@ -861,7 +878,8 @@ class _ActionButton extends StatelessWidget {
                 icon: const Icon(Icons.stop_circle_outlined),
                 label: const Text('Complete Job — Check Out'),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.warningColor),
+                  backgroundColor: AppTheme.warningColor,
+                ),
                 onPressed: onCheckOut,
               ),
             ),
@@ -907,15 +925,17 @@ class _CompletedView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle,
-                  color: AppTheme.successColor, size: 80),
+              const Icon(
+                Icons.check_circle,
+                color: AppTheme.successColor,
+                size: 80,
+              ),
               const SizedBox(height: 20),
               Text(
                 'Job Complete!',
-                style: Theme.of(context)
-                    .textTheme
-                    .displaySmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -979,9 +999,9 @@ class _SummaryTile extends StatelessWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: bold ? FontWeight.bold : FontWeight.w600,
-                  color: valueColor,
-                ),
+              fontWeight: bold ? FontWeight.bold : FontWeight.w600,
+              color: valueColor,
+            ),
           ),
         ],
       ),

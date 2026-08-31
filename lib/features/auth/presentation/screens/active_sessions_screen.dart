@@ -46,8 +46,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -66,10 +67,12 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
     if (!mounted) return;
 
     result.fold(
-      (failure) => ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed: ${failure.message}'))),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Other devices signed out'))),
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed: ${failure.message}'))),
+      (_) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Other devices signed out'))),
     );
     setState(() {
       _signingOutOthers = false;
@@ -114,8 +117,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           final sessions = snap.data ?? [];
-          final activeSessions =
-              sessions.where((s) => s.revokedAt == null).toList();
+          final activeSessions = sessions
+              .where((s) => s.revokedAt == null)
+              .toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -124,40 +128,49 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 40),
-                    child: Text('No session history yet',
-                        style: TextStyle(color: Colors.grey.shade600)),
+                    child: Text(
+                      'No session history yet',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
                   ),
                 )
               else
-                ...activeSessions.map((session) => Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        leading: Icon(_platformIcon(session.platform)),
-                        title: Row(
-                          children: [
-                            Text(_platformLabel(session.platform)),
-                            if (session.isCurrent) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text('This device',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.green.shade800)),
+                ...activeSessions.map(
+                  (session) => Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      leading: Icon(_platformIcon(session.platform)),
+                      title: Row(
+                        children: [
+                          Text(_platformLabel(session.platform)),
+                          if (session.isCurrent) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
                               ),
-                            ],
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'This device',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.green.shade800,
+                                ),
+                              ),
+                            ),
                           ],
-                        ),
-                        subtitle: Text(
-                          'Last active ${DateFormat.yMMMd().add_jm().format(session.lastActiveAt)}',
-                        ),
+                        ],
                       ),
-                    )),
+                      subtitle: Text(
+                        'Last active ${DateFormat.yMMMd().add_jm().format(session.lastActiveAt)}',
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16),
               if (activeSessions.length > 1)
                 ElevatedButton.icon(
@@ -166,12 +179,14 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2))
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.logout),
                   label: const Text('Sign out other devices'),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white),
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
                 ),
             ],
           );

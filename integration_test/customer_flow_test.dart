@@ -26,7 +26,7 @@ void main() {
       expect(find.text('Schedule'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.calendar_today));
       await tester.pumpAndSettle();
-      
+
       // Select tomorrow
       final tomorrow = DateTime.now().add(const Duration(days: 1));
       await tester.tap(find.text('${tomorrow.day}'));
@@ -41,7 +41,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 4: Enter address
-      await tester.enterText(find.byType(TextFormField).first, '45/A, Galle Road, Colombo 03');
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        '45/A, Galle Road, Colombo 03',
+      );
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
@@ -78,7 +81,7 @@ void main() {
 
       // Verify bookings screen
       expect(find.text('My Bookings'), findsOneWidget);
-      
+
       // Check for tabs
       expect(find.text('Upcoming'), findsOneWidget);
       expect(find.text('Completed'), findsOneWidget);
@@ -129,7 +132,10 @@ void main() {
 
         // Rate with stars
         await tester.tap(find.byIcon(Icons.star).at(4)); // 5 stars
-        await tester.enterText(find.byType(TextField).first, 'Excellent service!');
+        await tester.enterText(
+          find.byType(TextField).first,
+          'Excellent service!',
+        );
         await tester.tap(find.text('Submit'));
         await tester.pumpAndSettle();
 
@@ -150,7 +156,7 @@ void main() {
 
       // Verify profile screen
       expect(find.text('My Profile'), findsOneWidget);
-      
+
       // Edit profile
       await tester.tap(find.byIcon(Icons.edit));
       await tester.pumpAndSettle();
@@ -179,7 +185,10 @@ void main() {
 
       // Enter address details
       await tester.enterText(find.byType(TextField).at(0), 'Home');
-      await tester.enterText(find.byType(TextField).at(1), '123 New Address, Colombo');
+      await tester.enterText(
+        find.byType(TextField).at(1),
+        '123 New Address, Colombo',
+      );
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
     });
@@ -234,9 +243,12 @@ void main() {
 
       // Verify chat screen
       expect(find.text('Support Chat'), findsOneWidget);
-      
+
       // Send message
-      await tester.enterText(find.byType(TextField).first, 'I need help with my booking');
+      await tester.enterText(
+        find.byType(TextField).first,
+        'I need help with my booking',
+      );
       await tester.tap(find.byIcon(Icons.send));
       await tester.pumpAndSettle();
     });

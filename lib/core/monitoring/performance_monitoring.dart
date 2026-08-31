@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 /// Performance monitoring service for tracking app performance
 class PerformanceMonitoring {
-  static final PerformanceMonitoring _instance = PerformanceMonitoring._internal();
+  static final PerformanceMonitoring _instance =
+      PerformanceMonitoring._internal();
   factory PerformanceMonitoring() => _instance;
   PerformanceMonitoring._internal();
 
@@ -58,10 +59,7 @@ class PerformanceMonitoring {
   /// Log memory usage
   void logMemoryUsage(String context) {
     // Note: Actual memory usage requires platform-specific implementation
-    developer.log(
-      'Memory check at: $context',
-      name: 'Performance',
-    );
+    developer.log('Memory check at: $context', name: 'Performance');
   }
 
   /// Track frame build time

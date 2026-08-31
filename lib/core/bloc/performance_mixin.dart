@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Mixin for optimizing BLoC state updates
-/// 
+///
 /// Usage:
 /// ```dart
 /// class MyBloc extends Bloc<MyEvent, MyState> with BlocPerformanceMixin<MyState> {
@@ -24,7 +24,7 @@ mixin BlocPerformanceMixin<S> on BlocBase<S> {
 }
 
 /// Build optimization predicates for BlocBuilder
-/// 
+///
 /// These predicates help prevent unnecessary widget rebuilds
 /// by comparing only the relevant state properties
 class BuildOptimization {
@@ -39,10 +39,7 @@ class BuildOptimization {
   }
 
   /// Builds only when error state changes
-  static bool whenErrorChanged<S extends ErrorState>(
-    S previous,
-    S current,
-  ) {
+  static bool whenErrorChanged<S extends ErrorState>(S previous, S current) {
     return previous.hasError != current.hasError ||
         previous.errorMessage != current.errorMessage;
   }
@@ -56,11 +53,11 @@ class BuildOptimization {
   }
 
   /// Builds only when specific property changes
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// BlocBuilder<MyBloc, MyState>(
-  ///   buildWhen: (prev, curr) => 
+  ///   buildWhen: (prev, curr) =>
   ///     BuildOptimization.whenPropertyChanged(prev, curr, (s) => s.count),
   ///   builder: (context, state) => Text('${state.count}'),
   /// )
@@ -105,7 +102,7 @@ abstract class DataState<T> {
 }
 
 /// Optimized base state class with equality support
-/// 
+///
 /// Extend this class for better performance in BLoCs
 abstract class OptimizedState {
   const OptimizedState();
@@ -140,7 +137,7 @@ class EventTransformers {
   EventTransformers._();
 
   /// Throttles events to prevent rapid-fire updates
-  /// 
+  ///
   /// Usage:
   /// ```dart
   /// on<MyEvent>(
@@ -150,14 +147,12 @@ class EventTransformers {
   /// ```
   static EventTransformer<E> throttle<E>(Duration duration) {
     return (events, mapper) {
-      return events
-          .throttleTime(duration)
-          .asyncExpand(mapper);
+      return events.throttleTime(duration).asyncExpand(mapper);
     };
   }
 
   /// Debounces events to wait for pause in input
-  /// 
+  ///
   /// Usage for search inputs:
   /// ```dart
   /// on<SearchQueryChanged>(
@@ -167,9 +162,7 @@ class EventTransformers {
   /// ```
   static EventTransformer<E> debounce<E>(Duration duration) {
     return (events, mapper) {
-      return events
-          .debounceTime(duration)
-          .asyncExpand(mapper);
+      return events.debounceTime(duration).asyncExpand(mapper);
     };
   }
 }
@@ -210,7 +203,7 @@ extension StreamPerformanceExtension<T> on Stream<T> {
 }
 
 /// Performance-optimized BLoC observer
-/// 
+///
 /// Use this to track BLoC performance in development
 class PerformanceBlocObserver extends BlocObserver {
   final bool trackEventProcessingTime;
@@ -232,7 +225,10 @@ class PerformanceBlocObserver extends BlocObserver {
   }
 
   @override
-  void onTransition(Bloc<dynamic, dynamic> bloc, Transition<dynamic, dynamic> transition) {
+  void onTransition(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  ) {
     super.onTransition(bloc, transition);
 
     final key = bloc.runtimeType.toString();
@@ -245,14 +241,18 @@ class PerformanceBlocObserver extends BlocObserver {
         // Log slow transitions (> 100ms)
         if (duration.inMilliseconds > 100) {
           // ignore: avoid_print
-          print('⚠️ SLOW BLoC: ${bloc.runtimeType} took ${duration.inMilliseconds}ms');
+          print(
+            '⚠️ SLOW BLoC: ${bloc.runtimeType} took ${duration.inMilliseconds}ms',
+          );
         }
       }
     }
 
     if (logStateChanges) {
       // ignore: avoid_print
-      print('📊 ${bloc.runtimeType}: ${transition.currentState.runtimeType} -> ${transition.nextState.runtimeType}');
+      print(
+        '📊 ${bloc.runtimeType}: ${transition.currentState.runtimeType} -> ${transition.nextState.runtimeType}',
+      );
     }
   }
 

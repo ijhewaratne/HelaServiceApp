@@ -27,7 +27,7 @@ class ServiceCatalogItem extends Equatable {
   final int? maxDurationHours;
   final MinTierRequired minTier;
   final List<String> requiredEquipment; // tools worker must bring
-  final List<String> includedTasks;     // checklist shown to customer
+  final List<String> includedTasks; // checklist shown to customer
   final bool isActive;
   final bool isPopular;
   final String? imageUrl;
@@ -87,50 +87,49 @@ class ServiceCatalogItem extends Equatable {
     bool? isPopular,
     String? imageUrl,
     Map<String, dynamic>? metadata,
-  }) =>
-      ServiceCatalogItem(
-        id: id,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        layer: layer,
-        parentId: parentId,
-        pricingModel: pricingModel ?? this.pricingModel,
-        baseRatePerHour: baseRatePerHour ?? this.baseRatePerHour,
-        fixedPrice: fixedPrice ?? this.fixedPrice,
-        defaultDurationHours: defaultDurationHours ?? this.defaultDurationHours,
-        minDurationHours: minDurationHours ?? this.minDurationHours,
-        maxDurationHours: maxDurationHours ?? this.maxDurationHours,
-        minTier: minTier ?? this.minTier,
-        requiredEquipment: requiredEquipment ?? this.requiredEquipment,
-        includedTasks: includedTasks ?? this.includedTasks,
-        isActive: isActive ?? this.isActive,
-        isPopular: isPopular ?? this.isPopular,
-        imageUrl: imageUrl ?? this.imageUrl,
-        metadata: metadata ?? this.metadata,
-        createdAt: createdAt,
-      );
+  }) => ServiceCatalogItem(
+    id: id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    layer: layer,
+    parentId: parentId,
+    pricingModel: pricingModel ?? this.pricingModel,
+    baseRatePerHour: baseRatePerHour ?? this.baseRatePerHour,
+    fixedPrice: fixedPrice ?? this.fixedPrice,
+    defaultDurationHours: defaultDurationHours ?? this.defaultDurationHours,
+    minDurationHours: minDurationHours ?? this.minDurationHours,
+    maxDurationHours: maxDurationHours ?? this.maxDurationHours,
+    minTier: minTier ?? this.minTier,
+    requiredEquipment: requiredEquipment ?? this.requiredEquipment,
+    includedTasks: includedTasks ?? this.includedTasks,
+    isActive: isActive ?? this.isActive,
+    isPopular: isPopular ?? this.isPopular,
+    imageUrl: imageUrl ?? this.imageUrl,
+    metadata: metadata ?? this.metadata,
+    createdAt: createdAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'layer': layer.name,
-        'parentId': parentId,
-        'pricingModel': pricingModel.name,
-        'baseRatePerHour': baseRatePerHour,
-        'fixedPrice': fixedPrice,
-        'defaultDurationHours': defaultDurationHours,
-        'minDurationHours': minDurationHours,
-        'maxDurationHours': maxDurationHours,
-        'minTier': minTier.name,
-        'requiredEquipment': requiredEquipment,
-        'includedTasks': includedTasks,
-        'isActive': isActive,
-        'isPopular': isPopular,
-        'imageUrl': imageUrl,
-        'metadata': metadata,
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'layer': layer.name,
+    'parentId': parentId,
+    'pricingModel': pricingModel.name,
+    'baseRatePerHour': baseRatePerHour,
+    'fixedPrice': fixedPrice,
+    'defaultDurationHours': defaultDurationHours,
+    'minDurationHours': minDurationHours,
+    'maxDurationHours': maxDurationHours,
+    'minTier': minTier.name,
+    'requiredEquipment': requiredEquipment,
+    'includedTasks': includedTasks,
+    'isActive': isActive,
+    'isPopular': isPopular,
+    'imageUrl': imageUrl,
+    'metadata': metadata,
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 
   factory ServiceCatalogItem.fromJson(Map<String, dynamic> json) =>
       ServiceCatalogItem(
@@ -146,8 +145,7 @@ class ServiceCatalogItem extends Equatable {
           (e) => e.name == (json['pricingModel'] as String?),
           orElse: () => PricingModel.hourly,
         ),
-        baseRatePerHour:
-            (json['baseRatePerHour'] as num?)?.toDouble() ?? 0.0,
+        baseRatePerHour: (json['baseRatePerHour'] as num?)?.toDouble() ?? 0.0,
         fixedPrice: (json['fixedPrice'] as num?)?.toDouble(),
         defaultDurationHours: json['defaultDurationHours'] as int?,
         minDurationHours: json['minDurationHours'] as int?,
@@ -156,11 +154,13 @@ class ServiceCatalogItem extends Equatable {
           (e) => e.name == (json['minTier'] as String?),
           orElse: () => MinTierRequired.green,
         ),
-        requiredEquipment: (json['requiredEquipment'] as List<dynamic>?)
+        requiredEquipment:
+            (json['requiredEquipment'] as List<dynamic>?)
                 ?.map((e) => e as String)
                 .toList() ??
             [],
-        includedTasks: (json['includedTasks'] as List<dynamic>?)
+        includedTasks:
+            (json['includedTasks'] as List<dynamic>?)
                 ?.map((e) => e as String)
                 .toList() ??
             [],

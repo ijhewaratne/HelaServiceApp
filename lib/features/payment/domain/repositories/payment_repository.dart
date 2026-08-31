@@ -6,7 +6,7 @@ import '../entities/payment_result.dart';
 /// Abstract repository for payment operations using PayHere
 abstract class PaymentRepository {
   /// Process payment via PayHere
-  /// 
+  ///
   /// [bookingId] - The booking/job ID to associate with payment
   /// [amount] - Amount in cents (e.g., 150000 = LKR 1,500.00)
   /// [customerName] - Full name of customer

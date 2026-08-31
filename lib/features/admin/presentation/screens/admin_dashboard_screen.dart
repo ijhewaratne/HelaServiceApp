@@ -87,21 +87,39 @@ class _AdminHeader extends StatelessWidget {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF0A3D3D), AppTheme.primaryDark],
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 52, 20, 8),
-      child: const Row(children: [
-        Icon(Icons.admin_panel_settings, color: Colors.white, size: 30),
-        SizedBox(width: 12),
-        Column(mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('HelaService',
-              style: TextStyle(color: Colors.white70, fontSize: 11, letterSpacing: 1.2)),
-          Text('Operations Command Center',
-              style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-        ]),
-      ]),
+      child: const Row(
+        children: [
+          Icon(Icons.admin_panel_settings, color: Colors.white, size: 30),
+          SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'HelaService',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              Text(
+                'Operations Command Center',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -115,88 +133,166 @@ class _OverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const _MfaBanner(),
-        Text('Live metrics', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: _LiveCard(
-            label: 'Active Bookings',
-            stream: sl<FirebaseFirestore>().collection('bookings')
-                .where('status', whereIn: ['confirmed','workerAssigned','workerEnRoute','workerArrived','inProgress'])
-                .snapshots().map((s) => s.size.toString()),
-            icon: Icons.calendar_today, color: AppTheme.primaryColor,
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: _LiveCard(
-            label: 'Pending Verification',
-            stream: sl<FirebaseFirestore>().collection('workers')
-                .where('verificationStatus', isEqualTo: 'pending_review')
-                .snapshots().map((s) => s.size.toString()),
-            icon: Icons.pending_actions, color: AppTheme.warningColor,
-          )),
-        ]),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: _LiveCard(
-            label: 'Unresolved Safety Alerts',
-            stream: sl<FirebaseFirestore>().collection('safety_alerts')
-                .where('status', whereIn: ['open', 'acknowledged', 'escalated'])
-                .snapshots().map((s) => s.size.toString()),
-            icon: Icons.warning_amber, color: AppTheme.errorColor,
-          )),
-          const SizedBox(width: 12),
-          Expanded(child: _LiveCard(
-            label: 'Workers Online',
-            stream: sl<FirebaseFirestore>().collection('workers')
-                .where('isOnline', isEqualTo: true)
-                .snapshots().map((s) => s.size.toString()),
-            icon: Icons.people_outline, color: AppTheme.successColor,
-          )),
-        ]),
-        const SizedBox(height: 24),
-        Text('Quick actions', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 10),
-        _ActionTile(icon: Icons.book_online_outlined,
-            label: 'Booking Management', subtitle: 'View and reassign active bookings',
-            onTap: () => context.push('/admin/bookings')),
-        _ActionTile(icon: Icons.workspace_premium_outlined,
-            label: 'Worker Approvals', subtitle: 'Green and Blue tier verification queue',
-            onTap: () => context.push('/admin/workers')),
-        _ActionTile(icon: Icons.bar_chart_outlined,
-            label: 'Revenue Reports', subtitle: 'Daily and weekly revenue drill-down',
-            onTap: () => context.push('/admin/revenue')),
-        _ActionTile(icon: Icons.support_agent_outlined,
-            label: 'Support Tickets', subtitle: 'Customer feedback and complaints',
-            onTap: () => context.push('/admin/support')),
-        _ActionTile(icon: Icons.emergency_outlined,
-            label: 'Emergency Dispatch', subtitle: 'Manual worker assignment',
-            onTap: () => context.push('/admin/dispatch')),
-        _ActionTile(icon: Icons.people_outlined,
-            label: 'Customer Management', subtitle: 'View and suspend customer accounts',
-            onTap: () => context.push('/admin/customers')),
-        _ActionTile(icon: Icons.rate_review_outlined,
-            label: 'Review Moderation', subtitle: 'Approve, hide, or flag reviews',
-            onTap: () => context.push('/admin/reviews')),
-        _ActionTile(icon: Icons.report_problem_outlined,
-            label: 'Disputes', subtitle: 'Manage open and under-review disputes',
-            onTap: () => context.push('/admin/disputes')),
-        _ActionTile(icon: Icons.category_outlined,
-            label: 'Service Categories', subtitle: 'Manage service catalog and pricing',
-            onTap: () => context.push('/admin/categories')),
-        _ActionTile(icon: Icons.history_outlined,
-            label: 'Audit Log', subtitle: 'View admin action history',
-            onTap: () => context.push('/admin/audit-log')),
-        _ActionTile(icon: Icons.manage_accounts_outlined,
-            label: 'User Management', subtitle: 'View and manage admin accounts',
-            onTap: () => context.push('/admin/users')),
-        _ActionTile(icon: Icons.fact_check_outlined,
-            label: 'Pending Approvals', subtitle: 'Two-person sign-off for high-risk changes',
-            onTap: () => context.push('/admin/approvals')),
-        _ActionTile(icon: Icons.shield_outlined,
-            label: 'Two-Factor Authentication', subtitle: 'Secure your admin account with a second step',
-            onTap: () => context.push('/account/mfa')),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _MfaBanner(),
+          Text('Live metrics', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _LiveCard(
+                  label: 'Active Bookings',
+                  stream: sl<FirebaseFirestore>()
+                      .collection('bookings')
+                      .where(
+                        'status',
+                        whereIn: [
+                          'confirmed',
+                          'workerAssigned',
+                          'workerEnRoute',
+                          'workerArrived',
+                          'inProgress',
+                        ],
+                      )
+                      .snapshots()
+                      .map((s) => s.size.toString()),
+                  icon: Icons.calendar_today,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _LiveCard(
+                  label: 'Pending Verification',
+                  stream: sl<FirebaseFirestore>()
+                      .collection('workers')
+                      .where('verificationStatus', isEqualTo: 'pending_review')
+                      .snapshots()
+                      .map((s) => s.size.toString()),
+                  icon: Icons.pending_actions,
+                  color: AppTheme.warningColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _LiveCard(
+                  label: 'Unresolved Safety Alerts',
+                  stream: sl<FirebaseFirestore>()
+                      .collection('safety_alerts')
+                      .where(
+                        'status',
+                        whereIn: ['open', 'acknowledged', 'escalated'],
+                      )
+                      .snapshots()
+                      .map((s) => s.size.toString()),
+                  icon: Icons.warning_amber,
+                  color: AppTheme.errorColor,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _LiveCard(
+                  label: 'Workers Online',
+                  stream: sl<FirebaseFirestore>()
+                      .collection('workers')
+                      .where('isOnline', isEqualTo: true)
+                      .snapshots()
+                      .map((s) => s.size.toString()),
+                  icon: Icons.people_outline,
+                  color: AppTheme.successColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text('Quick actions', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          _ActionTile(
+            icon: Icons.book_online_outlined,
+            label: 'Booking Management',
+            subtitle: 'View and reassign active bookings',
+            onTap: () => context.push('/admin/bookings'),
+          ),
+          _ActionTile(
+            icon: Icons.workspace_premium_outlined,
+            label: 'Worker Approvals',
+            subtitle: 'Green and Blue tier verification queue',
+            onTap: () => context.push('/admin/workers'),
+          ),
+          _ActionTile(
+            icon: Icons.bar_chart_outlined,
+            label: 'Revenue Reports',
+            subtitle: 'Daily and weekly revenue drill-down',
+            onTap: () => context.push('/admin/revenue'),
+          ),
+          _ActionTile(
+            icon: Icons.support_agent_outlined,
+            label: 'Support Tickets',
+            subtitle: 'Customer feedback and complaints',
+            onTap: () => context.push('/admin/support'),
+          ),
+          _ActionTile(
+            icon: Icons.emergency_outlined,
+            label: 'Emergency Dispatch',
+            subtitle: 'Manual worker assignment',
+            onTap: () => context.push('/admin/dispatch'),
+          ),
+          _ActionTile(
+            icon: Icons.people_outlined,
+            label: 'Customer Management',
+            subtitle: 'View and suspend customer accounts',
+            onTap: () => context.push('/admin/customers'),
+          ),
+          _ActionTile(
+            icon: Icons.rate_review_outlined,
+            label: 'Review Moderation',
+            subtitle: 'Approve, hide, or flag reviews',
+            onTap: () => context.push('/admin/reviews'),
+          ),
+          _ActionTile(
+            icon: Icons.report_problem_outlined,
+            label: 'Disputes',
+            subtitle: 'Manage open and under-review disputes',
+            onTap: () => context.push('/admin/disputes'),
+          ),
+          _ActionTile(
+            icon: Icons.category_outlined,
+            label: 'Service Categories',
+            subtitle: 'Manage service catalog and pricing',
+            onTap: () => context.push('/admin/categories'),
+          ),
+          _ActionTile(
+            icon: Icons.history_outlined,
+            label: 'Audit Log',
+            subtitle: 'View admin action history',
+            onTap: () => context.push('/admin/audit-log'),
+          ),
+          _ActionTile(
+            icon: Icons.manage_accounts_outlined,
+            label: 'User Management',
+            subtitle: 'View and manage admin accounts',
+            onTap: () => context.push('/admin/users'),
+          ),
+          _ActionTile(
+            icon: Icons.fact_check_outlined,
+            label: 'Pending Approvals',
+            subtitle: 'Two-person sign-off for high-risk changes',
+            onTap: () => context.push('/admin/approvals'),
+          ),
+          _ActionTile(
+            icon: Icons.shield_outlined,
+            label: 'Two-Factor Authentication',
+            subtitle: 'Secure your admin account with a second step',
+            onTap: () => context.push('/account/mfa'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -227,17 +323,19 @@ class _MfaBanner extends StatelessWidget {
               onTap: () => context.push('/account/mfa'),
               child: Padding(
                 padding: const EdgeInsets.all(14),
-                child: Row(children: [
-                  Icon(Icons.shield_outlined, color: AppTheme.warningColor),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Two-factor authentication is not enabled for this admin account. Tap to set it up.',
-                      style: TextStyle(fontSize: 13),
+                child: Row(
+                  children: [
+                    Icon(Icons.shield_outlined, color: AppTheme.warningColor),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Two-factor authentication is not enabled for this admin account. Tap to set it up.',
+                        style: TextStyle(fontSize: 13),
+                      ),
                     ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ]),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
               ),
             ),
           ),
@@ -252,8 +350,12 @@ class _LiveCard extends StatelessWidget {
   final Stream<String> stream;
   final IconData icon;
   final Color color;
-  const _LiveCard({required this.label, required this.stream,
-    required this.icon, required this.color});
+  const _LiveCard({
+    required this.label,
+    required this.stream,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -266,14 +368,24 @@ class _LiveCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 8),
-          Text(snap.data ?? '…',
-              style: Theme.of(ctx).textTheme.displaySmall
-                  ?.copyWith(color: color, fontWeight: FontWeight.bold)),
-          Text(label, style: Theme.of(ctx).textTheme.bodySmall?.copyWith(color: color)),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              snap.data ?? '…',
+              style: Theme.of(ctx).textTheme.displaySmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              label,
+              style: Theme.of(ctx).textTheme.bodySmall?.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -283,8 +395,12 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String label, subtitle;
   final VoidCallback onTap;
-  const _ActionTile({required this.icon, required this.label,
-    required this.subtitle, required this.onTap});
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -313,8 +429,12 @@ class _VerificationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: sl<FirebaseFirestore>().collection('workers')
-          .where('verificationStatus', whereIn: ['pending_review', 'documents_submitted'])
+      stream: sl<FirebaseFirestore>()
+          .collection('workers')
+          .where(
+            'verificationStatus',
+            whereIn: ['pending_review', 'documents_submitted'],
+          )
           .orderBy('createdAt')
           .snapshots(),
       builder: (ctx, snap) {
@@ -323,11 +443,23 @@ class _VerificationTab extends StatelessWidget {
         }
         final docs = snap.data?.docs ?? [];
         if (docs.isEmpty) {
-          return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.check_circle_outline, size: 64, color: AppTheme.successColor),
-            const SizedBox(height: 16),
-            Text('No pending verifications', style: Theme.of(ctx).textTheme.titleMedium),
-          ]));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 64,
+                  color: AppTheme.successColor,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No pending verifications',
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -355,22 +487,29 @@ class _VerifCard extends StatelessWidget {
       'verifiedAt': FieldValue.serverTimestamp(),
     });
     if (ctx.mounted) {
-      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-          content: Text('Worker approved.'), backgroundColor: AppTheme.successColor));
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Worker approved.'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
     }
   }
 
   Future<void> _reject(BuildContext ctx) async {
     await sl<FirebaseFirestore>().collection('workers').doc(workerId).update({
-      'verificationStatus': 'rejected', 'isVerified': false,
+      'verificationStatus': 'rejected',
+      'isVerified': false,
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final name = data['fullName'] as String? ?? data['name'] as String? ?? 'Worker';
+    final name =
+        data['fullName'] as String? ?? data['name'] as String? ?? 'Worker';
     final phone = data['phone'] as String? ?? '-';
-    final status = (data['verificationStatus'] as String? ?? 'pending').replaceAll('_', ' ');
+    final status = (data['verificationStatus'] as String? ?? 'pending')
+        .replaceAll('_', ' ');
     final tier = data['verificationTier'] as String? ?? 'green';
 
     return Container(
@@ -380,55 +519,90 @@ class _VerifCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
-      child: Column(children: [
-        Row(children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
-            child: Text(name.isNotEmpty ? name[0].toUpperCase() : 'W',
-                style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : 'W',
+                  style: const TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: Theme.of(context).textTheme.titleSmall),
+                    Text(phone, style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  status,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.warningColor,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(name, style: Theme.of(context).textTheme.titleSmall),
-            Text(phone, style: Theme.of(context).textTheme.bodySmall),
-          ])),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.warningColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(status, style: const TextStyle(
-                fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.warningColor)),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _Badge(label: 'NIC', done: data['nicVerified'] as bool? ?? false),
+              const SizedBox(width: 6),
+              _Badge(
+                label: 'Phone',
+                done: data['phoneVerified'] as bool? ?? false,
+              ),
+              const SizedBox(width: 6),
+              _Badge(
+                label: 'BG',
+                done: data['backgroundCheckPassed'] as bool? ?? false,
+              ),
+              const Spacer(),
+              Text('Tier: $tier', style: Theme.of(context).textTheme.bodySmall),
+            ],
           ),
-        ]),
-        const SizedBox(height: 10),
-        Row(children: [
-          _Badge(label: 'NIC', done: data['nicVerified'] as bool? ?? false),
-          const SizedBox(width: 6),
-          _Badge(label: 'Phone', done: data['phoneVerified'] as bool? ?? false),
-          const SizedBox(width: 6),
-          _Badge(label: 'BG', done: data['backgroundCheckPassed'] as bool? ?? false),
-          const Spacer(),
-          Text('Tier: $tier', style: Theme.of(context).textTheme.bodySmall),
-        ]),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: OutlinedButton(
-            onPressed: () => _reject(context),
-            style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.errorColor,
-                side: const BorderSide(color: AppTheme.errorColor)),
-            child: const Text('Reject'),
-          )),
-          const SizedBox(width: 10),
-          Expanded(child: ElevatedButton(
-            onPressed: () => _approve(context),
-            child: const Text('Approve'),
-          )),
-        ]),
-      ]),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _reject(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.errorColor,
+                    side: const BorderSide(color: AppTheme.errorColor),
+                  ),
+                  child: const Text('Reject'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => _approve(context),
+                  child: const Text('Approve'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -448,11 +622,14 @@ class _Badge extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: c.withValues(alpha: 0.3)),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(done ? Icons.check : Icons.close, size: 10, color: c),
-        const SizedBox(width: 3),
-        Text(label, style: TextStyle(fontSize: 10, color: c)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(done ? Icons.check : Icons.close, size: 10, color: c),
+          const SizedBox(width: 3),
+          Text(label, style: TextStyle(fontSize: 10, color: c)),
+        ],
+      ),
     );
   }
 }
@@ -465,7 +642,8 @@ class _SafetyAlertsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: sl<FirebaseFirestore>().collection('safety_alerts')
+      stream: sl<FirebaseFirestore>()
+          .collection('safety_alerts')
           .where('status', whereIn: ['open', 'acknowledged', 'escalated'])
           .orderBy('createdAt', descending: true)
           .snapshots(),
@@ -475,11 +653,23 @@ class _SafetyAlertsTab extends StatelessWidget {
         }
         final docs = snap.data?.docs ?? [];
         if (docs.isEmpty) {
-          return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.security, size: 64, color: AppTheme.successColor),
-            const SizedBox(height: 16),
-            Text('No unresolved safety alerts', style: Theme.of(ctx).textTheme.titleMedium),
-          ]));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.security,
+                  size: 64,
+                  color: AppTheme.successColor,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No unresolved safety alerts',
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -501,12 +691,15 @@ class _AlertCard extends StatelessWidget {
   const _AlertCard({required this.alertId, required this.data});
 
   Future<void> _resolve() async {
-    await sl<FirebaseFirestore>().collection('safety_alerts').doc(alertId).update({
-      'status': 'resolved',
-      'resolvedBy': FirebaseAuth.instance.currentUser?.uid,
-      'resolvedAt': FieldValue.serverTimestamp(),
-      'resolutionNotes': 'Resolved by admin dashboard',
-    });
+    await sl<FirebaseFirestore>()
+        .collection('safety_alerts')
+        .doc(alertId)
+        .update({
+          'status': 'resolved',
+          'resolvedBy': FirebaseAuth.instance.currentUser?.uid,
+          'resolvedAt': FieldValue.serverTimestamp(),
+          'resolutionNotes': 'Resolved by admin dashboard',
+        });
   }
 
   String _typeLabel(String rawType) {
@@ -535,9 +728,12 @@ class _AlertCard extends StatelessWidget {
     final severity = data['severity'] as String? ?? 'medium';
     final isSOS = type == 'sosPanic' || type == 'sos';
     final color = isSOS ? AppTheme.errorColor : AppTheme.warningColor;
-    final desc = data['message'] as String? ?? data['description'] as String? ?? 'No description';
-    final wid  = data['workerId'] as String? ?? '-';
-    final cid  = data['customerId'] as String? ?? '-';
+    final desc =
+        data['message'] as String? ??
+        data['description'] as String? ??
+        'No description';
+    final wid = data['workerId'] as String? ?? '-';
+    final cid = data['customerId'] as String? ?? '-';
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -546,50 +742,81 @@ class _AlertCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-            child: Icon(isSOS ? Icons.sos : Icons.warning, color: color, size: 22),
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(_typeLabel(type),
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(color: color, fontWeight: FontWeight.bold)),
-            Text('Worker: $wid | Customer: $cid', style: Theme.of(context).textTheme.bodySmall),
-          ])),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              if (isSOS) Icon(Icons.priority_high, color: color, size: 20),
-              const SizedBox(height: 4),
-              Text(
-                '${severity.toUpperCase()} · ${status.toUpperCase()}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  isSOS ? Icons.sos : Icons.warning,
+                  color: color,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _typeLabel(type),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Worker: $wid | Customer: $cid',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (isSOS) Icon(Icons.priority_high, color: color, size: 20),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${severity.toUpperCase()} · ${status.toUpperCase()}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: color),
+                  ),
+                ],
               ),
             ],
           ),
-        ]),
-        const SizedBox(height: 8),
-        Text(desc, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: OutlinedButton.icon(
-            icon: const Icon(Icons.phone, size: 14),
-            label: const Text('Contact'),
-            onPressed: () {},
-          )),
-          const SizedBox(width: 10),
-          Expanded(child: ElevatedButton.icon(
-            icon: const Icon(Icons.check, size: 14),
-            label: const Text('Resolve'),
-            onPressed: _resolve,
-          )),
-        ]),
-      ]),
+          const SizedBox(height: 8),
+          Text(desc, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.phone, size: 14),
+                  label: const Text('Contact'),
+                  onPressed: () {},
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.check, size: 14),
+                  label: const Text('Resolve'),
+                  onPressed: _resolve,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -602,7 +829,8 @@ class _PerformanceTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: sl<FirebaseFirestore>().collection('workers')
+      stream: sl<FirebaseFirestore>()
+          .collection('workers')
           .where('isVerified', isEqualTo: true)
           .orderBy('reliabilityScore', descending: true)
           .limit(30)
@@ -612,14 +840,18 @@ class _PerformanceTab extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         final docs = snap.data?.docs ?? [];
-        if (docs.isEmpty) return const Center(child: Text('No verified workers.'));
+        if (docs.isEmpty)
+          return const Center(child: Text('No verified workers.'));
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: docs.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
           itemBuilder: (ctx, i) {
             final data = docs[i].data() as Map<String, dynamic>;
-            final name = data['fullName'] as String? ?? data['name'] as String? ?? 'Worker';
+            final name =
+                data['fullName'] as String? ??
+                data['name'] as String? ??
+                'Worker';
             final score = (data['reliabilityScore'] as num?)?.toDouble() ?? 0.0;
             final jobs = data['completedJobsCount'] as int? ?? 0;
             final tier = data['verificationTier'] as String? ?? 'green';
@@ -631,31 +863,65 @@ class _PerformanceTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Theme.of(ctx).colorScheme.outline),
               ),
-              child: Row(children: [
-                SizedBox(width: 28, child: Text('#${i + 1}',
-                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '#${i + 1}',
+                      style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: i < 3 ? AppTheme.warningColor : null))),
-                const SizedBox(width: 8),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(name, style: Theme.of(ctx).textTheme.titleSmall),
-                  Text('$jobs jobs', style: Theme.of(ctx).textTheme.bodySmall),
-                ])),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: tc.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
-                  child: Text(tier.toUpperCase(),
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: tc)),
-                ),
-                const SizedBox(width: 12),
-                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  Text(score.toStringAsFixed(2),
-                      style: Theme.of(ctx).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-                  Text('score', style: Theme.of(ctx).textTheme.bodySmall),
-                ]),
-              ]),
+                        color: i < 3 ? AppTheme.warningColor : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(name, style: Theme.of(ctx).textTheme.titleSmall),
+                        Text(
+                          '$jobs jobs',
+                          style: Theme.of(ctx).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: tc.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      tier.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: tc,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        score.toStringAsFixed(2),
+                        style: Theme.of(ctx).textTheme.titleSmall?.copyWith(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text('score', style: Theme.of(ctx).textTheme.bodySmall),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
         );
@@ -665,10 +931,14 @@ class _PerformanceTab extends StatelessWidget {
 
   static Color _tierC(String t) {
     switch (t) {
-      case 'blue':    return const Color(0xFF3B82F6);
-      case 'gold':    return const Color(0xFFF59E0B);
-      case 'partner': return const Color(0xFF8B5CF6);
-      default:        return const Color(0xFF22C55E);
+      case 'blue':
+        return const Color(0xFF3B82F6);
+      case 'gold':
+        return const Color(0xFFF59E0B);
+      case 'partner':
+        return const Color(0xFF8B5CF6);
+      default:
+        return const Color(0xFF22C55E);
     }
   }
 }

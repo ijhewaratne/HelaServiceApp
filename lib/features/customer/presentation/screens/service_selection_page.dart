@@ -66,22 +66,19 @@ class ServiceSelectionPage extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 0.85,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final service = _services[index];
-                  return _ServiceCard(
-                    title: service['title'] as String,
-                    icon: service['icon'] as IconData,
-                    color: service['color'] as Color,
-                    desc: service['desc'] as String,
-                    onTap: () {
-                      // Navigate to animated matching queue or form
-                      // context.go('/customer/book/form');
-                    },
-                  );
-                },
-                childCount: _services.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final service = _services[index];
+                return _ServiceCard(
+                  title: service['title'] as String,
+                  icon: service['icon'] as IconData,
+                  color: service['color'] as Color,
+                  desc: service['desc'] as String,
+                  onTap: () {
+                    // Navigate to animated matching queue or form
+                    // context.go('/customer/book/form');
+                  },
+                );
+              }, childCount: _services.length),
             ),
           ),
         ],
@@ -119,7 +116,7 @@ class _ServiceCard extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
           border: Border.all(color: Colors.grey.shade100),
         ),

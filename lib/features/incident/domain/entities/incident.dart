@@ -70,21 +70,21 @@ class Incident extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        reporterId,
-        reporterType,
-        jobId,
-        subjectId,
-        type,
-        description,
-        audioUrl,
-        imageUrl,
-        reportedAt,
-        status,
-        resolvedBy,
-        resolvedAt,
-        resolution,
-      ];
+    id,
+    reporterId,
+    reporterType,
+    jobId,
+    subjectId,
+    type,
+    description,
+    audioUrl,
+    imageUrl,
+    reportedAt,
+    status,
+    resolvedBy,
+    resolvedAt,
+    resolution,
+  ];
 }
 
 enum IncidentType {
@@ -96,12 +96,7 @@ enum IncidentType {
   other,
 }
 
-enum IncidentStatus {
-  pending,
-  investigating,
-  resolved,
-  escalated,
-}
+enum IncidentStatus { pending, investigating, resolved, escalated }
 
 extension IncidentTypeExtension on IncidentType {
   String get displayName {

@@ -56,68 +56,66 @@ class Dispute extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? resolvedAt,
-  }) =>
-      Dispute(
-        id: id ?? this.id,
-        requestId: requestId ?? this.requestId,
-        reportedByUserId: reportedByUserId ?? this.reportedByUserId,
-        reportedUserId: reportedUserId ?? this.reportedUserId,
-        issueType: issueType ?? this.issueType,
-        description: description ?? this.description,
-        status: status ?? this.status,
-        adminNote: adminNote ?? this.adminNote,
-        resolvedByAdminId: resolvedByAdminId ?? this.resolvedByAdminId,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        resolvedAt: resolvedAt ?? this.resolvedAt,
-      );
+  }) => Dispute(
+    id: id ?? this.id,
+    requestId: requestId ?? this.requestId,
+    reportedByUserId: reportedByUserId ?? this.reportedByUserId,
+    reportedUserId: reportedUserId ?? this.reportedUserId,
+    issueType: issueType ?? this.issueType,
+    description: description ?? this.description,
+    status: status ?? this.status,
+    adminNote: adminNote ?? this.adminNote,
+    resolvedByAdminId: resolvedByAdminId ?? this.resolvedByAdminId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    resolvedAt: resolvedAt ?? this.resolvedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'requestId': requestId,
-        'reportedByUserId': reportedByUserId,
-        'reportedUserId': reportedUserId,
-        'issueType': issueType.name,
-        'description': description,
-        'status': status.name,
-        'adminNote': adminNote,
-        'resolvedByAdminId': resolvedByAdminId,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
-        'resolvedAt':
-            resolvedAt != null ? Timestamp.fromDate(resolvedAt!) : null,
-      };
+    'id': id,
+    'requestId': requestId,
+    'reportedByUserId': reportedByUserId,
+    'reportedUserId': reportedUserId,
+    'issueType': issueType.name,
+    'description': description,
+    'status': status.name,
+    'adminNote': adminNote,
+    'resolvedByAdminId': resolvedByAdminId,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+    'resolvedAt': resolvedAt != null ? Timestamp.fromDate(resolvedAt!) : null,
+  };
 
   factory Dispute.fromJson(Map<String, dynamic> json, {String? id}) => Dispute(
-        id: id ?? json['id'] as String? ?? '',
-        requestId: json['requestId'] as String? ?? '',
-        reportedByUserId: json['reportedByUserId'] as String? ?? '',
-        reportedUserId: json['reportedUserId'] as String? ?? '',
-        issueType: DisputeIssueType.values.firstWhere(
-          (e) => e.name == (json['issueType'] as String?),
-          orElse: () => DisputeIssueType.other,
-        ),
-        description: json['description'] as String? ?? '',
-        status: DisputeStatus.values.firstWhere(
-          (e) => e.name == (json['status'] as String?),
-          orElse: () => DisputeStatus.open,
-        ),
-        adminNote: json['adminNote'] as String?,
-        resolvedByAdminId: json['resolvedByAdminId'] as String?,
-        createdAt: json['createdAt'] is Timestamp
-            ? (json['createdAt'] as Timestamp).toDate()
-            : DateTime.now(),
-        updatedAt: json['updatedAt'] != null
-            ? (json['updatedAt'] is Timestamp
-                ? (json['updatedAt'] as Timestamp).toDate()
-                : DateTime.parse(json['updatedAt'] as String))
-            : null,
-        resolvedAt: json['resolvedAt'] != null
-            ? (json['resolvedAt'] is Timestamp
-                ? (json['resolvedAt'] as Timestamp).toDate()
-                : DateTime.parse(json['resolvedAt'] as String))
-            : null,
-      );
+    id: id ?? json['id'] as String? ?? '',
+    requestId: json['requestId'] as String? ?? '',
+    reportedByUserId: json['reportedByUserId'] as String? ?? '',
+    reportedUserId: json['reportedUserId'] as String? ?? '',
+    issueType: DisputeIssueType.values.firstWhere(
+      (e) => e.name == (json['issueType'] as String?),
+      orElse: () => DisputeIssueType.other,
+    ),
+    description: json['description'] as String? ?? '',
+    status: DisputeStatus.values.firstWhere(
+      (e) => e.name == (json['status'] as String?),
+      orElse: () => DisputeStatus.open,
+    ),
+    adminNote: json['adminNote'] as String?,
+    resolvedByAdminId: json['resolvedByAdminId'] as String?,
+    createdAt: json['createdAt'] is Timestamp
+        ? (json['createdAt'] as Timestamp).toDate()
+        : DateTime.now(),
+    updatedAt: json['updatedAt'] != null
+        ? (json['updatedAt'] is Timestamp
+              ? (json['updatedAt'] as Timestamp).toDate()
+              : DateTime.parse(json['updatedAt'] as String))
+        : null,
+    resolvedAt: json['resolvedAt'] != null
+        ? (json['resolvedAt'] is Timestamp
+              ? (json['resolvedAt'] as Timestamp).toDate()
+              : DateTime.parse(json['resolvedAt'] as String))
+        : null,
+  );
 
   factory Dispute.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

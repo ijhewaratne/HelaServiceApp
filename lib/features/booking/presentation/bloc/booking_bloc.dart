@@ -19,11 +19,11 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     required FindNearestWorker findNearestWorker,
     AnalyticsService? analytics,
     PerformanceMonitoring? performance,
-  })  : _bookingRepository = bookingRepository,
-        _findNearestWorker = findNearestWorker,
-        _analytics = analytics ?? AnalyticsService(),
-        _performance = performance ?? PerformanceMonitoring(),
-        super(BookingInitial()) {
+  }) : _bookingRepository = bookingRepository,
+       _findNearestWorker = findNearestWorker,
+       _analytics = analytics ?? AnalyticsService(),
+       _performance = performance ?? PerformanceMonitoring(),
+       super(BookingInitial()) {
     on<CreateBooking>(_onCreateBooking);
     on<LoadBooking>(_onLoadBooking);
     on<UpdateBooking>(_onUpdateBooking);
@@ -50,8 +50,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw StateError(''));
       await _analytics.logError(
-          error: 'Booking creation failed: ${failure.message}',
-          context: 'booking_bloc');
+        error: 'Booking creation failed: ${failure.message}',
+        context: 'booking_bloc',
+      );
       emit(BookingError(message: failure.message));
       return;
     }
@@ -122,7 +123,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     Emitter<BookingState> emit,
   ) async {
     emit(BookingLoading());
-    final result = await _bookingRepository.getCustomerBookings(event.customerId);
+    final result = await _bookingRepository.getCustomerBookings(
+      event.customerId,
+    );
     result.fold(
       (failure) => emit(BookingError(message: failure.message)),
       (bookings) => emit(BookingListLoaded(bookings: bookings)),
@@ -149,14 +152,16 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     try {
       final result = await _performance.measure(
         'find_workers',
-        () => _findNearestWorker(FindNearestWorkerParams(
-          customerLat: event.latitude,
-          customerLng: event.longitude,
-          serviceType: event.serviceType,
-          zoneId: event.zoneId,
-          maxRadiusKm: event.maxRadiusKm,
-          topN: event.topN,
-        )),
+        () => _findNearestWorker(
+          FindNearestWorkerParams(
+            customerLat: event.latitude,
+            customerLng: event.longitude,
+            serviceType: event.serviceType,
+            zoneId: event.zoneId,
+            maxRadiusKm: event.maxRadiusKm,
+            topN: event.topN,
+          ),
+        ),
       );
       result.fold(
         (failure) => emit(BookingError(message: failure.message)),
@@ -180,12 +185,11 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       event.bookingId,
       event.workerId,
     );
-    result.fold(
-      (failure) => emit(BookingError(message: failure.message)),
-      (booking) {
-        emit(WorkerAssigned(booking: booking, workerId: event.workerId));
-      },
-    );
+    result.fold((failure) => emit(BookingError(message: failure.message)), (
+      booking,
+    ) {
+      emit(WorkerAssigned(booking: booking, workerId: event.workerId));
+    });
   }
 
   Future<void> _onUpdateBookingStatus(
@@ -198,28 +202,28 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       event.status,
       additionalData: event.additionalData,
     );
-    result.fold(
-      (failure) => emit(BookingError(message: failure.message)),
-      (booking) async {
-        if (event.status == BookingStatus.completed) {
-          final durationMinutes = booking.duration?.inMinutes ?? 0;
-          await _analytics.logJobCompleted(
-            jobId: event.bookingId,
-            workerId: booking.workerId ?? 'unknown',
-            serviceType: booking.serviceType.name,
-            durationMinutes: durationMinutes,
-            finalPrice: booking.finalPrice ?? booking.estimatedPrice,
-            workerRating: ((event.additionalData?['rating'] as num?) ?? 0).toDouble(),
-          );
-          await _analytics.logPurchase(
-            bookingId: event.bookingId,
-            value: booking.finalPrice ?? booking.estimatedPrice,
-            serviceType: booking.serviceType.name,
-          );
-        }
-        emit(BookingStatusUpdated(booking: booking, status: event.status));
-      },
-    );
+    result.fold((failure) => emit(BookingError(message: failure.message)), (
+      booking,
+    ) async {
+      if (event.status == BookingStatus.completed) {
+        final durationMinutes = booking.duration?.inMinutes ?? 0;
+        await _analytics.logJobCompleted(
+          jobId: event.bookingId,
+          workerId: booking.workerId ?? 'unknown',
+          serviceType: booking.serviceType.name,
+          durationMinutes: durationMinutes,
+          finalPrice: booking.finalPrice ?? booking.estimatedPrice,
+          workerRating: ((event.additionalData?['rating'] as num?) ?? 0)
+              .toDouble(),
+        );
+        await _analytics.logPurchase(
+          bookingId: event.bookingId,
+          value: booking.finalPrice ?? booking.estimatedPrice,
+          serviceType: booking.serviceType.name,
+        );
+      }
+      emit(BookingStatusUpdated(booking: booking, status: event.status));
+    });
   }
 
   Future<void> _onWatchBooking(
@@ -332,7 +336,14 @@ class FindWorkers extends BookingEvent {
   });
 
   @override
-  List<Object?> get props => [latitude, longitude, serviceType, zoneId, maxRadiusKm, topN];
+  List<Object?> get props => [
+    latitude,
+    longitude,
+    serviceType,
+    zoneId,
+    maxRadiusKm,
+    topN,
+  ];
 }
 
 /// Assign worker to booking

@@ -22,8 +22,7 @@ class PromoRepositoryImpl implements PromoRepository {
     required ServiceType serviceType,
     required String zoneId,
     required String userId,
-  }) async =>
-      const Left(GenericFailure('Not implemented'));
+  }) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, double>> applyPromoCode({
@@ -31,42 +30,36 @@ class PromoRepositoryImpl implements PromoRepository {
     required String userId,
     required String bookingId,
     required double orderAmount,
-  }) async =>
-      const Left(GenericFailure('Not implemented'));
+  }) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, List<PromoCodeEntity>>> getActivePromoCodes({
     String? userId,
     ServiceType? serviceType,
     String? zoneId,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, bool>> hasUserUsedPromoCode({
     required String userId,
     required String promoCode,
-  }) async =>
-      const Right(false);
+  }) async => const Right(false);
 
   @override
   Future<Either<Failure, List<PromoCodeUsage>>> getUserPromoUsage({
     required String userId,
     int limit = 50,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, PromoCodeEntity>> createPromoCode(
     PromoCodeEntity promoCode,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, PromoCodeEntity>> updatePromoCode(
     PromoCodeEntity promoCode,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, void>> deactivatePromoCode(String code) async =>
@@ -75,12 +68,10 @@ class PromoRepositoryImpl implements PromoRepository {
   @override
   Future<Either<Failure, PromoCodeStatistics>> getPromoCodeStatistics(
     String code,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, List<PromoCodeEntity>>> getTrendingPromoCodes({
     int limit = 10,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 }

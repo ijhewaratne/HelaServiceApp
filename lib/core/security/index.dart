@@ -1,13 +1,13 @@
 /// Security Library
-/// 
+///
 /// Sprint 5: Security Hardening for HelaService
-/// 
+///
 /// This library provides security utilities:
 /// - Input validation and sanitization
 /// - NIC/Phone validation
 /// - Password validation
 /// - XSS/Injection protection
-/// 
+///
 /// Usage:
 /// ```dart
 /// import 'package:home_service_app/core/security/index.dart';
@@ -78,12 +78,10 @@ class QuickValidate {
   QuickValidate._();
 
   /// NIC validation
-  static bool nic(String value) => 
-      NICValidator.validate(value) == null;
+  static bool nic(String value) => NICValidator.validate(value) == null;
 
   /// Phone validation
-  static bool phone(String value) => 
-      PhoneValidator.validate(value) == null;
+  static bool phone(String value) => PhoneValidator.validate(value) == null;
 
   /// Email validation
   static bool email(String value, {bool required = false}) =>
@@ -113,10 +111,10 @@ class QuickSanitize {
   QuickSanitize._();
 
   /// Sanitize for HTML display
-  static String html(String input) => 
+  static String html(String input) =>
       input.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
   /// Sanitize for plain text display
-  static String text(String input) => 
+  static String text(String input) =>
       input.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
 }

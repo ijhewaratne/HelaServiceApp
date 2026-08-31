@@ -4,16 +4,16 @@ import '../../../core/constants/app_constants.dart';
 import '../domain/entities/incident.dart';
 
 /// Emergency Service for reporting and handling incidents
-/// 
+///
 /// Phase 1: Critical Security & Stability - Created missing file
 class EmergencyService {
   final FirebaseFirestore _firestore;
-  
-  EmergencyService({FirebaseFirestore? firestore}) 
-      : _firestore = firestore ?? FirebaseFirestore.instance;
-  
+
+  EmergencyService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
+
   /// Report an emergency/incident
-  /// 
+  ///
   /// Creates an incident record in Firestore and triggers notifications
   Future<Incident?> reportEmergency({
     required String reporterId,
@@ -26,7 +26,7 @@ class EmergencyService {
     try {
       final incidentRef = _firestore.collection('incidents').doc();
       final now = DateTime.now();
-      
+
       final incident = Incident(
         id: incidentRef.id,
         reporterId: reporterId,
@@ -38,7 +38,7 @@ class EmergencyService {
         reportedAt: now,
         status: IncidentStatus.pending,
       );
-      
+
       await incidentRef.set({
         'id': incident.id,
         'reporterId': incident.reporterId,
@@ -51,19 +51,19 @@ class EmergencyService {
         'status': incident.status.name,
         'createdAt': Timestamp.fromDate(now),
       });
-      
+
       // TODO: Send push notification to admins
       // TODO: Send email alert for high severity incidents
-      
+
       return incident;
     } catch (e) {
       print('Error reporting emergency: $e');
       return null;
     }
   }
-  
+
   /// Contact emergency operator via WhatsApp
-  /// 
+  ///
   /// Opens WhatsApp with a pre-filled emergency message
   Future<void> contactEmergencyOperator({
     required String message,
@@ -72,23 +72,26 @@ class EmergencyService {
     final operatorNumber = phoneNumber ?? AppConstants.operatorWhatsApp;
     final encodedMessage = Uri.encodeComponent(message);
     final whatsappUrl = 'https://wa.me/$operatorNumber?text=$encodedMessage';
-    
+
     final uri = Uri.parse(whatsappUrl);
-    
+
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       throw Exception('Could not launch WhatsApp');
     }
   }
-  
+
   /// Get incident by ID
   Future<Incident?> getIncident(String incidentId) async {
     try {
-      final doc = await _firestore.collection('incidents').doc(incidentId).get();
-      
+      final doc = await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .get();
+
       if (!doc.exists) return null;
-      
+
       final data = doc.data()!;
       return _mapToIncident(data);
     } catch (e) {
@@ -96,7 +99,7 @@ class EmergencyService {
       return null;
     }
   }
-  
+
   /// Get incidents for a user
   Future<List<Incident>> getUserIncidents(String userId) async {
     try {
@@ -105,14 +108,14 @@ class EmergencyService {
           .where('reporterId', isEqualTo: userId)
           .orderBy('reportedAt', descending: true)
           .get();
-      
+
       return snapshot.docs.map((doc) => _mapToIncident(doc.data())).toList();
     } catch (e) {
       print('Error getting user incidents: $e');
       return [];
     }
   }
-  
+
   /// Update incident status
   Future<void> updateIncidentStatus(
     String incidentId,
@@ -125,23 +128,26 @@ class EmergencyService {
         'status': status.name,
         'updatedAt': Timestamp.now(),
       };
-      
+
       if (resolution != null) {
         updateData['resolution'] = resolution;
         updateData['resolvedAt'] = Timestamp.now();
       }
-      
+
       if (resolvedBy != null) {
         updateData['resolvedBy'] = resolvedBy;
       }
-      
-      await _firestore.collection('incidents').doc(incidentId).update(updateData);
+
+      await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .update(updateData);
     } catch (e) {
       print('Error updating incident status: $e');
       rethrow;
     }
   }
-  
+
   /// Call emergency hotline (direct phone call)
   Future<void> callEmergencyHotline() async {
     final uri = Uri.parse('tel:${AppConstants.emergencyPhone}');
@@ -151,7 +157,7 @@ class EmergencyService {
       throw Exception('Could not launch phone dialer');
     }
   }
-  
+
   /// Map Firestore data to Incident entity
   Incident _mapToIncident(Map<String, dynamic> data) {
     return Incident(
@@ -164,14 +170,15 @@ class EmergencyService {
       description: data['description'] as String? ?? '',
       audioUrl: data['audioUrl'] as String?,
       imageUrl: data['imageUrl'] as String?,
-      reportedAt: (data['reportedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      reportedAt:
+          (data['reportedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       status: _parseIncidentStatus(data['status'] as String?),
       resolvedBy: data['resolvedBy'] as String?,
       resolvedAt: (data['resolvedAt'] as Timestamp?)?.toDate(),
       resolution: data['resolution'] as String?,
     );
   }
-  
+
   /// Parse incident type from string
   IncidentType _parseIncidentType(String? type) {
     switch (type) {
@@ -189,7 +196,7 @@ class EmergencyService {
         return IncidentType.other;
     }
   }
-  
+
   /// Parse incident status from string
   IncidentStatus _parseIncidentStatus(String? status) {
     switch (status) {

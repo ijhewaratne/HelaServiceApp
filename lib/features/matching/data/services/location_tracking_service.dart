@@ -5,9 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import '../../../../core/utils/geohash_helper.dart';
 
 /// Service for tracking worker location in real-time
-/// 
+///
 /// Phase 3: Essential Features - Real-Time Worker Tracking
-/// 
+///
 /// This service handles:
 /// - Starting/stopping location tracking
 /// - Updating worker location in Firestore
@@ -18,13 +18,13 @@ class LocationTrackingService {
   bool _isTracking = false;
 
   LocationTrackingService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Check if currently tracking
   bool get isTracking => _isTracking;
 
   /// Start tracking worker location
-  /// 
+  ///
   /// Should be called when worker goes online
   Future<void> startTracking(String workerId) async {
     if (_isTracking) return;
@@ -54,22 +54,23 @@ class LocationTrackingService {
     await _updateWorkerStatus(workerId, true);
 
     // Start listening to location updates
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
-      ),
-    ).listen(
-      (position) => _updateWorkerLocation(workerId, position),
-      onError: (error) {
-        print('Location tracking error: $error');
-        _isTracking = false;
-      },
-    );
+    _positionStream =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10, // Update every 10 meters
+          ),
+        ).listen(
+          (position) => _updateWorkerLocation(workerId, position),
+          onError: (error) {
+            print('Location tracking error: $error');
+            _isTracking = false;
+          },
+        );
   }
 
   /// Stop tracking worker location
-  /// 
+  ///
   /// Should be called when worker goes offline
   Future<void> stopTracking(String workerId) async {
     _isTracking = false;
@@ -136,7 +137,7 @@ class LocationTrackingService {
   }
 
   /// Listen to a worker's location updates (customer-side)
-  /// 
+  ///
   /// Returns a stream of location updates for the specified worker
   Stream<WorkerLocation> watchWorkerLocation(String workerId) {
     return _firestore
@@ -144,28 +145,28 @@ class LocationTrackingService {
         .doc(workerId)
         .snapshots()
         .map((snapshot) {
-      if (!snapshot.exists) {
-        return WorkerLocation.empty;
-      }
+          if (!snapshot.exists) {
+            return WorkerLocation.empty;
+          }
 
-      final data = snapshot.data() as Map<String, dynamic>;
-      final geoPoint = data['location'] as GeoPoint?;
-      final timestamp = data['timestamp'] as Timestamp?;
+          final data = snapshot.data() as Map<String, dynamic>;
+          final geoPoint = data['location'] as GeoPoint?;
+          final timestamp = data['timestamp'] as Timestamp?;
 
-      return WorkerLocation(
-        workerId: workerId,
-        latitude: geoPoint?.latitude ?? 0.0,
-        longitude: geoPoint?.longitude ?? 0.0,
-        accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0.0,
-        heading: (data['heading'] as num?)?.toDouble() ?? 0.0,
-        speed: (data['speed'] as num?)?.toDouble() ?? 0.0,
-        timestamp: timestamp?.toDate(),
-      );
-    });
+          return WorkerLocation(
+            workerId: workerId,
+            latitude: geoPoint?.latitude ?? 0.0,
+            longitude: geoPoint?.longitude ?? 0.0,
+            accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0.0,
+            heading: (data['heading'] as num?)?.toDouble() ?? 0.0,
+            speed: (data['speed'] as num?)?.toDouble() ?? 0.0,
+            timestamp: timestamp?.toDate(),
+          );
+        });
   }
 
   /// Get nearby online workers
-  /// 
+  ///
   /// Uses geohash for efficient querying
   Future<List<WorkerLocation>> getNearbyWorkers({
     required double latitude,
@@ -175,12 +176,16 @@ class LocationTrackingService {
   }) async {
     try {
       // Get neighboring geohashes
-      final centerGeohash = GeohashHelper.encode(latitude, longitude, precision: 5);
+      final centerGeohash = GeohashHelper.encode(
+        latitude,
+        longitude,
+        precision: 5,
+      );
       final neighbors = GeohashHelper.getNeighbors(centerGeohash);
 
       // Query workers in all neighboring cells
       final allWorkers = <WorkerLocation>[];
-      
+
       for (final geohashPrefix in [...neighbors, centerGeohash]) {
         final query = await _firestore
             .collection('worker_locations')
@@ -192,7 +197,7 @@ class LocationTrackingService {
         for (final doc in query.docs) {
           final data = doc.data();
           final geoPoint = data['location'] as GeoPoint?;
-          
+
           if (geoPoint != null) {
             final worker = WorkerLocation(
               workerId: doc.id,
@@ -241,8 +246,9 @@ class LocationTrackingService {
     final a =
         math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_toRadians(lat1)) *
-        math.cos(_toRadians(lat2)) *
-        math.sin(dLon / 2) * math.sin(dLon / 2);
+            math.cos(_toRadians(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
 
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return earthRadius * c;
@@ -326,4 +332,3 @@ class LocationServiceDisabledException implements Exception {
   @override
   String toString() => 'Location services are disabled';
 }
-

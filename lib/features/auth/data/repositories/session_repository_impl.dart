@@ -62,9 +62,7 @@ class SessionRepositoryImpl implements SessionRepository {
   }
 
   @override
-  Future<Either<Failure, List<UserSession>>> getSessions(
-    String userId,
-  ) async {
+  Future<Either<Failure, List<UserSession>>> getSessions(String userId) async {
     try {
       final currentSessionId = await _getOrCreateSessionId();
       final snap = await _firestore
@@ -104,7 +102,9 @@ class SessionRepositoryImpl implements SessionRepository {
       });
       return const Right(null);
     } on FirebaseFunctionsException catch (e) {
-      return Left(GenericFailure('Failed to sign out other devices: ${e.message}'));
+      return Left(
+        GenericFailure('Failed to sign out other devices: ${e.message}'),
+      );
     } catch (e) {
       return Left(GenericFailure('Unknown error: $e'));
     }

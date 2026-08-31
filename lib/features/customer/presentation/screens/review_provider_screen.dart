@@ -69,7 +69,8 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
           setState(() => _loading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('You have already reviewed this booking')),
+              content: Text('You have already reviewed this booking'),
+            ),
           );
         }
         return;
@@ -84,8 +85,7 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
         reviewText: _textController.text.trim().isEmpty
             ? null
             : _textController.text.trim(),
-        punctualityRating:
-            _punctualityRating == 0 ? null : _punctualityRating,
+        punctualityRating: _punctualityRating == 0 ? null : _punctualityRating,
         qualityRating: _qualityRating == 0 ? null : _qualityRating,
         wouldRecommend: _wouldRecommend,
         wasProviderOnTime: _providerOnTime,
@@ -93,22 +93,24 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
         createdAt: DateTime.now(),
       );
 
-      final docRef =
-          FirebaseFirestore.instance.collection('reviews').doc();
+      final docRef = FirebaseFirestore.instance.collection('reviews').doc();
       await docRef.set(review.copyWith(id: docRef.id).toJson());
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text(
-                  'Review submitted — thank you! It will appear after moderation.')),
+            content: Text(
+              'Review submitted — thank you! It will appear after moderation.',
+            ),
+          ),
         );
         context.go('/customer/bookings');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -168,7 +170,8 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
               decoration: InputDecoration(
                 hintText: 'Share details about your experience...',
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFF1B5E20)),
@@ -200,17 +203,25 @@ class _ReviewProviderScreenState extends State<ReviewProviderScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _loading
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Text('Submit Review',
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Submit Review',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -225,8 +236,10 @@ class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
   @override
   Widget build(BuildContext context) {
-    return Text(text,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15));
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+    );
   }
 }
 
@@ -235,8 +248,11 @@ class _StarPicker extends StatelessWidget {
   final ValueChanged<int> onChanged;
   final double size;
 
-  const _StarPicker(
-      {required this.value, required this.onChanged, this.size = 36});
+  const _StarPicker({
+    required this.value,
+    required this.onChanged,
+    this.size = 36,
+  });
 
   @override
   Widget build(BuildContext context) {

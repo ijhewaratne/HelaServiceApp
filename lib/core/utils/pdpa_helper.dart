@@ -21,15 +21,15 @@ class PDPAManager {
   }
 
   // 3. Sensitive Data Encryption Stub (Transit)
-  // Ensures NICs and precise addresses are theoretically obfuscated before leaving the device. 
+  // Ensures NICs and precise addresses are theoretically obfuscated before leaving the device.
   // In production, implement a robust Key Management Service (KMS) or symmetric AES-256 process here
   static Map<String, dynamic> encryptSensitiveData(String nic, String address) {
-    // NOTE: For MVP purposes, this simply returns a payload map. 
+    // NOTE: For MVP purposes, this simply returns a payload map.
     // The actual AES-Key derivation via 'encrypt' package should live here in Prod.
     return {
       'encrypted_nic': 'ENCRYPTED_STUB_$nic',
       'encrypted_address': 'ENCRYPTED_STUB_$address',
-      'encryption_version': 'v1_aes_stub'
+      'encryption_version': 'v1_aes_stub',
     };
   }
 

@@ -10,15 +10,20 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class MockFirebaseStorage extends Mock implements FirebaseStorage {}
 
-class MockCollectionReference extends Mock implements CollectionReference<Map<String, dynamic>> {}
+class MockCollectionReference extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
 
-class MockDocumentReference extends Mock implements DocumentReference<Map<String, dynamic>> {}
+class MockDocumentReference extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
 
-class MockQuerySnapshot extends Mock implements QuerySnapshot<Map<String, dynamic>> {}
+class MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
 
-class MockQueryDocumentSnapshot extends Mock implements QueryDocumentSnapshot<Map<String, dynamic>> {}
+class MockQueryDocumentSnapshot extends Mock
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {}
 
-class MockDocumentSnapshot extends Mock implements DocumentSnapshot<Map<String, dynamic>> {}
+class MockDocumentSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}
 
 class MockUser extends Mock implements User {}
 
@@ -103,10 +108,7 @@ QueryDocumentSnapshot<Map<String, dynamic>> createMockQueryDocumentSnapshot({
   required String id,
   required Map<String, dynamic> data,
 }) {
-  return FakeQueryDocumentSnapshot(
-    snapshotId: id,
-    snapshotData: data,
-  );
+  return FakeQueryDocumentSnapshot(snapshotId: id, snapshotData: data);
 }
 
 /// Helper to create mock QuerySnapshot

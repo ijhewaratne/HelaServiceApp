@@ -34,8 +34,7 @@ void main() {
 
   group('authStateChanges', () {
     test('emits null when Firebase emits null (signed-out state)', () {
-      when(mockAuth.authStateChanges())
-          .thenAnswer((_) => Stream.value(null));
+      when(mockAuth.authStateChanges()).thenAnswer((_) => Stream.value(null));
       expect(repository.authStateChanges, emits(null));
     });
   });

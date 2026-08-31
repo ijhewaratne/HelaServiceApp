@@ -15,7 +15,8 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> verifyPhone({
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
-    required Function(firebase.PhoneAuthCredential credential) onVerificationCompleted,
+    required Function(firebase.PhoneAuthCredential credential)
+    onVerificationCompleted,
     required Function(String error) onVerificationFailed,
   });
 
@@ -43,7 +44,10 @@ abstract class AuthRepository {
   Future<User?> getCurrentUser();
 
   /// Update user type after role selection
-  Future<Either<Failure, User>> updateUserType(String userId, UserType userType);
+  Future<Either<Failure, User>> updateUserType(
+    String userId,
+    UserType userType,
+  );
 
   /// Mark user as onboarded
   Future<Either<Failure, User>> markUserOnboarded(String userId);

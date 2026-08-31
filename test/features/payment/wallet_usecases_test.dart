@@ -6,8 +6,8 @@ import 'package:home_service_app/features/worker/domain/entities/worker_verifica
 void main() {
   // ── Payout.calculate — 80/20 split ───────────────────────────────────────
 
-  final tPeriodStart = DateTime(2026, 6,  2);
-  final tPeriodEnd   = DateTime(2026, 6,  9);
+  final tPeriodStart = DateTime(2026, 6, 2);
+  final tPeriodEnd = DateTime(2026, 6, 9);
 
   group('Payout.calculate', () {
     test('80/20 split is correct', () {
@@ -20,7 +20,7 @@ void main() {
         bookingIds: ['b1'],
       );
       expect(payout.workerAmount, closeTo(4000.0, 0.01));
-      expect(payout.platformFee,  closeTo(1000.0, 0.01));
+      expect(payout.platformFee, closeTo(1000.0, 0.01));
     });
 
     test('zero gross yields zero amounts', () {
@@ -33,7 +33,7 @@ void main() {
         bookingIds: [],
       );
       expect(payout.workerAmount, 0.0);
-      expect(payout.platformFee,  0.0);
+      expect(payout.platformFee, 0.0);
     });
 
     test('fractional amounts sum to gross', () {
@@ -46,7 +46,7 @@ void main() {
         bookingIds: ['b1'],
       );
       expect(payout.workerAmount, closeTo(1200.0, 0.01));
-      expect(payout.platformFee,  closeTo(300.0,  0.01));
+      expect(payout.platformFee, closeTo(300.0, 0.01));
       expect(payout.workerAmount + payout.platformFee, closeTo(1500.0, 0.01));
     });
 
@@ -169,9 +169,9 @@ void main() {
     });
 
     test('rate multipliers are correct per tier', () {
-      expect(VerificationTier.green.rateMultiplier,   1.00);
-      expect(VerificationTier.blue.rateMultiplier,    1.10);
-      expect(VerificationTier.gold.rateMultiplier,    1.25);
+      expect(VerificationTier.green.rateMultiplier, 1.00);
+      expect(VerificationTier.blue.rateMultiplier, 1.10);
+      expect(VerificationTier.gold.rateMultiplier, 1.25);
       expect(VerificationTier.partner.rateMultiplier, 1.40);
     });
   });

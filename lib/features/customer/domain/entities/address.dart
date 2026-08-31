@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 enum AddressType { home, work, other }
 
 /// Address entity for customer addresses
-/// 
+///
 /// Phase 2: Architecture Refactoring - Replaces Map<String, dynamic>
 class Address extends Equatable {
   final String id;
@@ -163,11 +163,13 @@ class Address extends Equatable {
       isDefault: json['isDefault'] as bool? ?? false,
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
-          : DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+          : DateTime.parse(
+              json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+            ),
       updatedAt: json['updatedAt'] != null
           ? (json['updatedAt'] is Timestamp
-              ? (json['updatedAt'] as Timestamp).toDate()
-              : DateTime.parse(json['updatedAt'] as String))
+                ? (json['updatedAt'] as Timestamp).toDate()
+                : DateTime.parse(json['updatedAt'] as String))
           : null,
     );
   }
@@ -184,13 +186,7 @@ class Address extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        customerId,
-        houseNumber,
-        city,
-        zoneId,
-      ];
+  List<Object?> get props => [id, customerId, houseNumber, city, zoneId];
 
   @override
   String toString() => 'Address($label: $shortAddress)';
@@ -203,11 +199,12 @@ extension AddressX on Address {
     const earthRadius = 6371; // km
     final dLat = _toRadians(lat - latitude);
     final dLng = _toRadians(lng - longitude);
-    final a = 
+    final a =
         math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(_toRadians(latitude)) * 
-        math.cos(_toRadians(lat)) * 
-        math.sin(dLng / 2) * math.sin(dLng / 2);
+        math.cos(_toRadians(latitude)) *
+            math.cos(_toRadians(lat)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return earthRadius * c;
   }

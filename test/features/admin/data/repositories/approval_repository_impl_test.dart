@@ -49,13 +49,10 @@ void main() {
 
       final result = await repository.getPending();
 
-      result.fold(
-        (_) => fail('Expected pending approvals'),
-        (approvals) {
-          expect(approvals, hasLength(1));
-          expect(approvals.first.type, ApprovalType.categoryDeactivation);
-        },
-      );
+      result.fold((_) => fail('Expected pending approvals'), (approvals) {
+        expect(approvals, hasLength(1));
+        expect(approvals.first.type, ApprovalType.categoryDeactivation);
+      });
     });
   });
 
@@ -76,8 +73,10 @@ void main() {
 
       expect(result.isLeft(), isTrue);
 
-      final doc =
-          await firestore.collection('pending_approvals').doc(approvalId).get();
+      final doc = await firestore
+          .collection('pending_approvals')
+          .doc(approvalId)
+          .get();
       expect(doc.data()?['status'], 'pending'); // unchanged
     });
 
@@ -97,8 +96,10 @@ void main() {
 
       expect(result.isRight(), isTrue);
 
-      final doc =
-          await firestore.collection('pending_approvals').doc(approvalId).get();
+      final doc = await firestore
+          .collection('pending_approvals')
+          .doc(approvalId)
+          .get();
       expect(doc.data()?['status'], 'approved');
       expect(doc.data()?['decidedBy'], 'admin_2');
     });
@@ -118,8 +119,10 @@ void main() {
         reason: 'Category still in active use',
       );
 
-      final doc =
-          await firestore.collection('pending_approvals').doc(approvalId).get();
+      final doc = await firestore
+          .collection('pending_approvals')
+          .doc(approvalId)
+          .get();
       expect(doc.data()?['status'], 'rejected');
       expect(doc.data()?['reason'], 'Category still in active use');
     });

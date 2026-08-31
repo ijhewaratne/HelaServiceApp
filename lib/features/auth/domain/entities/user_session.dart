@@ -18,6 +18,12 @@ class UserSession extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [id, platform, createdAt, lastActiveAt, revokedAt, isCurrent];
+  List<Object?> get props => [
+    id,
+    platform,
+    createdAt,
+    lastActiveAt,
+    revokedAt,
+    isCurrent,
+  ];
 }

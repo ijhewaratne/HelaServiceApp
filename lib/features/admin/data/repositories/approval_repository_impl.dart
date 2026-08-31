@@ -64,7 +64,8 @@ class ApprovalRepositoryImpl implements ApprovalRepository {
       }
       if (doc.data()?['proposedBy'] == decidedBy) {
         return const Left(
-            ValidationFailure('You cannot decide your own proposal'));
+          ValidationFailure('You cannot decide your own proposal'),
+        );
       }
 
       await _col.doc(approvalId).update({
@@ -92,7 +93,8 @@ class ApprovalRepositoryImpl implements ApprovalRepository {
         orElse: () => ApprovalType.categoryDeactivation,
       ),
       payload: Map<String, dynamic>.from(
-          data['payload'] as Map<String, dynamic>? ?? {}),
+        data['payload'] as Map<String, dynamic>? ?? {},
+      ),
       proposedBy: data['proposedBy'] as String? ?? '',
       proposedAt:
           (data['proposedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),

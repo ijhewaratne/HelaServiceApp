@@ -1,5 +1,5 @@
 /// User entity representing an authenticated user
-/// 
+///
 /// @deprecated Use [User] instead
 /// This class is deprecated and will be removed in a future version.
 /// Use the consolidated [User] entity from 'user.dart'.

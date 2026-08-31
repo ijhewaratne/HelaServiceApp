@@ -11,7 +11,7 @@ import 'app.dart';
 import 'injection_container.dart' as di;
 
 /// Phase 6: DevOps & Monitoring - Staging Environment Entry Point
-/// 
+///
 /// This entry point is used for:
 /// - Staging deployments via GitHub Actions
 /// - QA testing
@@ -21,44 +21,46 @@ import 'injection_container.dart' as di;
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load staging environment variables
   await dotenv.load(fileName: '.env.staging');
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   // Initialize Firebase with staging options
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: String.fromEnvironment('FIREBASE_API_KEY_STAGING'),
       appId: String.fromEnvironment('FIREBASE_APP_ID_STAGING'),
-      messagingSenderId: String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID_STAGING'),
+      messagingSenderId: String.fromEnvironment(
+        'FIREBASE_MESSAGING_SENDER_ID_STAGING',
+      ),
       projectId: String.fromEnvironment('FIREBASE_PROJECT_ID_STAGING'),
       storageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET_STAGING'),
     ),
   );
-  
+
   // Initialize Crashlytics for staging
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
-  
+
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-  
+
   // Enable performance monitoring for staging
   await FirebasePerformance.instance.setPerformanceCollectionEnabled(true);
-  
+
   // Initialize dependency injection
   await di.init();
-  
+
   // Run the app with staging configuration
   runApp(const HelaServiceAppStaging());
 }
@@ -104,13 +106,11 @@ class _StagingInitializerState extends State<_StagingInitializer> {
   Future<void> _initialize() async {
     // Add a small delay to show staging banner
     await Future.delayed(const Duration(seconds: 1));
-    
+
     if (mounted) {
       // Navigate to main app
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const HelaServiceApp(),
-        ),
+        MaterialPageRoute(builder: (context) => const HelaServiceApp()),
       );
     }
   }

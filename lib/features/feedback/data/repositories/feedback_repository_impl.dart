@@ -23,7 +23,7 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
   }) async {
     try {
       final docRef = _firestore.collection('feedback').doc();
-      
+
       final feedback = FeedbackModel(
         id: docRef.id,
         userId: userId,
@@ -86,7 +86,7 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
   }) async {
     try {
       final docRef = _firestore.collection('feedback').doc(feedbackId);
-      
+
       final updates = <String, dynamic>{};
       if (isResolved != null) {
         updates['isResolved'] = isResolved;
@@ -125,14 +125,14 @@ class FeedbackRepositoryImpl implements FeedbackRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      try {
-        final feedback = snapshot.docs
-            .map((doc) => FeedbackModel.fromFirestore(doc).toEntity())
-            .toList();
-        return Right(feedback);
-      } catch (e) {
-        return Left(ServerFailure(e.toString()));
-      }
-    });
+          try {
+            final feedback = snapshot.docs
+                .map((doc) => FeedbackModel.fromFirestore(doc).toEntity())
+                .toList();
+            return Right(feedback);
+          } catch (e) {
+            return Left(ServerFailure(e.toString()));
+          }
+        });
   }
 }

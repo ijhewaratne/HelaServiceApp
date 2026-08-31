@@ -17,9 +17,7 @@ class TestableWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: providers,
-      child: MaterialApp(
-        home: child,
-      ),
+      child: MaterialApp(home: child),
     );
   }
 }
@@ -33,7 +31,10 @@ class MockHelpers {
   }
 
   /// Creates a mock error response for async repository calls
-  static Future<T> mockAsyncError<T>(Exception error, {int delayMs = 100}) async {
+  static Future<T> mockAsyncError<T>(
+    Exception error, {
+    int delayMs = 100,
+  }) async {
     await Future.delayed(Duration(milliseconds: delayMs));
     throw error;
   }

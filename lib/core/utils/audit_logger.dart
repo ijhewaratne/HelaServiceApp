@@ -18,11 +18,11 @@ class AuditLogger {
     required Map<String, dynamic> payload,
   }) async {
     final String logId = const Uuid().v4();
-    
+
     // Simulate saving to an immutable `/audit_logs` collection
     // final Map<String, dynamic> auditData = { ... };
     // await _firestore.collection('audit_logs').doc(logId).set(auditData);
-    
+
     // ignore: avoid_print
     print('AUDIT LOG [$logId]: ${type.name} recorded for Worker $workerId');
   }
@@ -38,10 +38,7 @@ class AuditLogger {
       workerId: workerId,
       bookingId: bookingId,
       type: AuditEventType.gpsCheckIn,
-      payload: {
-        'latitude': latitude,
-        'longitude': longitude,
-      },
+      payload: {'latitude': latitude, 'longitude': longitude},
     );
   }
 
@@ -59,7 +56,7 @@ class AuditLogger {
       payload: {
         'amount': amount,
         'transactionRef': transactionRef,
-        'currency': 'LKR'
+        'currency': 'LKR',
       },
     );
   }

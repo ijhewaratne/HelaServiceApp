@@ -15,9 +15,9 @@ class IncidentRepositoryImpl implements IncidentRepository {
     try {
       final docRef = _firestore.collection('incidents').doc();
       final incidentWithId = incident.copyWith(id: docRef.id);
-      
+
       await docRef.set(_incidentToMap(incidentWithId));
-      
+
       return Right(incidentWithId);
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to report incident'));
@@ -27,15 +27,19 @@ class IncidentRepositoryImpl implements IncidentRepository {
   }
 
   @override
-  Future<Either<Failure, List<Incident>>> getUserIncidents(String userId) async {
+  Future<Either<Failure, List<Incident>>> getUserIncidents(
+    String userId,
+  ) async {
     try {
       final snapshot = await _firestore
           .collection('incidents')
           .where('reporterId', isEqualTo: userId)
           .orderBy('reportedAt', descending: true)
           .get();
-      
-      final incidents = snapshot.docs.map((doc) => _incidentFromMap(doc)).toList();
+
+      final incidents = snapshot.docs
+          .map((doc) => _incidentFromMap(doc))
+          .toList();
       return Right(incidents);
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incidents'));
@@ -54,13 +58,15 @@ class IncidentRepositoryImpl implements IncidentRepository {
           .collection('incidents')
           .orderBy('reportedAt', descending: true)
           .limit(limit);
-      
+
       if (status != null) {
         query = query.where('status', isEqualTo: status.name);
       }
-      
+
       final snapshot = await query.get();
-      final incidents = snapshot.docs.map((doc) => _incidentFromMap(doc)).toList();
+      final incidents = snapshot.docs
+          .map((doc) => _incidentFromMap(doc))
+          .toList();
       return Right(incidents);
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incidents'));
@@ -77,10 +83,8 @@ class IncidentRepositoryImpl implements IncidentRepository {
     String? resolvedBy,
   }) async {
     try {
-      final updateData = <String, dynamic>{
-        'status': status.name,
-      };
-      
+      final updateData = <String, dynamic>{'status': status.name};
+
       if (resolution != null) {
         updateData['resolution'] = resolution;
       }
@@ -88,10 +92,16 @@ class IncidentRepositoryImpl implements IncidentRepository {
         updateData['resolvedBy'] = resolvedBy;
         updateData['resolvedAt'] = FieldValue.serverTimestamp();
       }
-      
-      await _firestore.collection('incidents').doc(incidentId).update(updateData);
-      
-      final doc = await _firestore.collection('incidents').doc(incidentId).get();
+
+      await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .update(updateData);
+
+      final doc = await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .get();
       return Right(_incidentFromMap(doc));
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to update incident'));
@@ -103,12 +113,15 @@ class IncidentRepositoryImpl implements IncidentRepository {
   @override
   Future<Either<Failure, Incident>> getIncidentById(String incidentId) async {
     try {
-      final doc = await _firestore.collection('incidents').doc(incidentId).get();
-      
+      final doc = await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .get();
+
       if (!doc.exists) {
         return const Left(ServerFailure('Incident not found'));
       }
-      
+
       return Right(_incidentFromMap(doc));
     } on FirebaseException catch (e) {
       return Left(ServerFailure(e.message ?? 'Failed to fetch incident'));
@@ -123,17 +136,21 @@ class IncidentRepositoryImpl implements IncidentRepository {
     IncidentStatus? status,
   }) {
     try {
-      var query = _firestore.collection('incidents').orderBy('reportedAt', descending: true);
-      
+      var query = _firestore
+          .collection('incidents')
+          .orderBy('reportedAt', descending: true);
+
       if (userId != null) {
         query = query.where('reporterId', isEqualTo: userId);
       }
       if (status != null) {
         query = query.where('status', isEqualTo: status.name);
       }
-      
+
       return query.snapshots().map((snapshot) {
-        final incidents = snapshot.docs.map((doc) => _incidentFromMap(doc)).toList();
+        final incidents = snapshot.docs
+            .map((doc) => _incidentFromMap(doc))
+            .toList();
         return Right<Failure, List<Incident>>(incidents);
       });
     } catch (e) {
@@ -156,8 +173,8 @@ class IncidentRepositoryImpl implements IncidentRepository {
       'reportedAt': Timestamp.fromDate(incident.reportedAt),
       'status': incident.status.name,
       'resolvedBy': incident.resolvedBy,
-      'resolvedAt': incident.resolvedAt != null 
-          ? Timestamp.fromDate(incident.resolvedAt!) 
+      'resolvedAt': incident.resolvedAt != null
+          ? Timestamp.fromDate(incident.resolvedAt!)
           : null,
       'resolution': incident.resolution,
     };

@@ -2,24 +2,24 @@ class NICValidator {
   /// Validates Sri Lankan NIC (both old and new formats)
   static bool isValid(String nic) {
     if (nic.isEmpty) return false;
-    
+
     // Remove spaces and convert to uppercase
     final clean = nic.trim().replaceAll(' ', '').toUpperCase();
-    
+
     // Old format: 9 digits + V/X (10 chars)
     // Example: 853202937V
     final oldFormat = RegExp(r'^[0-9]{9}[VX]$');
-    
+
     // New format: 12 digits (12 chars)
     // Example: 198532029372
     final newFormat = RegExp(r'^[0-9]{12}$');
-    
+
     if (oldFormat.hasMatch(clean)) {
       return _validateOldNIC(clean);
     } else if (newFormat.hasMatch(clean)) {
       return _validateNewNIC(clean);
     }
-    
+
     return false;
   }
 
@@ -51,7 +51,7 @@ class NICValidator {
   static int? getBirthYear(String nic) {
     final clean = nic.trim().replaceAll(' ', '').toUpperCase();
     if (!isValid(clean)) return null;
-    
+
     if (clean.length == 10) {
       // Old format: 853202937V -> 1985
       final yearDigits = int.tryParse(clean.substring(0, 2)) ?? 0;

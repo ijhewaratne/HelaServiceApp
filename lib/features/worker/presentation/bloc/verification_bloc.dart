@@ -72,8 +72,8 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   final FirebaseFirestore _db;
 
   VerificationBloc({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance,
-        super(VerificationInitial()) {
+    : _db = firestore ?? FirebaseFirestore.instance,
+      super(VerificationInitial()) {
     on<LoadVerification>(_onLoad);
     on<UpdateChecklist>(_onUpdate);
     on<PromoteToNextTier>(_onPromote);
@@ -83,7 +83,9 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       _db.collection('worker_verifications').doc(workerId);
 
   Future<void> _onLoad(
-      LoadVerification event, Emitter<VerificationState> emit) async {
+    LoadVerification event,
+    Emitter<VerificationState> emit,
+  ) async {
     emit(VerificationLoading());
     try {
       final snap = await _doc(event.workerId).get();
@@ -91,21 +93,21 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         emit(VerificationLoaded(WorkerVerification.initial(event.workerId)));
         return;
       }
-      emit(VerificationLoaded(
-          WorkerVerification.fromJson(snap.data()!)));
+      emit(VerificationLoaded(WorkerVerification.fromJson(snap.data()!)));
     } catch (e) {
       emit(VerificationError('Failed to load verification: $e'));
     }
   }
 
   Future<void> _onUpdate(
-      UpdateChecklist event, Emitter<VerificationState> emit) async {
+    UpdateChecklist event,
+    Emitter<VerificationState> emit,
+  ) async {
     emit(VerificationLoading());
     try {
-      await _doc(event.verification.workerId).set(
-        event.verification.toJson(),
-        SetOptions(merge: true),
-      );
+      await _doc(
+        event.verification.workerId,
+      ).set(event.verification.toJson(), SetOptions(merge: true));
       emit(VerificationLoaded(event.verification));
     } catch (e) {
       emit(VerificationError('Failed to update checklist: $e'));
@@ -113,7 +115,9 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   }
 
   Future<void> _onPromote(
-      PromoteToNextTier event, Emitter<VerificationState> emit) async {
+    PromoteToNextTier event,
+    Emitter<VerificationState> emit,
+  ) async {
     emit(VerificationLoading());
     try {
       final snap = await _doc(event.workerId).get();

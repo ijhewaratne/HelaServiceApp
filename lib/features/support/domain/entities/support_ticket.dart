@@ -33,18 +33,18 @@ class SupportTicket extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'customerId': customerId,
-        'bookingId': bookingId,
-        'category': category.name,
-        'subject': subject,
-        'description': description,
-        'status': status.name,
-        'adminResponse': adminResponse,
-        'respondedBy': respondedBy,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
-      };
+    'id': id,
+    'customerId': customerId,
+    'bookingId': bookingId,
+    'category': category.name,
+    'subject': subject,
+    'description': description,
+    'status': status.name,
+    'adminResponse': adminResponse,
+    'respondedBy': respondedBy,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+  };
 
   factory SupportTicket.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;

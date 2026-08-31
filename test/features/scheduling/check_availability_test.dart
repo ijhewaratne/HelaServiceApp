@@ -14,7 +14,8 @@ class TestSchedulingRepository implements SchedulingRepository {
   Future<Either<Failure, bool>> Function({
     required String workerId,
     required BookingSchedule schedule,
-  })? checkAvailabilityHandler;
+  })?
+  checkAvailabilityHandler;
 
   Future<Either<Failure, List<String>>> Function({
     required BookingSchedule schedule,
@@ -22,13 +23,15 @@ class TestSchedulingRepository implements SchedulingRepository {
     double? nearLat,
     double? nearLng,
     double radiusKm,
-  })? findAvailableWorkersHandler;
+  })?
+  findAvailableWorkersHandler;
 
   Future<Either<Failure, List<String>>> Function({
     required String parentBookingId,
     required BookingSchedule schedule,
     required Map<String, dynamic> bookingTemplate,
-  })? generateRecurringBookingsHandler;
+  })?
+  generateRecurringBookingsHandler;
 
   @override
   Future<Either<Failure, bool>> checkAvailability({
@@ -68,7 +71,9 @@ class TestSchedulingRepository implements SchedulingRepository {
     required Map<String, dynamic> bookingTemplate,
   }) {
     if (generateRecurringBookingsHandler == null) {
-      throw UnimplementedError('generateRecurringBookingsHandler not configured');
+      throw UnimplementedError(
+        'generateRecurringBookingsHandler not configured',
+      );
     }
     return generateRecurringBookingsHandler!(
       parentBookingId: parentBookingId,
@@ -113,7 +118,7 @@ void main() {
   setUp(() {
     repo = TestSchedulingRepository();
     checkAvailability = CheckWorkerAvailability(repo);
-    findAvailable     = FindAvailableWorkers(repo);
+    findAvailable = FindAvailableWorkers(repo);
     generateRecurring = GenerateRecurringBookings(repo);
   });
 
@@ -132,7 +137,8 @@ void main() {
           ({required workerId, required schedule}) async => const Right(true);
 
       final result = await checkAvailability(
-          CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule));
+        CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule),
+      );
 
       expect(result, const Right<Failure, bool>(true));
     });
@@ -142,17 +148,20 @@ void main() {
           ({required workerId, required schedule}) async => const Right(false);
 
       final result = await checkAvailability(
-          CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule));
+        CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule),
+      );
 
       expect(result, const Right<Failure, bool>(false));
     });
 
     test('propagates ServerFailure on error', () async {
-      repo.checkAvailabilityHandler = ({required workerId, required schedule}) async =>
-          const Left(ServerFailure('network error'));
+      repo.checkAvailabilityHandler =
+          ({required workerId, required schedule}) async =>
+              const Left(ServerFailure('network error'));
 
       final result = await checkAvailability(
-          CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule));
+        CheckWorkerAvailabilityParams(workerId: 'w1', schedule: tSchedule),
+      );
 
       expect(result.isLeft(), true);
     });
@@ -174,13 +183,15 @@ void main() {
 
       repo.findAvailableWorkersHandler = availableWorkers;
 
-      final result = await findAvailable(FindAvailableWorkersParams(
-        schedule: tSchedule,
-        serviceType: 'babysitting',
-        nearLat: 6.9271,
-        nearLng: 79.8612,
-        radiusKm: 5.0,
-      ));
+      final result = await findAvailable(
+        FindAvailableWorkersParams(
+          schedule: tSchedule,
+          serviceType: 'babysitting',
+          nearLat: 6.9271,
+          nearLng: 79.8612,
+          radiusKm: 5.0,
+        ),
+      );
 
       result.fold(
         (l) => fail('Expected Right, got Left: ${l.message}'),
@@ -201,13 +212,15 @@ void main() {
 
       repo.findAvailableWorkersHandler = noAvailableWorkers;
 
-      final result = await findAvailable(FindAvailableWorkersParams(
-        schedule: tSchedule,
-        serviceType: 'babysitting',
-        nearLat: 6.9271,
-        nearLng: 79.8612,
-        radiusKm: 5.0,
-      ));
+      final result = await findAvailable(
+        FindAvailableWorkersParams(
+          schedule: tSchedule,
+          serviceType: 'babysitting',
+          nearLat: 6.9271,
+          nearLng: 79.8612,
+          radiusKm: 5.0,
+        ),
+      );
 
       result.fold(
         (l) => fail('Expected Right'),
@@ -221,18 +234,20 @@ void main() {
   group('GenerateRecurringBookings', () {
     test('returns list of generated booking IDs', () async {
       final bookingTemplate = {'serviceType': 'babysitting'};
-      repo.generateRecurringBookingsHandler = ({
-        required parentBookingId,
-        required schedule,
-        required bookingTemplate,
-      }) async =>
-          const Right(['b2', 'b3', 'b4']);
+      repo.generateRecurringBookingsHandler =
+          ({
+            required parentBookingId,
+            required schedule,
+            required bookingTemplate,
+          }) async => const Right(['b2', 'b3', 'b4']);
 
-      final result = await generateRecurring(GenerateRecurringBookingsParams(
-        parentBookingId: 'b1',
-        schedule: tSchedule,
-        bookingTemplate: bookingTemplate,
-      ));
+      final result = await generateRecurring(
+        GenerateRecurringBookingsParams(
+          parentBookingId: 'b1',
+          schedule: tSchedule,
+          bookingTemplate: bookingTemplate,
+        ),
+      );
 
       result.fold(
         (l) => fail('Expected Right'),
@@ -290,9 +305,18 @@ void main() {
     });
 
     test('intervalDays: weekly=7, biweekly=14, monthly=30', () {
-      expect(const RecurrenceRule(pattern: RecurrencePattern.weekly).intervalDays, 7);
-      expect(const RecurrenceRule(pattern: RecurrencePattern.biweekly).intervalDays, 14);
-      expect(const RecurrenceRule(pattern: RecurrencePattern.monthly).intervalDays, 30);
+      expect(
+        const RecurrenceRule(pattern: RecurrencePattern.weekly).intervalDays,
+        7,
+      );
+      expect(
+        const RecurrenceRule(pattern: RecurrencePattern.biweekly).intervalDays,
+        14,
+      );
+      expect(
+        const RecurrenceRule(pattern: RecurrencePattern.monthly).intervalDays,
+        30,
+      );
     });
   });
 

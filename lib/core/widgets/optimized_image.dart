@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../utils/performance_utils.dart';
 
 /// Optimized network image widget with caching
-/// 
+///
 /// Use this instead of Image.network for better performance
 class OptimizedNetworkImage extends StatelessWidget {
   final String imageUrl;
@@ -39,13 +39,13 @@ class OptimizedNetworkImage extends StatelessWidget {
     final calculatedCacheWidth = memCacheWidth != null
         ? (memCacheWidth! * devicePixelRatio).toInt()
         : width != null
-            ? (width! * devicePixelRatio).toInt()
-            : PerformanceUtils.listItemWidth;
+        ? (width! * devicePixelRatio).toInt()
+        : PerformanceUtils.listItemWidth;
     final calculatedCacheHeight = memCacheHeight != null
         ? (memCacheHeight! * devicePixelRatio).toInt()
         : height != null
-            ? (height! * devicePixelRatio).toInt()
-            : null;
+        ? (height! * devicePixelRatio).toInt()
+        : null;
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
@@ -55,10 +55,8 @@ class OptimizedNetworkImage extends StatelessWidget {
       memCacheWidth: calculatedCacheWidth,
       memCacheHeight: calculatedCacheHeight,
       fadeInDuration: fadeInDuration,
-      placeholder: (context, url) =>
-          placeholder ?? _buildPlaceholder(),
-      errorWidget: (context, url, error) =>
-          errorWidget ?? _buildErrorWidget(),
+      placeholder: (context, url) => placeholder ?? _buildPlaceholder(),
+      errorWidget: (context, url, error) => errorWidget ?? _buildErrorWidget(),
     );
   }
 
@@ -85,11 +83,7 @@ class OptimizedNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       color: backgroundColor ?? Colors.grey[300],
-      child: const Icon(
-        Icons.broken_image,
-        color: Colors.grey,
-        size: 32,
-      ),
+      child: const Icon(Icons.broken_image, color: Colors.grey, size: 32),
     );
   }
 }
@@ -150,10 +144,7 @@ class OptimizedListImage extends StatelessWidget {
     );
 
     if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
+      return ClipRRect(borderRadius: borderRadius!, child: image);
     }
 
     return image;
@@ -188,10 +179,7 @@ class OptimizedDetailImage extends StatelessWidget {
     );
 
     if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
+      return ClipRRect(borderRadius: borderRadius!, child: image);
     }
 
     return image;
@@ -272,10 +260,7 @@ class FadeInOptimizedImage extends StatelessWidget {
     );
 
     if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
+      return ClipRRect(borderRadius: borderRadius!, child: image);
     }
 
     return image;

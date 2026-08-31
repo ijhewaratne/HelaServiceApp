@@ -18,10 +18,9 @@ class DisputeRepositoryImpl implements DisputeRepository {
       final newDispute = dispute.copyWith(id: docRef.id);
       await docRef.set(newDispute.toJson());
       // Mark booking as disputed
-      await _firestore
-          .collection('bookings')
-          .doc(dispute.requestId)
-          .update({'status': 'disputed'});
+      await _firestore.collection('bookings').doc(dispute.requestId).update({
+        'status': 'disputed',
+      });
       return Right(newDispute);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -31,8 +30,7 @@ class DisputeRepositoryImpl implements DisputeRepository {
   @override
   Future<Either<Failure, List<Dispute>>> getAllDisputes() async {
     try {
-      final snap =
-          await _col.orderBy('createdAt', descending: true).get();
+      final snap = await _col.orderBy('createdAt', descending: true).get();
       return Right(snap.docs.map((d) => Dispute.fromFirestore(d)).toList());
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -41,7 +39,8 @@ class DisputeRepositoryImpl implements DisputeRepository {
 
   @override
   Future<Either<Failure, List<Dispute>>> getDisputesByStatus(
-      DisputeStatus status) async {
+    DisputeStatus status,
+  ) async {
     try {
       final snap = await _col
           .where('status', isEqualTo: status.name)
@@ -55,7 +54,8 @@ class DisputeRepositoryImpl implements DisputeRepository {
 
   @override
   Future<Either<Failure, Dispute?>> getDisputeForRequest(
-      String requestId) async {
+    String requestId,
+  ) async {
     try {
       final snap = await _col
           .where('requestId', isEqualTo: requestId)
@@ -106,7 +106,6 @@ class DisputeRepositoryImpl implements DisputeRepository {
         .where('status', whereIn: ['open', 'underReview'])
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => Dispute.fromFirestore(d)).toList());
+        .map((snap) => snap.docs.map((d) => Dispute.fromFirestore(d)).toList());
   }
 }

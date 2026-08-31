@@ -8,7 +8,8 @@ abstract class ServiceCatalogRepository {
 
   /// All active children of a parent (Layer 2/3/4)
   Future<Either<Failure, List<ServiceCatalogItem>>> getChildren(
-      String parentId);
+    String parentId,
+  );
 
   /// Single item by id
   Future<Either<Failure, ServiceCatalogItem>> getItem(String id);
@@ -18,7 +19,8 @@ abstract class ServiceCatalogRepository {
 
   /// Admin: create or update a catalog item
   Future<Either<Failure, ServiceCatalogItem>> upsertItem(
-      ServiceCatalogItem item);
+    ServiceCatalogItem item,
+  );
 
   /// Admin: toggle active state
   Future<Either<Failure, void>> setActive(String id, {required bool active});

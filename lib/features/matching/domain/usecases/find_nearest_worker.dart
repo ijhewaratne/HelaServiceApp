@@ -37,22 +37,25 @@ class FindNearestWorkerParams {
 ///   40% current distance to customer
 ///   40% home-base distance (avoid sending worker too far from home)
 ///   20% idle time (recently completed = higher priority)
-class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams> {
+class FindNearestWorker
+    implements UseCase<List<Worker>, FindNearestWorkerParams> {
   final WorkerRepository _workerRepository;
   final FirebaseFirestore _db;
 
-  FindNearestWorker(this._workerRepository,
-      {FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+  FindNearestWorker(this._workerRepository, {FirebaseFirestore? firestore})
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<Either<Failure, List<Worker>>> call(
-      FindNearestWorkerParams params) async {
+    FindNearestWorkerParams params,
+  ) async {
     try {
       // Build geohash neighbours for the customer location
       final centerHash = GeohashHelper.encode(
-          params.customerLat, params.customerLng,
-          precision: 5);
+        params.customerLat,
+        params.customerLng,
+        precision: 5,
+      );
       final neighbours = GeohashHelper.getNeighbors(centerHash);
 
       final candidates = <_ScoredWorker>[];
@@ -73,8 +76,11 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
           if (lat == null || lng == null) continue;
 
           final dist = _haversineKm(
-              params.customerLat, params.customerLng,
-              lat, lng);
+            params.customerLat,
+            params.customerLng,
+            lat,
+            lng,
+          );
           if (dist > params.maxRadiusKm) continue;
 
           // Load full Worker entity for skill / status checks
@@ -83,19 +89,25 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
           if (worker == null) continue;
           if (worker.status != WorkerStatus.approved) continue;
 
-          final requestedService = params.serviceType.toString().split('.').last.toLowerCase();
+          final requestedService = params.serviceType
+              .toString()
+              .split('.')
+              .last
+              .toLowerCase();
           final serviceMatch = worker.services.any(
             (service) => service.name.toLowerCase() == requestedService,
           );
           if (!serviceMatch) continue;
 
-          candidates.add(_ScoredWorker(
-            worker: worker,
-            currentDistKm: dist,
-            homeLat: worker.homeLat,
-            homeLng: worker.homeLng,
-            lastJobCompletedAt: worker.lastJobCompletedAt,
-          ));
+          candidates.add(
+            _ScoredWorker(
+              worker: worker,
+              currentDistKm: dist,
+              homeLat: worker.homeLat,
+              homeLng: worker.homeLng,
+              lastJobCompletedAt: worker.lastJobCompletedAt,
+            ),
+          );
         }
       }
 
@@ -103,15 +115,19 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
       final scored = candidates.map((c) {
         final distScore = 1.0 / (c.currentDistKm + 0.1);
         final homeDistKm = (c.homeLat != null && c.homeLng != null)
-            ? _haversineKm(params.customerLat, params.customerLng,
-                c.homeLat!, c.homeLng!)
+            ? _haversineKm(
+                params.customerLat,
+                params.customerLng,
+                c.homeLat!,
+                c.homeLng!,
+              )
             : 10.0;
         final homeScore = 1.0 / (homeDistKm + 0.1);
         final idleMins = c.lastJobCompletedAt != null
             ? DateTime.now()
-                .difference(c.lastJobCompletedAt!)
-                .inMinutes
-                .toDouble()
+                  .difference(c.lastJobCompletedAt!)
+                  .inMinutes
+                  .toDouble()
             : 120.0;
         final idleScore = math.min(idleMins / 60.0, 2.0);
         return _ScoredWorker(
@@ -122,8 +138,7 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
           lastJobCompletedAt: c.lastJobCompletedAt,
           score: distScore * 0.4 + homeScore * 0.4 + idleScore * 0.2,
         );
-      }).toList()
-        ..sort((a, b) => b.score.compareTo(a.score));
+      }).toList()..sort((a, b) => b.score.compareTo(a.score));
 
       return Right(scored.take(params.topN).map((s) => s.worker).toList());
     } catch (e) {
@@ -135,7 +150,8 @@ class FindNearestWorker implements UseCase<List<Worker>, FindNearestWorkerParams
     const r = 6371.0;
     final dLat = (lat2 - lat1) * math.pi / 180;
     final dLon = (lon2 - lon1) * math.pi / 180;
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(lat1 * math.pi / 180) *
             math.cos(lat2 * math.pi / 180) *
             math.sin(dLon / 2) *

@@ -58,18 +58,18 @@ class Feedback extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        userType,
-        category,
-        message,
-        rating,
-        attachments,
-        createdAt,
-        isResolved,
-        adminResponse,
-        resolvedAt,
-      ];
+    id,
+    userId,
+    userType,
+    category,
+    message,
+    rating,
+    attachments,
+    createdAt,
+    isResolved,
+    adminResponse,
+    resolvedAt,
+  ];
 }
 
 enum FeedbackCategory { bug, feature, complaint, general }

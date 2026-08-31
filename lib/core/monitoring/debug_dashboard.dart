@@ -66,7 +66,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,23 +129,20 @@ class _DebugDashboardState extends State<DebugDashboard> {
               _buildSection(
                 title: '⚡ Performance',
                 children: [
-                  _buildButton(
-                    'Measure Operation',
-                    () async {
-                      final duration = await _performance.measure(
-                        'test_operation',
-                        () async {
-                          await Future.delayed(const Duration(milliseconds: 500));
-                          return 'done';
-                        },
+                  _buildButton('Measure Operation', () async {
+                    final duration = await _performance.measure(
+                      'test_operation',
+                      () async {
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        return 'done';
+                      },
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Operation took ${duration}ms')),
                       );
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Operation took ${duration}ms')),
-                        );
-                      }
-                    },
-                  ),
+                    }
+                  }),
                 ],
               ),
 
@@ -155,25 +152,22 @@ class _DebugDashboardState extends State<DebugDashboard> {
               _buildSection(
                 title: '🔌 Services',
                 children: [
-                  _buildToggle(
-                    'Location Tracking',
-                    _isLocationTracking,
-                    (value) {
-                      setState(() => _isLocationTracking = value);
-                      if (value) {
-                        LocationService(FirebaseFirestore.instance).startTracking('debug_worker');
-                      }
-                    },
-                  ),
-                  _buildButton(
-                    'Check Memory',
-                    () {
-                      PerformanceMonitoring().logMemoryUsage('debug_dashboard');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Memory usage logged')),
-                      );
-                    },
-                  ),
+                  _buildToggle('Location Tracking', _isLocationTracking, (
+                    value,
+                  ) {
+                    setState(() => _isLocationTracking = value);
+                    if (value) {
+                      LocationService(
+                        FirebaseFirestore.instance,
+                      ).startTracking('debug_worker');
+                    }
+                  }),
+                  _buildButton('Check Memory', () {
+                    PerformanceMonitoring().logMemoryUsage('debug_dashboard');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Memory usage logged')),
+                    );
+                  }),
                 ],
               ),
             ],
@@ -199,11 +193,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
           ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: children,
-        ),
+        Wrap(spacing: 8, runSpacing: 8, children: children),
       ],
     );
   }
@@ -221,11 +211,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
     );
   }
 
-  Widget _buildToggle(
-    String label,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
+  Widget _buildToggle(String label, bool value, ValueChanged<bool> onChanged) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -248,10 +234,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
 class DebugDashboardOverlay extends StatelessWidget {
   final Widget child;
 
-  const DebugDashboardOverlay({
-    super.key,
-    required this.child,
-  });
+  const DebugDashboardOverlay({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -260,9 +243,7 @@ class DebugDashboardOverlay extends StatelessWidget {
     return Stack(
       children: [
         child,
-        const Positioned.fill(
-          child: DebugDashboard(),
-        ),
+        const Positioned.fill(child: DebugDashboard()),
       ],
     );
   }

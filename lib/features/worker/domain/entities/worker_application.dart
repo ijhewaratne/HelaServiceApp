@@ -62,7 +62,8 @@ class WorkerApplication extends Equatable {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       address: address ?? this.address,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
-      emergencyContactPhone: emergencyContactPhone ?? this.emergencyContactPhone,
+      emergencyContactPhone:
+          emergencyContactPhone ?? this.emergencyContactPhone,
       selectedServices: selectedServices ?? this.selectedServices,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       nicFrontUrl: nicFrontUrl ?? this.nicFrontUrl,
@@ -76,11 +77,22 @@ class WorkerApplication extends Equatable {
 
   @override
   List<Object?> get props => [
-        id, nic, fullName, mobileNumber, address,
-        emergencyContactName, emergencyContactPhone,
-        selectedServices, profilePhotoUrl, nicFrontUrl, nicBackUrl,
-        status, appliedAt, rejectionReason, hasCompletedTraining,
-      ];
+    id,
+    nic,
+    fullName,
+    mobileNumber,
+    address,
+    emergencyContactName,
+    emergencyContactPhone,
+    selectedServices,
+    profilePhotoUrl,
+    nicFrontUrl,
+    nicBackUrl,
+    status,
+    appliedAt,
+    rejectionReason,
+    hasCompletedTraining,
+  ];
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {
@@ -128,10 +140,10 @@ class WorkerApplication extends Equatable {
 }
 
 enum ApplicationStatus {
-  draft,           // Filling form
-  pendingDocs,     // Awaiting NIC upload
-  underReview,     // Admin checking
-  trainingRequired,// Needs to watch videos
-  approved,        // Can go online
-  rejected         // Failed verification
+  draft, // Filling form
+  pendingDocs, // Awaiting NIC upload
+  underReview, // Admin checking
+  trainingRequired, // Needs to watch videos
+  approved, // Can go online
+  rejected, // Failed verification
 }

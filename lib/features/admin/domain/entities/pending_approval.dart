@@ -32,14 +32,14 @@ class PendingApproval extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        type,
-        payload,
-        proposedBy,
-        proposedAt,
-        status,
-        decidedBy,
-        decidedAt,
-        reason,
-      ];
+    id,
+    type,
+    payload,
+    proposedBy,
+    proposedAt,
+    status,
+    decidedBy,
+    decidedAt,
+    reason,
+  ];
 }

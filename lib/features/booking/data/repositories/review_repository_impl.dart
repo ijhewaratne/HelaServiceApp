@@ -26,15 +26,15 @@ class ReviewRepositoryImpl implements ReviewRepository {
 
   @override
   Future<Either<Failure, List<Review>>> getReviewsForProvider(
-      String providerId) async {
+    String providerId,
+  ) async {
     try {
       final snap = await _col
           .where('providerId', isEqualTo: providerId)
           .where('moderationStatus', isEqualTo: 'approved')
           .orderBy('createdAt', descending: true)
           .get();
-      return Right(
-          snap.docs.map((d) => Review.fromFirestore(d)).toList());
+      return Right(snap.docs.map((d) => Review.fromFirestore(d)).toList());
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -42,22 +42,21 @@ class ReviewRepositoryImpl implements ReviewRepository {
 
   @override
   Future<Either<Failure, List<Review>>> getReviewsByCustomer(
-      String customerId) async {
+    String customerId,
+  ) async {
     try {
       final snap = await _col
           .where('customerId', isEqualTo: customerId)
           .orderBy('createdAt', descending: true)
           .get();
-      return Right(
-          snap.docs.map((d) => Review.fromFirestore(d)).toList());
+      return Right(snap.docs.map((d) => Review.fromFirestore(d)).toList());
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Review?>> getReviewForRequest(
-      String requestId) async {
+  Future<Either<Failure, Review?>> getReviewForRequest(String requestId) async {
     try {
       final snap = await _col
           .where('requestId', isEqualTo: requestId)
@@ -77,8 +76,7 @@ class ReviewRepositoryImpl implements ReviewRepository {
           .where('moderationStatus', isEqualTo: 'pending')
           .orderBy('createdAt', descending: true)
           .get();
-      return Right(
-          snap.docs.map((d) => Review.fromFirestore(d)).toList());
+      return Right(snap.docs.map((d) => Review.fromFirestore(d)).toList());
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -86,7 +84,9 @@ class ReviewRepositoryImpl implements ReviewRepository {
 
   @override
   Future<Either<Failure, void>> approveReview(
-      String reviewId, String adminId) async {
+    String reviewId,
+    String adminId,
+  ) async {
     try {
       final batch = _firestore.batch();
       batch.update(_col.doc(reviewId), {
@@ -103,7 +103,8 @@ class ReviewRepositoryImpl implements ReviewRepository {
       await batch.commit();
       // Recalculate rating after approval changes the approved-review set
       final doc = await _col.doc(reviewId).get();
-      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      final providerId =
+          (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
       if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
@@ -113,7 +114,10 @@ class ReviewRepositoryImpl implements ReviewRepository {
 
   @override
   Future<Either<Failure, void>> hideReview(
-      String reviewId, String adminId, String note) async {
+    String reviewId,
+    String adminId,
+    String note,
+  ) async {
     try {
       final batch = _firestore.batch();
       batch.update(_col.doc(reviewId), {
@@ -131,7 +135,8 @@ class ReviewRepositoryImpl implements ReviewRepository {
       await batch.commit();
       // Recalculate: a previously-approved review being hidden reduces the count
       final doc = await _col.doc(reviewId).get();
-      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      final providerId =
+          (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
       if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
@@ -141,7 +146,9 @@ class ReviewRepositoryImpl implements ReviewRepository {
 
   @override
   Future<Either<Failure, void>> flagReview(
-      String reviewId, String adminId) async {
+    String reviewId,
+    String adminId,
+  ) async {
     try {
       final batch = _firestore.batch();
       batch.update(_col.doc(reviewId), {
@@ -158,7 +165,8 @@ class ReviewRepositoryImpl implements ReviewRepository {
       await batch.commit();
       // Recalculate: a previously-approved review being flagged reduces the count
       final doc = await _col.doc(reviewId).get();
-      final providerId = (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
+      final providerId =
+          (doc.data() as Map<String, dynamic>?)?['providerId'] as String?;
       if (providerId != null) await _updateProviderRating(providerId);
       return const Right(null);
     } catch (e) {
@@ -180,5 +188,4 @@ class ReviewRepositoryImpl implements ReviewRepository {
       'rating': avg,
     });
   }
-
 }

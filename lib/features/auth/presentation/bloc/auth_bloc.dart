@@ -29,11 +29,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AnalyticsService? analytics,
     CrashReportingService? crashReporting,
     SessionRepository? sessionRepository,
-  })  : _authRepository = authRepository,
-        _analytics = analytics ?? AnalyticsService(),
-        _crashReporting = crashReporting ?? CrashReportingService(),
-        _sessionRepository = sessionRepository,
-        super(AuthInitial()) {
+  }) : _authRepository = authRepository,
+       _analytics = analytics ?? AnalyticsService(),
+       _crashReporting = crashReporting ?? CrashReportingService(),
+       _sessionRepository = sessionRepository,
+       super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
     on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
     on<OtpSubmitted>(_onOtpSubmitted);
@@ -46,7 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       add(_AuthStateChanged(user: user));
     });
   }
-  
+
   Future<void> _onAuthStateChanged(
     _AuthStateChanged event,
     Emitter<AuthState> emit,
@@ -96,7 +96,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    
+
     final result = await _authRepository.verifyPhone(
       phoneNumber: event.phoneNumber,
       onCodeSent: (verificationId) {
@@ -109,7 +109,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           verificationId: _verificationId ?? '',
           smsCode: credential.smsCode ?? '',
         );
-        
+
         result.fold(
           (failure) {
             if (failure is MfaRequiredFailure) {
@@ -127,7 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               method: 'phone_auto_verification',
               userType: user.userType.name,
             );
-            
+
             if (user.isOnboarded) {
               emit(AuthAuthenticated(user: user));
             } else {
@@ -144,7 +144,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(message: error));
       },
     );
-    
+
     result.fold(
       (failure) {
         _analytics.logError(
@@ -162,7 +162,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    
+
     if (_verificationId == null) {
       _analytics.logError(
         error: 'OTP submitted without verification ID',
@@ -171,7 +171,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(message: 'Verification ID not found'));
       return;
     }
-    
+
     final result = await _authRepository.verifyOTP(
       verificationId: _verificationId!,
       smsCode: event.otpCode,
@@ -184,21 +184,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
       await _analytics.logError(
-          error: 'OTP verification failed: ${failure.message}',
-          context: 'auth_bloc');
+        error: 'OTP verification failed: ${failure.message}',
+        context: 'auth_bloc',
+      );
       emit(AuthError(message: failure.message));
       return;
     }
 
     final user = result.getOrElse(() => throw StateError(''));
-    final isNewUser = user.createdAt != null &&
+    final isNewUser =
+        user.createdAt != null &&
         user.createdAt!.difference(DateTime.now()).inMinutes.abs() < 5;
     if (isNewUser) {
       await _analytics.logSignUp(
-          method: 'phone_otp', userType: user.userType.name);
+        method: 'phone_otp',
+        userType: user.userType.name,
+      );
     } else {
       await _analytics.logLogin(
-          method: 'phone_otp', userType: user.userType.name);
+        method: 'phone_otp',
+        userType: user.userType.name,
+      );
     }
 
     if (!emit.isDone) {
@@ -216,8 +222,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
 
-    final result =
-        await _authRepository.completeMfaChallenge(totpCode: event.totpCode);
+    final result = await _authRepository.completeMfaChallenge(
+      totpCode: event.totpCode,
+    );
 
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (_) => throw StateError(''));
@@ -227,7 +234,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final user = result.getOrElse(() => throw StateError(''));
     await _analytics.logLogin(
-        method: 'phone_otp_mfa', userType: user.userType.name);
+      method: 'phone_otp_mfa',
+      userType: user.userType.name,
+    );
 
     if (!emit.isDone) {
       if (user.isOnboarded) {
@@ -240,10 +249,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    
+
     await _analytics.logLogout();
     await _authRepository.signOut();
-    
+
     emit(AuthUnauthenticated());
   }
 }
@@ -296,7 +305,7 @@ class _AuthStateChanged extends AuthEvent {
   final User? user;
 
   _AuthStateChanged({this.user});
-  
+
   @override
   List<Object?> get props => [user];
 }

@@ -34,15 +34,20 @@ class _SkillSelectionPageState extends State<SkillSelectionPage> {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 32),
-            
+
             ..._skills.keys.map((skill) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: CheckboxListTile(
-                  title: Text(skill, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  title: Text(
+                    skill,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
                   value: _skills[skill],
                   activeColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   tileColor: Colors.grey.shade50,
                   onChanged: (bool? value) {
                     setState(() {
@@ -56,17 +61,21 @@ class _SkillSelectionPageState extends State<SkillSelectionPage> {
             const Spacer(),
             BrandedButton(
               label: 'Save Skills',
-              onPressed: _skills.values.any((element) => element) 
-                ? () {
-                    // Navigate to next step: Training Video
-                    // context.go('/worker/onboarding/training');
-                  } 
-                : () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select at least one skill.')),
-                    );
-                  },
-              backgroundColor: _skills.values.any((element) => element) ? Colors.indigo : Colors.grey,
+              onPressed: _skills.values.any((element) => element)
+                  ? () {
+                      // Navigate to next step: Training Video
+                      // context.go('/worker/onboarding/training');
+                    }
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select at least one skill.'),
+                        ),
+                      );
+                    },
+              backgroundColor: _skills.values.any((element) => element)
+                  ? Colors.indigo
+                  : Colors.grey,
             ),
           ],
         ),

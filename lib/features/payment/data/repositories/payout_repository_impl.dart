@@ -8,14 +8,15 @@ class PayoutRepositoryImpl implements PayoutRepository {
   final FirebaseFirestore _db;
 
   PayoutRepositoryImpl({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('payouts');
 
   @override
   Future<Either<Failure, List<Payout>>> getWorkerPayouts(
-      String workerId) async {
+    String workerId,
+  ) async {
     try {
       final snap = await _col
           .where('workerId', isEqualTo: workerId)
@@ -66,7 +67,9 @@ class PayoutRepositoryImpl implements PayoutRepository {
 
   @override
   Future<Either<Failure, void>> markFailed(
-      String payoutId, String reason) async {
+    String payoutId,
+    String reason,
+  ) async {
     try {
       await _col.doc(payoutId).update({
         'status': 'failed',
@@ -84,8 +87,11 @@ class PayoutRepositoryImpl implements PayoutRepository {
     try {
       final now = DateTime.now();
       final weekStart = now.subtract(Duration(days: now.weekday - 1));
-      final periodStart =
-          DateTime(weekStart.year, weekStart.month, weekStart.day);
+      final periodStart = DateTime(
+        weekStart.year,
+        weekStart.month,
+        weekStart.day,
+      );
       final periodEnd = periodStart.add(const Duration(days: 7));
 
       // Find all completed bookings not yet in a payout. Firestore queries

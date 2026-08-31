@@ -41,7 +41,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
           } else {
             setState(() => _isLoading = false);
           }
-          
+
           if (state is AuthOtpSent) {
             setState(() {
               _otpSent = true;
@@ -53,16 +53,16 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
           }
 
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
-          
+
           if (state is AuthAuthenticated) {
             // Navigate based on user type
             _navigateBasedOnUserType(state.user);
           }
-          
+
           if (state is AuthNeedsOnboarding) {
             // Route based on existing role — only send to role-select when
             // no role has been chosen yet. Workers already have a role but
@@ -91,17 +91,16 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
                       _mfaRequired
                           ? 'Two-Factor Authentication'
                           : (_otpSent ? 'Enter OTP' : 'Welcome to HelaService'),
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _mfaRequired
                           ? 'Enter the code from your authenticator app'
                           : (_otpSent
-                              ? 'Enter the 6-digit code sent to +94 ${_phoneController.text}'
-                              : 'Enter your mobile number to get started'),
+                                ? 'Enter the 6-digit code sent to +94 ${_phoneController.text}'
+                                : 'Enter your mobile number to get started'),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 40),
@@ -192,9 +191,9 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
                         ),
                       ),
                     ],
-                    
+
                     const Spacer(),
-                    
+
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -202,13 +201,17 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
                         onPressed: _isLoading
                             ? null
                             : (_mfaRequired
-                                ? _verifyMfaCode
-                                : (_otpSent ? _verifyOTP : _sendOTP)),
+                                  ? _verifyMfaCode
+                                  : (_otpSent ? _verifyOTP : _sendOTP)),
                         child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(_mfaRequired
-                              ? 'VERIFY'
-                              : (_otpSent ? 'VERIFY' : 'SEND CODE')),
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Text(
+                                _mfaRequired
+                                    ? 'VERIFY'
+                                    : (_otpSent ? 'VERIFY' : 'SEND CODE'),
+                              ),
                       ),
                     ),
                   ],
@@ -223,7 +226,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> {
 
   void _sendOTP() {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final phone = '+94${_phoneController.text.trim()}';
     context.read<AuthBloc>().add(PhoneNumberSubmitted(phoneNumber: phone));
   }

@@ -21,7 +21,8 @@ class ConnectivityService {
       // Check initial connectivity status if connectivity object is available
       if (_connectivity != null) {
         // Handle connectivity package API
-        final results = await (_connectivity.checkConnectivity() as Future<dynamic>);
+        final results =
+            await (_connectivity.checkConnectivity() as Future<dynamic>);
         _updateConnectionStatus(results);
 
         // Listen for connectivity changes
@@ -56,17 +57,18 @@ class ConnectivityService {
   /// Update connection status based on connectivity results
   void _updateConnectionStatus(dynamic results) {
     final wasConnected = _isConnected;
-    
+
     // Handle different result types
     if (results is List) {
       // connectivity_plus 5.x+ returns List<ConnectivityResult>
-      _isConnected = results.any((result) => 
-        result.toString().contains('wifi') || 
-        result.toString().contains('mobile') ||
-        result.toString().contains('ethernet')
+      _isConnected = results.any(
+        (result) =>
+            result.toString().contains('wifi') ||
+            result.toString().contains('mobile') ||
+            result.toString().contains('ethernet'),
       );
-    } else if (results.toString().contains('none') || 
-               results.toString().contains('None')) {
+    } else if (results.toString().contains('none') ||
+        results.toString().contains('None')) {
       _isConnected = false;
     } else {
       _isConnected = true;
@@ -81,7 +83,8 @@ class ConnectivityService {
   Future<bool> checkConnectivity() async {
     try {
       if (_connectivity != null) {
-        final results = await (_connectivity.checkConnectivity() as Future<dynamic>);
+        final results =
+            await (_connectivity.checkConnectivity() as Future<dynamic>);
         _updateConnectionStatus(results);
       }
       return _isConnected;

@@ -9,7 +9,7 @@ import 'active_job_page.dart';
 
 class JobOfferPage extends StatefulWidget {
   final String workerId;
-  
+
   const JobOfferPage({Key? key, required this.workerId}) : super(key: key);
 
   @override
@@ -22,7 +22,7 @@ class _JobOfferPageState extends State<JobOfferPage> {
   Map<String, dynamic>? _currentOffer;
   Timer? _countdownTimer;
   int _secondsLeft = 30;
-  
+
   @override
   void initState() {
     super.initState();
@@ -37,11 +37,11 @@ class _JobOfferPageState extends State<JobOfferPage> {
         .where('status', isEqualTo: 'pending')
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        final offer = snapshot.docs.first.data() as Map<String, dynamic>;
-        _showOffer(offer, snapshot.docs.first.id);
-      }
-    });
+          if (snapshot.docs.isNotEmpty) {
+            final offer = snapshot.docs.first.data() as Map<String, dynamic>;
+            _showOffer(offer, snapshot.docs.first.id);
+          }
+        });
   }
 
   void _showOffer(Map<String, dynamic> offer, String offerId) {
@@ -98,7 +98,7 @@ class _JobOfferPageState extends State<JobOfferPage> {
             ),
             minHeight: 6,
           ),
-          
+
           Padding(
             padding: EdgeInsets.all(20),
             child: Column(
@@ -116,20 +116,26 @@ class _JobOfferPageState extends State<JobOfferPage> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '$_secondsLeft s',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
-                
+
                 // Earnings (Big)
                 Center(
                   child: Column(
@@ -147,14 +153,14 @@ class _JobOfferPageState extends State<JobOfferPage> {
                   ),
                 ),
                 SizedBox(height: 24),
-                
+
                 // Job details
                 _buildDetailRow(Icons.work, _getServiceName(serviceType)),
                 _buildDetailRow(Icons.location_on, '$distance km away'),
                 _buildDetailRow(Icons.home, '$houseNumber, $landmark'),
-                
+
                 SizedBox(height: 24),
-                
+
                 // Action buttons
                 Row(
                   children: [
@@ -178,10 +184,14 @@ class _JobOfferPageState extends State<JobOfferPage> {
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16),
                         ),
-                        onPressed: () => _acceptJob(offerId, offer['jobId'] as String),
+                        onPressed: () =>
+                            _acceptJob(offerId, offer['jobId'] as String),
                         child: Text(
                           'ACCEPT JOB',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -238,13 +248,11 @@ class _JobOfferPageState extends State<JobOfferPage> {
       if (result.data['success'] == true) {
         Navigator.pop(context);
         _countdownTimer?.cancel();
-        
+
         // Navigate to active job screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => ActiveJobPage(jobId: jobId),
-          ),
+          MaterialPageRoute(builder: (_) => ActiveJobPage(jobId: jobId)),
         );
       }
     } catch (e) {
@@ -287,7 +295,11 @@ class _JobOfferPageState extends State<JobOfferPage> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.radio_button_checked, size: 60, color: Colors.green),
+                  Icon(
+                    Icons.radio_button_checked,
+                    size: 60,
+                    color: Colors.green,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'You are online',

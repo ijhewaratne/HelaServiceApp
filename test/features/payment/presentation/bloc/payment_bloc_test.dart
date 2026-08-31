@@ -53,31 +53,37 @@ void main() {
     blocTest<PaymentBloc, PaymentState>(
       'emits [PaymentProcessing, PaymentSuccess] and logs analytics when successful',
       build: () {
-        when(mockRepository.processPayment(
+        when(
+          mockRepository.processPayment(
+            bookingId: bookingId,
+            amount: amount,
+            customerName: customerName,
+            customerPhone: customerPhone,
+            customerEmail: customerEmail,
+            customerAddress: anyNamed('customerAddress'),
+            customerCity: anyNamed('customerCity'),
+            description: anyNamed('description'),
+          ),
+        ).thenAnswer((_) async => Right(successResult));
+        when(
+          mockAnalytics.logPaymentSuccess(
+            paymentId: anyNamed('paymentId'),
+            bookingId: anyNamed('bookingId'),
+            amount: anyNamed('amount'),
+            method: anyNamed('method'),
+          ),
+        ).thenAnswer((_) async {});
+        return bloc;
+      },
+      act: (bloc) => bloc.add(
+        ProcessPayment(
           bookingId: bookingId,
           amount: amount,
           customerName: customerName,
           customerPhone: customerPhone,
           customerEmail: customerEmail,
-          customerAddress: anyNamed('customerAddress'),
-          customerCity: anyNamed('customerCity'),
-          description: anyNamed('description'),
-        )).thenAnswer((_) async => Right(successResult));
-        when(mockAnalytics.logPaymentSuccess(
-          paymentId: anyNamed('paymentId'),
-          bookingId: anyNamed('bookingId'),
-          amount: anyNamed('amount'),
-          method: anyNamed('method'),
-        )).thenAnswer((_) async {});
-        return bloc;
-      },
-      act: (bloc) => bloc.add(ProcessPayment(
-        bookingId: bookingId,
-        amount: amount,
-        customerName: customerName,
-        customerPhone: customerPhone,
-        customerEmail: customerEmail,
-      )),
+        ),
+      ),
       expect: () => [
         PaymentProcessing(),
         PaymentSuccess(payment: successResult),
@@ -87,37 +93,40 @@ void main() {
     blocTest<PaymentBloc, PaymentState>(
       'emits [PaymentProcessing, PaymentFailed] and logs analytics when failed',
       build: () {
-        when(mockRepository.processPayment(
-          bookingId: anyNamed('bookingId'),
-          amount: anyNamed('amount'),
-          customerName: anyNamed('customerName'),
-          customerPhone: anyNamed('customerPhone'),
-          customerEmail: anyNamed('customerEmail'),
-          customerAddress: anyNamed('customerAddress'),
-          customerCity: anyNamed('customerCity'),
-          description: anyNamed('description'),
-        )).thenAnswer((_) async => Right(failureResult));
-        when(mockAnalytics.logPaymentFailed(
-          bookingId: anyNamed('bookingId'),
-          amount: anyNamed('amount'),
-          reason: anyNamed('reason'),
-          errorCode: anyNamed('errorCode'),
-        )).thenAnswer((_) async {});
+        when(
+          mockRepository.processPayment(
+            bookingId: anyNamed('bookingId'),
+            amount: anyNamed('amount'),
+            customerName: anyNamed('customerName'),
+            customerPhone: anyNamed('customerPhone'),
+            customerEmail: anyNamed('customerEmail'),
+            customerAddress: anyNamed('customerAddress'),
+            customerCity: anyNamed('customerCity'),
+            description: anyNamed('description'),
+          ),
+        ).thenAnswer((_) async => Right(failureResult));
+        when(
+          mockAnalytics.logPaymentFailed(
+            bookingId: anyNamed('bookingId'),
+            amount: anyNamed('amount'),
+            reason: anyNamed('reason'),
+            errorCode: anyNamed('errorCode'),
+          ),
+        ).thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(ProcessPayment(
-        bookingId: bookingId,
-        amount: amount,
-        customerName: customerName,
-        customerPhone: customerPhone,
-        customerEmail: customerEmail,
-      )),
+      act: (bloc) => bloc.add(
+        ProcessPayment(
+          bookingId: bookingId,
+          amount: amount,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          customerEmail: customerEmail,
+        ),
+      ),
       expect: () => [
         PaymentProcessing(),
-        PaymentFailed(
-          message: 'Payment failed',
-          status: PaymentStatus.failed,
-        ),
+        PaymentFailed(message: 'Payment failed', status: PaymentStatus.failed),
       ],
     );
   });
@@ -128,8 +137,9 @@ void main() {
     blocTest<PaymentBloc, PaymentState>(
       'emits [PaymentLoading, PaymentStatusChecked] when successful',
       build: () {
-        when(mockRepository.checkPaymentStatus(orderId))
-            .thenAnswer((_) async => const Right(PaymentStatus.completed));
+        when(
+          mockRepository.checkPaymentStatus(orderId),
+        ).thenAnswer((_) async => const Right(PaymentStatus.completed));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckPaymentStatus(orderId: orderId)),
@@ -158,8 +168,9 @@ void main() {
     blocTest<PaymentBloc, PaymentState>(
       'emits [PaymentLoading, PaymentHistoryLoaded] when successful',
       build: () {
-        when(mockRepository.getCustomerPaymentHistory(customerId))
-            .thenAnswer((_) async => Right(payments));
+        when(
+          mockRepository.getCustomerPaymentHistory(customerId),
+        ).thenAnswer((_) async => Right(payments));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadPaymentHistory(customerId: customerId)),
@@ -182,18 +193,22 @@ void main() {
     blocTest<PaymentBloc, PaymentState>(
       'emits [PaymentProcessing, RefundProcessed] when successful',
       build: () {
-        when(mockRepository.refundPayment(
-          paymentId: paymentId,
-          amount: anyNamed('amount'),
-          reason: anyNamed('reason'),
-        )).thenAnswer((_) async => Right(refundResult));
+        when(
+          mockRepository.refundPayment(
+            paymentId: paymentId,
+            amount: anyNamed('amount'),
+            reason: anyNamed('reason'),
+          ),
+        ).thenAnswer((_) async => Right(refundResult));
         return bloc;
       },
-      act: (bloc) => bloc.add(RequestRefund(
-        paymentId: paymentId,
-        amount: 150000,
-        reason: 'Customer request',
-      )),
+      act: (bloc) => bloc.add(
+        RequestRefund(
+          paymentId: paymentId,
+          amount: 150000,
+          reason: 'Customer request',
+        ),
+      ),
       expect: () => [
         PaymentProcessing(),
         RefundProcessed(refund: refundResult),

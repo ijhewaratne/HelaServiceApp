@@ -31,18 +31,24 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
     final name = _nameController.text.trim();
     if (_selectedRole == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select how you will use Sevana')));
+        const SnackBar(content: Text('Please select how you will use Sevana')),
+      );
       return;
     }
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter your name')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter your name')));
       return;
     }
     if (!_agreedToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content:
-              Text('Please agree to the Terms of Service and Privacy Notice')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please agree to the Terms of Service and Privacy Notice',
+          ),
+        ),
+      );
       return;
     }
 
@@ -73,11 +79,11 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
         documentType: ConsentDocumentType.privacy,
         version: AppConstants.privacyVersion,
       );
-      final consentFailure = termsResult.fold((f) => f, (_) => null) ??
+      final consentFailure =
+          termsResult.fold((f) => f, (_) => null) ??
           privacyResult.fold((f) => f, (_) => null);
       if (consentFailure != null) {
-        throw Exception(
-            'Could not record consent: ${consentFailure.message}');
+        throw Exception('Could not record consent: ${consentFailure.message}');
       }
 
       if (!mounted) return;
@@ -89,8 +95,9 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -141,8 +148,9 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
               Text(
                 'Your full name',
                 style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700]),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -152,7 +160,8 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
                   hintText: 'e.g. Nimal Perera',
                   prefixIcon: const Icon(Icons.badge_outlined),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF1B5E20)),
@@ -180,21 +189,25 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
                           child: Text.rich(
                             TextSpan(
                               style: TextStyle(
-                                  fontSize: 13, color: Colors.grey[700]),
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                              ),
                               children: const [
                                 TextSpan(text: 'I agree to the '),
                                 TextSpan(
                                   text: 'Terms of Service',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1B5E20)),
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1B5E20),
+                                  ),
                                 ),
                                 TextSpan(text: ' and '),
                                 TextSpan(
                                   text: 'Privacy Notice',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1B5E20)),
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1B5E20),
+                                  ),
                                 ),
                               ],
                             ),
@@ -215,17 +228,25 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: _loading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Text('Get Started',
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Get Started',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -277,32 +298,41 @@ class _RoleCard extends StatelessWidget {
               backgroundColor: selected
                   ? const Color(0xFF1B5E20)
                   : const Color(0xFFE8F5E9),
-              child: Icon(icon,
-                  color: selected ? Colors.white : const Color(0xFF1B5E20),
-                  size: 22),
+              child: Icon(
+                icon,
+                color: selected ? Colors.white : const Color(0xFF1B5E20),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: selected
-                              ? const Color(0xFF1B5E20)
-                              : Colors.black87)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: selected
+                          ? const Color(0xFF1B5E20)
+                          : Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: TextStyle(
-                          color: Colors.grey[600], fontSize: 13)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  ),
                 ],
               ),
             ),
             if (selected)
-              const Icon(Icons.check_circle,
-                  color: Color(0xFF1B5E20), size: 22),
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFF1B5E20),
+                size: 22,
+              ),
           ],
         ),
       ),

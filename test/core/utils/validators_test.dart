@@ -10,9 +10,13 @@ void main() {
         'user+tag@example.com',
         'firstname.lastname@company.com',
       ];
-      
+
       for (final email in validEmails) {
-        expect(EmailValidator.isValid(email), isTrue, reason: '$email should be valid');
+        expect(
+          EmailValidator.isValid(email),
+          isTrue,
+          reason: '$email should be valid',
+        );
       }
     });
 
@@ -26,9 +30,13 @@ void main() {
         'test..test@example.com',
         'test@example..com',
       ];
-      
+
       for (final email in invalidEmails) {
-        expect(EmailValidator.isValid(email), isFalse, reason: '$email should be invalid');
+        expect(
+          EmailValidator.isValid(email),
+          isFalse,
+          reason: '$email should be invalid',
+        );
       }
     });
   });
@@ -41,9 +49,13 @@ void main() {
         'MyStr0ng#Pwd',
         'C0mpl3x!Pass',
       ];
-      
+
       for (final password in validPasswords) {
-        expect(PasswordValidator.isValid(password), isTrue, reason: '$password should be valid');
+        expect(
+          PasswordValidator.isValid(password),
+          isTrue,
+          reason: '$password should be valid',
+        );
       }
     });
 
@@ -58,9 +70,13 @@ void main() {
         'password123', // no uppercase
         'PASSWORD123', // no lowercase
       ];
-      
+
       for (final password in invalidPasswords) {
-        expect(PasswordValidator.isValid(password), isFalse, reason: '$password should be invalid');
+        expect(
+          PasswordValidator.isValid(password),
+          isFalse,
+          reason: '$password should be invalid',
+        );
       }
     });
 
@@ -72,9 +88,18 @@ void main() {
 
     test('getStrength returns correct strength level', () {
       expect(PasswordValidator.getStrength(''), equals(PasswordStrength.weak));
-      expect(PasswordValidator.getStrength('password'), equals(PasswordStrength.weak));
-      expect(PasswordValidator.getStrength('Password1'), equals(PasswordStrength.medium));
-      expect(PasswordValidator.getStrength('Password1!'), equals(PasswordStrength.strong));
+      expect(
+        PasswordValidator.getStrength('password'),
+        equals(PasswordStrength.weak),
+      );
+      expect(
+        PasswordValidator.getStrength('Password1'),
+        equals(PasswordStrength.medium),
+      );
+      expect(
+        PasswordValidator.getStrength('Password1!'),
+        equals(PasswordStrength.strong),
+      );
     });
   });
 
@@ -88,24 +113,25 @@ void main() {
         'Sri Lankan Name',
         'කමල්', // Sinhala name
       ];
-      
+
       for (final name in validNames) {
-        expect(NameValidator.isValid(name), isTrue, reason: '$name should be valid');
+        expect(
+          NameValidator.isValid(name),
+          isTrue,
+          reason: '$name should be valid',
+        );
       }
     });
 
     test('rejects invalid names', () {
-      final invalidNames = [
-        '',
-        '   ',
-        '123',
-        '@John',
-        'John123',
-        'J',
-      ];
-      
+      final invalidNames = ['', '   ', '123', '@John', 'John123', 'J'];
+
       for (final name in invalidNames) {
-        expect(NameValidator.isValid(name), isFalse, reason: '$name should be invalid');
+        expect(
+          NameValidator.isValid(name),
+          isFalse,
+          reason: '$name should be invalid',
+        );
       }
     });
 
@@ -128,21 +154,25 @@ void main() {
         'Flat 5, Tower A, Apartment Complex',
         'No. 67, Jayanthipura, Battaramulla',
       ];
-      
+
       for (final address in validAddresses) {
-        expect(AddressValidator.isValid(address), isTrue, reason: '$address should be valid');
+        expect(
+          AddressValidator.isValid(address),
+          isTrue,
+          reason: '$address should be valid',
+        );
       }
     });
 
     test('rejects invalid addresses', () {
-      final invalidAddresses = [
-        '',
-        '   ',
-        'A',
-      ];
-      
+      final invalidAddresses = ['', '   ', 'A'];
+
       for (final address in invalidAddresses) {
-        expect(AddressValidator.isValid(address), isFalse, reason: '$address should be invalid');
+        expect(
+          AddressValidator.isValid(address),
+          isFalse,
+          reason: '$address should be invalid',
+        );
       }
     });
 
@@ -192,7 +222,7 @@ class EmailValidator {
   static final _emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
-  
+
   static bool isValid(String? email) {
     if (email == null || email.isEmpty) return false;
     return _emailRegex.hasMatch(email);
@@ -202,15 +232,17 @@ class EmailValidator {
 class PasswordValidator {
   static bool isValid(String? password) {
     if (password == null || password.length < 8) return false;
-    
+
     final hasUppercase = password.contains(RegExp(r'[A-Z]'));
     final hasLowercase = password.contains(RegExp(r'[a-z]'));
     final hasDigits = password.contains(RegExp(r'[0-9]'));
-    final hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-    
+    final hasSpecialChars = password.contains(
+      RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
+    );
+
     return hasUppercase && hasLowercase && hasDigits && hasSpecialChars;
   }
-  
+
   static PasswordStrength getStrength(String password) {
     int score = 0;
     if (password.length >= 8) score++;
@@ -218,7 +250,7 @@ class PasswordValidator {
     if (password.contains(RegExp(r'[a-z]'))) score++;
     if (password.contains(RegExp(r'[0-9]'))) score++;
     if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) score++;
-    
+
     if (score <= 2) return PasswordStrength.weak;
     if (score <= 3) return PasswordStrength.medium;
     return PasswordStrength.strong;
@@ -248,18 +280,18 @@ class AddressValidator {
 class AmountValidator {
   static bool isValid(String? amount, {double maxAmount = 1000000}) {
     if (amount == null || amount.isEmpty) return false;
-    
+
     final value = double.tryParse(amount);
     if (value == null) return false;
     if (value <= 0) return false;
     if (value >= maxAmount) return false;
-    
+
     // Check for maximum 2 decimal places
     final decimalIndex = amount.indexOf('.');
     if (decimalIndex != -1 && amount.length - decimalIndex - 1 > 2) {
       return false;
     }
-    
+
     return true;
   }
 }

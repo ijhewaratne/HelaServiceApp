@@ -11,11 +11,7 @@ class FeedbackPage extends StatefulWidget {
   final String userId;
   final String userType;
 
-  const FeedbackPage({
-    super.key,
-    required this.userId,
-    required this.userType,
-  });
+  const FeedbackPage({super.key, required this.userId, required this.userType});
 
   @override
   State<FeedbackPage> createState() => _FeedbackPageState();
@@ -36,13 +32,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   void _submitFeedback() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<FeedbackBloc>().add(SubmitFeedback(
-            userId: widget.userId,
-            userType: widget.userType,
-            category: _selectedCategory,
-            message: _messageController.text.trim(),
-            rating: _rating,
-          ));
+      context.read<FeedbackBloc>().add(
+        SubmitFeedback(
+          userId: widget.userId,
+          userType: widget.userType,
+          category: _selectedCategory,
+          message: _messageController.text.trim(),
+          rating: _rating,
+        ),
+      );
     }
   }
 
@@ -139,10 +137,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   Center(
                     child: Text(
                       'Your feedback helps us improve HelaService',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -161,9 +156,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
       children: [
         Text(
           'Category',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<FeedbackCategory>(
@@ -200,9 +195,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
       children: [
         Text(
           'How would you rate your experience?',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         Row(
@@ -214,9 +209,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 setState(() => _rating = starIndex);
               },
               icon: Icon(
-                starIndex <= (_rating ?? 0)
-                    ? Icons.star
-                    : Icons.star_border,
+                starIndex <= (_rating ?? 0) ? Icons.star : Icons.star_border,
                 color: Colors.amber,
                 size: 36,
               ),
@@ -227,10 +220,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
           Center(
             child: Text(
               _getRatingText(_rating!),
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
           ),
       ],

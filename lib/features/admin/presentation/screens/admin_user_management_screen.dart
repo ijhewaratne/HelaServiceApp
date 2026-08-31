@@ -29,8 +29,7 @@ class AdminUserManagementScreen extends StatelessWidget {
             color: Colors.amber[50],
             child: Row(
               children: [
-                const Icon(Icons.info_outline,
-                    color: Colors.amber, size: 18),
+                const Icon(Icons.info_outline, color: Colors.amber, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -45,9 +44,10 @@ class AdminUserManagementScreen extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text('Admin Users',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(
+                'Admin Users',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
           ),
           Expanded(
@@ -70,23 +70,22 @@ class AdminUserManagementScreen extends StatelessWidget {
                   itemCount: docs.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 4),
                   itemBuilder: (context, i) {
-                    final data =
-                        docs[i].data() as Map<String, dynamic>;
+                    final data = docs[i].data() as Map<String, dynamic>;
                     final uid = docs[i].id;
-                    final name = data['fullName'] as String? ??
+                    final name =
+                        data['fullName'] as String? ??
                         data['displayName'] as String? ??
                         'Unknown';
                     final phone = data['phoneNumber'] as String? ?? '';
-                    final userType =
-                        data['userType'] as String? ?? 'admin';
-                    final status =
-                        data['status'] as String? ?? 'active';
+                    final userType = data['userType'] as String? ?? 'admin';
+                    final status = data['status'] as String? ?? 'active';
                     final isSuspended = status == 'suspended';
                     final isSuperAdmin = userType == 'superAdmin';
 
                     return Card(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: isSuperAdmin
@@ -104,22 +103,30 @@ class AdminUserManagementScreen extends StatelessWidget {
                         ),
                         title: Row(
                           children: [
-                            Text(name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600)),
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             const SizedBox(width: 6),
                             if (isSuperAdmin)
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1B5E20),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Text('Super Admin',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10)),
+                                child: const Text(
+                                  'Super Admin',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -127,10 +134,9 @@ class AdminUserManagementScreen extends StatelessWidget {
                           '$phone\nUID: ${uid.substring(0, 12)}...'
                           '${isSuspended ? ' · SUSPENDED' : ''}',
                           style: TextStyle(
-                              color: isSuspended
-                                  ? Colors.red
-                                  : Colors.grey[500],
-                              fontSize: 12),
+                            color: isSuspended ? Colors.red : Colors.grey[500],
+                            fontSize: 12,
+                          ),
                         ),
                         isThreeLine: true,
                         trailing: PopupMenuButton<String>(
@@ -150,7 +156,8 @@ class AdminUserManagementScreen extends StatelessWidget {
                               PopupMenuItem(
                                 value: 'toggle',
                                 child: Text(
-                                    isSuspended ? 'Reactivate' : 'Suspend'),
+                                  isSuspended ? 'Reactivate' : 'Suspend',
+                                ),
                               ),
                           ],
                         ),
@@ -167,17 +174,22 @@ class AdminUserManagementScreen extends StatelessWidget {
   }
 
   Future<void> _toggleUserStatus(
-      BuildContext context, String uid, bool isSuspended) async {
+    BuildContext context,
+    String uid,
+    bool isSuspended,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(isSuspended ? 'Reactivate User' : 'Suspend User'),
-        content:
-            Text('Are you sure you want to ${isSuspended ? 'reactivate' : 'suspend'} this admin?'),
+        content: Text(
+          'Are you sure you want to ${isSuspended ? 'reactivate' : 'suspend'} this admin?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
@@ -191,27 +203,29 @@ class AdminUserManagementScreen extends StatelessWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .update({'status': isSuspended ? 'active' : 'suspended'});
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'status': isSuspended ? 'active' : 'suspended',
+    });
   }
 
   Future<void> _managePermissions(
-      BuildContext context, String adminUid, String name) async {
+    BuildContext context,
+    String adminUid,
+    String name,
+  ) async {
     final repository = sl<AdminPermissionsRepository>();
     final currentScopesResult = await repository.getScopes(adminUid);
     if (!context.mounted) return;
 
-    final currentScopes =
-        currentScopesResult.fold((_) => <AdminScope>{}, (s) => s);
+    final currentScopes = currentScopesResult.fold(
+      (_) => <AdminScope>{},
+      (s) => s,
+    );
 
     final updated = await showDialog<Set<AdminScope>>(
       context: context,
-      builder: (_) => _PermissionsDialog(
-        name: name,
-        initialScopes: currentScopes,
-      ),
+      builder: (_) =>
+          _PermissionsDialog(name: name, initialScopes: currentScopes),
     );
     if (updated == null || !context.mounted) return;
 
@@ -229,10 +243,15 @@ class AdminUserManagementScreen extends StatelessWidget {
 
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to propose: ${failure.message}'))),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        SnackBar(content: Text('Failed to propose: ${failure.message}')),
+      ),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
           content: Text(
-              'Proposed — awaiting a second admin\'s approval in Pending Approvals'))),
+            'Proposed — awaiting a second admin\'s approval in Pending Approvals',
+          ),
+        ),
+      ),
     );
   }
 }
@@ -269,19 +288,21 @@ class _PermissionsDialogState extends State<_PermissionsDialog> {
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ),
-              ...AdminScope.values.map((scope) => CheckboxListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(scope.label),
-                    value: _selected.contains(scope),
-                    onChanged: (checked) => setState(() {
-                      if (checked == true) {
-                        _selected.add(scope);
-                      } else {
-                        _selected.remove(scope);
-                      }
-                    }),
-                  )),
+              ...AdminScope.values.map(
+                (scope) => CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(scope.label),
+                  value: _selected.contains(scope),
+                  onChanged: (checked) => setState(() {
+                    if (checked == true) {
+                      _selected.add(scope);
+                    } else {
+                      _selected.remove(scope);
+                    }
+                  }),
+                ),
+              ),
             ],
           ),
         ),

@@ -35,8 +35,9 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, CustomerProfileLoaded] when successful',
       build: () {
-        when(mockRepository.getCustomerProfile(customerId))
-            .thenAnswer((_) async => Right(profile));
+        when(
+          mockRepository.getCustomerProfile(customerId),
+        ).thenAnswer((_) async => Right(profile));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadCustomerProfile(customerId: customerId)),
@@ -49,8 +50,9 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, CustomerError] when repository fails',
       build: () {
-        when(mockRepository.getCustomerProfile(customerId))
-            .thenAnswer((_) async => Left(ServerFailure('Network error')));
+        when(
+          mockRepository.getCustomerProfile(customerId),
+        ).thenAnswer((_) async => Left(ServerFailure('Network error')));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadCustomerProfile(customerId: customerId)),
@@ -69,14 +71,14 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, CustomerProfileUpdated] when successful',
       build: () {
-        when(mockRepository.updateCustomerProfile(customerId, updateData))
-            .thenAnswer((_) async => Right(updatedProfile));
+        when(
+          mockRepository.updateCustomerProfile(customerId, updateData),
+        ).thenAnswer((_) async => Right(updatedProfile));
         return bloc;
       },
-      act: (bloc) => bloc.add(UpdateCustomerProfile(
-        customerId: customerId,
-        data: updateData,
-      )),
+      act: (bloc) => bloc.add(
+        UpdateCustomerProfile(customerId: customerId, data: updateData),
+      ),
       expect: () => [
         CustomerLoading(),
         CustomerProfileUpdated(profile: updatedProfile),
@@ -94,8 +96,9 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, CustomerBookingsLoaded] when successful',
       build: () {
-        when(mockRepository.getCustomerBookings(customerId))
-            .thenAnswer((_) async => Right(bookings));
+        when(
+          mockRepository.getCustomerBookings(customerId),
+        ).thenAnswer((_) async => Right(bookings));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadCustomerBookings(customerId: customerId)),
@@ -108,15 +111,13 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, CustomerError] when repository fails',
       build: () {
-        when(mockRepository.getCustomerBookings(customerId))
-            .thenAnswer((_) async => Left(ServerFailure('Failed')));
+        when(
+          mockRepository.getCustomerBookings(customerId),
+        ).thenAnswer((_) async => Left(ServerFailure('Failed')));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadCustomerBookings(customerId: customerId)),
-      expect: () => [
-        CustomerLoading(),
-        CustomerError(message: 'Failed'),
-      ],
+      expect: () => [CustomerLoading(), CustomerError(message: 'Failed')],
     );
   });
 
@@ -140,8 +141,9 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, SavedAddressesLoaded] when successful',
       build: () {
-        when(mockRepository.getSavedAddresses(customerId))
-            .thenAnswer((_) async => Right(addresses));
+        when(
+          mockRepository.getSavedAddresses(customerId),
+        ).thenAnswer((_) async => Right(addresses));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadSavedAddresses(customerId: customerId)),
@@ -171,14 +173,13 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, SavedAddressAdded] when successful',
       build: () {
-        when(mockRepository.addSavedAddress(customerId, address))
-            .thenAnswer((_) async => Right(savedAddress));
+        when(
+          mockRepository.addSavedAddress(customerId, address),
+        ).thenAnswer((_) async => Right(savedAddress));
         return bloc;
       },
-      act: (bloc) => bloc.add(AddSavedAddress(
-        customerId: customerId,
-        address: address,
-      )),
+      act: (bloc) =>
+          bloc.add(AddSavedAddress(customerId: customerId, address: address)),
       expect: () => [
         CustomerLoading(),
         SavedAddressAdded(address: savedAddress),
@@ -193,14 +194,14 @@ void main() {
     blocTest<CustomerBloc, CustomerState>(
       'emits [CustomerLoading, SavedAddressDeleted] when successful',
       build: () {
-        when(mockRepository.deleteSavedAddress(customerId, addressId))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          mockRepository.deleteSavedAddress(customerId, addressId),
+        ).thenAnswer((_) async => const Right(null));
         return bloc;
       },
-      act: (bloc) => bloc.add(DeleteSavedAddress(
-        customerId: customerId,
-        addressId: addressId,
-      )),
+      act: (bloc) => bloc.add(
+        DeleteSavedAddress(customerId: customerId, addressId: addressId),
+      ),
       expect: () => [
         CustomerLoading(),
         SavedAddressDeleted(addressId: addressId),

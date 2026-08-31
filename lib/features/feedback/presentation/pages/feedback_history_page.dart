@@ -11,10 +11,7 @@ import '../bloc/feedback_bloc.dart';
 class FeedbackHistoryPage extends StatelessWidget {
   final String userId;
 
-  const FeedbackHistoryPage({
-    super.key,
-    required this.userId,
-  });
+  const FeedbackHistoryPage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +35,8 @@ class FeedbackHistoryPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       context.read<FeedbackBloc>().add(
-                            LoadUserFeedback(userId: userId),
-                          );
+                        LoadUserFeedback(userId: userId),
+                      );
                     },
                     child: const Text('Retry'),
                   ),
@@ -75,24 +72,18 @@ class FeedbackHistoryPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.feedback_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.feedback_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No feedback submitted yet',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             'Share your thoughts to help us improve',
-            style: TextStyle(
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(color: Colors.grey[500]),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -192,10 +183,7 @@ class FeedbackHistoryPage extends StatelessWidget {
                   // Date
                   Text(
                     'Submitted on ${DateFormat('MMM d, yyyy • h:mm a').format(feedback.createdAt)}',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                   const SizedBox(height: 16),
 
@@ -223,8 +211,8 @@ class FeedbackHistoryPage extends StatelessWidget {
                   Text(
                     'Your Feedback',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(feedback.message),
@@ -288,80 +276,67 @@ class _FeedbackCard extends StatelessWidget {
   final Feedback feedback;
   final VoidCallback onTap;
 
-  const _FeedbackCard({
-    required this.feedback,
-    required this.onTap,
-  });
+  const _FeedbackCard({required this.feedback, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: HelaCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                feedback.category.icon,
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  feedback.category.displayName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  feedback.category.icon,
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    feedback.category.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
-              ),
-              if (feedback.isResolved)
-                const Icon(Icons.check_circle, color: Colors.green, size: 20)
-              else
-                Icon(Icons.pending, color: Colors.orange[400], size: 20),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            feedback.message,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              if (feedback.rating != null) ...[
-                ...List.generate(5, (index) {
-                  return Icon(
-                    index < feedback.rating! ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
-                    size: 14,
-                  );
-                }),
-                const SizedBox(width: 12),
+                if (feedback.isResolved)
+                  const Icon(Icons.check_circle, color: Colors.green, size: 20)
+                else
+                  Icon(Icons.pending, color: Colors.orange[400], size: 20),
               ],
-              Expanded(
-                child: Text(
-                  DateFormat('MMM d, yyyy').format(feedback.createdAt),
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              feedback.message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (feedback.rating != null) ...[
+                  ...List.generate(5, (index) {
+                    return Icon(
+                      index < feedback.rating! ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                      size: 14,
+                    );
+                  }),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    DateFormat('MMM d, yyyy').format(feedback.createdAt),
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
                   ),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        ],
-      ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

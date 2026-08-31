@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 
 /// Comprehensive crash reporting service
 class CrashReportingService {
-  static final CrashReportingService _instance = CrashReportingService._internal();
+  static final CrashReportingService _instance =
+      CrashReportingService._internal();
   factory CrashReportingService() => _instance;
   CrashReportingService._internal();
 

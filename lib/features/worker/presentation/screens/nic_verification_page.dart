@@ -14,10 +14,10 @@ class _NicVerificationPageState extends State<NicVerificationPage> {
 
   Future<void> _simulateCameraScan() async {
     setState(() => _isScanning = true);
-    
+
     // Abstracted: Camera Controller + Google ML Kit OCR invocation
     await Future.delayed(const Duration(seconds: 2));
-    
+
     setState(() {
       _isScanning = false;
       _scannedNic = '951234567V'; // Simulated OCR Result
@@ -43,39 +43,57 @@ class _NicVerificationPageState extends State<NicVerificationPage> {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 40),
-            
+
             // Scan Frame Simulation
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.indigo.shade200, width: 2, style: BorderStyle.solid),
+                  border: Border.all(
+                    color: Colors.indigo.shade200,
+                    width: 2,
+                    style: BorderStyle.solid,
+                  ),
                 ),
                 child: Center(
-                  child: _isScanning 
+                  child: _isScanning
                       ? const CircularProgressIndicator()
                       : _scannedNic != null
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.check_circle, color: Colors.green, size: 48),
-                                const SizedBox(height: 16),
-                                Text('Scanned: $_scannedNic', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              ],
-                            )
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.credit_card, size: 64, color: Colors.indigo.shade300),
-                                const SizedBox(height: 16),
-                                const Text('Position NIC within frame'),
-                              ],
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 48,
                             ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Scanned: $_scannedNic',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.credit_card,
+                              size: 64,
+                              color: Colors.indigo.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text('Position NIC within frame'),
+                          ],
+                        ),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 40),
             if (_scannedNic == null)
               BrandedButton(

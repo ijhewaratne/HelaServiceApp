@@ -137,28 +137,40 @@ void main() {
     group('AuditEventType', () {
       test('has all required event types', () {
         expect(AuditEventType.values.length, equals(6));
-        expect(AuditEventType.values, contains(AuditEventType.contractAccepted));
+        expect(
+          AuditEventType.values,
+          contains(AuditEventType.contractAccepted),
+        );
         expect(AuditEventType.values, contains(AuditEventType.gpsCheckIn));
         expect(AuditEventType.values, contains(AuditEventType.jobAssigned));
         expect(AuditEventType.values, contains(AuditEventType.jobCompleted));
         expect(AuditEventType.values, contains(AuditEventType.payoutTransfer));
-        expect(AuditEventType.values, contains(AuditEventType.incidentReported));
+        expect(
+          AuditEventType.values,
+          contains(AuditEventType.incidentReported),
+        );
       });
 
       test('event types have correct names', () {
-        expect(AuditEventType.contractAccepted.name, equals('contractAccepted'));
+        expect(
+          AuditEventType.contractAccepted.name,
+          equals('contractAccepted'),
+        );
         expect(AuditEventType.gpsCheckIn.name, equals('gpsCheckIn'));
         expect(AuditEventType.jobAssigned.name, equals('jobAssigned'));
         expect(AuditEventType.jobCompleted.name, equals('jobCompleted'));
         expect(AuditEventType.payoutTransfer.name, equals('payoutTransfer'));
-        expect(AuditEventType.incidentReported.name, equals('incidentReported'));
+        expect(
+          AuditEventType.incidentReported.name,
+          equals('incidentReported'),
+        );
       });
     });
 
     group('immutability', () {
       test('concurrent log calls complete without error', () async {
         final futures = <Future>[];
-        
+
         for (int i = 0; i < 10; i++) {
           futures.add(
             auditLogger.logEvent(
@@ -169,7 +181,7 @@ void main() {
             ),
           );
         }
-        
+
         expect(() async => await Future.wait(futures), returnsNormally);
       });
     });

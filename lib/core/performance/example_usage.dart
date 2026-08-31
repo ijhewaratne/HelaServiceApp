@@ -1,5 +1,5 @@
 /// Example Usage: Performance Optimizations
-/// 
+///
 /// This file demonstrates how to use the performance optimization utilities
 /// throughout the HelaService app.
 

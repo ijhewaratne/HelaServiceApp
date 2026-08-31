@@ -11,7 +11,8 @@ abstract class SafetyRepository {
 
   /// Fetch all alerts for a specific booking
   Future<Either<Failure, List<SafetyAlert>>> getAlertsForBooking(
-      String bookingId);
+    String bookingId,
+  );
 
   /// Acknowledge an alert (admin)
   Future<Either<Failure, void>> acknowledgeAlert(String alertId);

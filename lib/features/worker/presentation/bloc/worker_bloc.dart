@@ -15,9 +15,9 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
   WorkerBloc({
     required WorkerRepository workerRepository,
     required LocationService locationService,
-  })  : _workerRepository = workerRepository,
-        _locationService = locationService,
-        super(WorkerInitial()) {
+  }) : _workerRepository = workerRepository,
+       _locationService = locationService,
+       super(WorkerInitial()) {
     on<LoadWorker>(_onLoadWorker);
     on<CheckNICExists>(_onCheckNICExists);
     on<SubmitApplication>(_onSubmitApplication);
@@ -32,7 +32,10 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     on<AcceptContract>(_onAcceptContract);
   }
 
-  Future<void> _onLoadWorker(LoadWorker event, Emitter<WorkerState> emit) async {
+  Future<void> _onLoadWorker(
+    LoadWorker event,
+    Emitter<WorkerState> emit,
+  ) async {
     emit(WorkerLoading());
     final result = await _workerRepository.getWorker(event.workerId);
     result.fold(
@@ -61,7 +64,8 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     final result = await _workerRepository.submitApplication(event.application);
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
-      (application) => emit(WorkerApplicationSubmitted(application: application)),
+      (application) =>
+          emit(WorkerApplicationSubmitted(application: application)),
     );
   }
 
@@ -73,7 +77,8 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     final result = await _workerRepository.getApplicationStatus(event.workerId);
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
-      (application) => emit(WorkerApplicationStatusLoaded(application: application)),
+      (application) =>
+          emit(WorkerApplicationStatusLoaded(application: application)),
     );
   }
 
@@ -88,17 +93,14 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
       lat: event.lat,
       lng: event.lng,
     );
-    result.fold(
-      (failure) => emit(WorkerError(message: failure.message)),
-      (_) {
-        if (event.isOnline) {
-          add(StartLocationTracking(workerId: event.workerId));
-        } else {
-          add(StopLocationTracking());
-        }
-        emit(WorkerOnlineStatusUpdated(isOnline: event.isOnline));
-      },
-    );
+    result.fold((failure) => emit(WorkerError(message: failure.message)), (_) {
+      if (event.isOnline) {
+        add(StartLocationTracking(workerId: event.workerId));
+      } else {
+        add(StopLocationTracking());
+      }
+      emit(WorkerOnlineStatusUpdated(isOnline: event.isOnline));
+    });
   }
 
   Future<void> _onUpdateLocation(
@@ -164,7 +166,9 @@ class WorkerBloc extends Bloc<WorkerEvent, WorkerState> {
     );
     result.fold(
       (failure) => emit(WorkerError(message: failure.message)),
-      (url) => emit(WorkerDocumentUploaded(documentUrl: url, isFront: event.isFront)),
+      (url) => emit(
+        WorkerDocumentUploaded(documentUrl: url, isFront: event.isFront),
+      ),
     );
   }
 

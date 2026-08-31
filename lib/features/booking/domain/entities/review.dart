@@ -56,71 +56,72 @@ class Review extends Equatable {
     String? adminNote,
     DateTime? createdAt,
     DateTime? moderatedAt,
-  }) =>
-      Review(
-        id: id ?? this.id,
-        requestId: requestId ?? this.requestId,
-        customerId: customerId ?? this.customerId,
-        providerId: providerId ?? this.providerId,
-        rating: rating ?? this.rating,
-        reviewText: reviewText ?? this.reviewText,
-        punctualityRating: punctualityRating ?? this.punctualityRating,
-        qualityRating: qualityRating ?? this.qualityRating,
-        wouldRecommend: wouldRecommend ?? this.wouldRecommend,
-        wasIssueResolved: wasIssueResolved ?? this.wasIssueResolved,
-        wasProviderOnTime: wasProviderOnTime ?? this.wasProviderOnTime,
-        moderationStatus: moderationStatus ?? this.moderationStatus,
-        adminNote: adminNote ?? this.adminNote,
-        createdAt: createdAt ?? this.createdAt,
-        moderatedAt: moderatedAt ?? this.moderatedAt,
-      );
+  }) => Review(
+    id: id ?? this.id,
+    requestId: requestId ?? this.requestId,
+    customerId: customerId ?? this.customerId,
+    providerId: providerId ?? this.providerId,
+    rating: rating ?? this.rating,
+    reviewText: reviewText ?? this.reviewText,
+    punctualityRating: punctualityRating ?? this.punctualityRating,
+    qualityRating: qualityRating ?? this.qualityRating,
+    wouldRecommend: wouldRecommend ?? this.wouldRecommend,
+    wasIssueResolved: wasIssueResolved ?? this.wasIssueResolved,
+    wasProviderOnTime: wasProviderOnTime ?? this.wasProviderOnTime,
+    moderationStatus: moderationStatus ?? this.moderationStatus,
+    adminNote: adminNote ?? this.adminNote,
+    createdAt: createdAt ?? this.createdAt,
+    moderatedAt: moderatedAt ?? this.moderatedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'requestId': requestId,
-        'customerId': customerId,
-        'providerId': providerId,
-        'rating': rating,
-        'reviewText': reviewText,
-        'punctualityRating': punctualityRating,
-        'qualityRating': qualityRating,
-        'wouldRecommend': wouldRecommend,
-        'wasIssueResolved': wasIssueResolved,
-        'wasProviderOnTime': wasProviderOnTime,
-        'moderationStatus': moderationStatus.name,
-        'adminNote': adminNote,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'moderatedAt':
-            moderatedAt != null ? Timestamp.fromDate(moderatedAt!) : null,
-      };
+    'id': id,
+    'requestId': requestId,
+    'customerId': customerId,
+    'providerId': providerId,
+    'rating': rating,
+    'reviewText': reviewText,
+    'punctualityRating': punctualityRating,
+    'qualityRating': qualityRating,
+    'wouldRecommend': wouldRecommend,
+    'wasIssueResolved': wasIssueResolved,
+    'wasProviderOnTime': wasProviderOnTime,
+    'moderationStatus': moderationStatus.name,
+    'adminNote': adminNote,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'moderatedAt': moderatedAt != null
+        ? Timestamp.fromDate(moderatedAt!)
+        : null,
+  };
 
   factory Review.fromJson(Map<String, dynamic> json, {String? id}) => Review(
-        id: id ?? json['id'] as String? ?? '',
-        requestId: json['requestId'] as String? ?? '',
-        customerId: json['customerId'] as String? ?? '',
-        providerId: json['providerId'] as String? ?? '',
-        rating: json['rating'] as int? ?? 0,
-        reviewText: json['reviewText'] as String?,
-        punctualityRating: json['punctualityRating'] as int?,
-        qualityRating: json['qualityRating'] as int?,
-        wouldRecommend: json['wouldRecommend'] as bool?,
-        wasIssueResolved: json['wasIssueResolved'] as bool?,
-        wasProviderOnTime: json['wasProviderOnTime'] as bool?,
-        moderationStatus: ReviewModerationStatus.values.firstWhere(
-          (e) => e.name == (json['moderationStatus'] as String?),
-          orElse: () => ReviewModerationStatus.pending,
-        ),
-        adminNote: json['adminNote'] as String?,
-        createdAt: json['createdAt'] is Timestamp
-            ? (json['createdAt'] as Timestamp).toDate()
-            : DateTime.parse(
-                json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
-        moderatedAt: json['moderatedAt'] != null
-            ? (json['moderatedAt'] is Timestamp
-                ? (json['moderatedAt'] as Timestamp).toDate()
-                : DateTime.parse(json['moderatedAt'] as String))
-            : null,
-      );
+    id: id ?? json['id'] as String? ?? '',
+    requestId: json['requestId'] as String? ?? '',
+    customerId: json['customerId'] as String? ?? '',
+    providerId: json['providerId'] as String? ?? '',
+    rating: json['rating'] as int? ?? 0,
+    reviewText: json['reviewText'] as String?,
+    punctualityRating: json['punctualityRating'] as int?,
+    qualityRating: json['qualityRating'] as int?,
+    wouldRecommend: json['wouldRecommend'] as bool?,
+    wasIssueResolved: json['wasIssueResolved'] as bool?,
+    wasProviderOnTime: json['wasProviderOnTime'] as bool?,
+    moderationStatus: ReviewModerationStatus.values.firstWhere(
+      (e) => e.name == (json['moderationStatus'] as String?),
+      orElse: () => ReviewModerationStatus.pending,
+    ),
+    adminNote: json['adminNote'] as String?,
+    createdAt: json['createdAt'] is Timestamp
+        ? (json['createdAt'] as Timestamp).toDate()
+        : DateTime.parse(
+            json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+          ),
+    moderatedAt: json['moderatedAt'] != null
+        ? (json['moderatedAt'] is Timestamp
+              ? (json['moderatedAt'] as Timestamp).toDate()
+              : DateTime.parse(json['moderatedAt'] as String))
+        : null,
+  );
 
   factory Review.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

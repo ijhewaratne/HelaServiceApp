@@ -67,8 +67,9 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not start enrollment: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not start enrollment: $e')));
     } finally {
       if (mounted) setState(() => _enrolling = false);
     }
@@ -80,29 +81,38 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
     if (user == null || secret == null) return;
     final code = _codeController.text.trim();
     if (code.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter the 6-digit code')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter the 6-digit code')));
       return;
     }
 
     setState(() => _enrolling = true);
     try {
       final assertion =
-          await TotpMultiFactorGenerator.getAssertionForEnrollment(secret, code);
-      await user.multiFactor.enroll(assertion, displayName: 'Authenticator app');
+          await TotpMultiFactorGenerator.getAssertionForEnrollment(
+            secret,
+            code,
+          );
+      await user.multiFactor.enroll(
+        assertion,
+        displayName: 'Authenticator app',
+      );
       if (!mounted) return;
       setState(() {
         _pendingSecret = null;
         _pendingQrUrl = null;
         _codeController.clear();
       });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Two-factor authentication enabled')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Two-factor authentication enabled')),
+      );
       await _refresh();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid code — try again ($e)')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Invalid code — try again ($e)')));
     } finally {
       if (mounted) setState(() => _enrolling = false);
     }
@@ -114,11 +124,13 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Remove two-factor authentication?'),
         content: const Text(
-            'Your account will only require your phone OTP to sign in.'),
+          'Your account will only require your phone OTP to sign in.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -159,25 +171,32 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
               color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(children: [
-              Icon(Icons.verified_user, color: Colors.green.shade700),
-              const SizedBox(width: 12),
-              const Expanded(
-                  child: Text('Two-factor authentication is enabled')),
-            ]),
+            child: Row(
+              children: [
+                Icon(Icons.verified_user, color: Colors.green.shade700),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Two-factor authentication is enabled'),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
-          ..._enrolledFactors.map((factor) => Card(
-                child: ListTile(
-                  leading: const Icon(Icons.shield_outlined),
-                  title: Text(factor.displayName ?? 'Authenticator app'),
-                  trailing: TextButton(
-                    onPressed: () => _unenroll(factor),
-                    child:
-                        const Text('Remove', style: TextStyle(color: Colors.red)),
+          ..._enrolledFactors.map(
+            (factor) => Card(
+              child: ListTile(
+                leading: const Icon(Icons.shield_outlined),
+                title: Text(factor.displayName ?? 'Authenticator app'),
+                trailing: TextButton(
+                  onPressed: () => _unenroll(factor),
+                  child: const Text(
+                    'Remove',
+                    style: TextStyle(color: Colors.red),
                   ),
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       );
     }
@@ -197,7 +216,8 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Icon(Icons.shield_outlined),
           label: const Text('Enable two-factor authentication'),
         ),
@@ -225,7 +245,9 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
           child: SelectableText(
             _pendingSecret!.secretKey,
             style: const TextStyle(
-                fontFamily: 'monospace', fontWeight: FontWeight.bold),
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -246,9 +268,9 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
                 onPressed: _enrolling
                     ? null
                     : () => setState(() {
-                          _pendingSecret = null;
-                          _pendingQrUrl = null;
-                        }),
+                        _pendingSecret = null;
+                        _pendingQrUrl = null;
+                      }),
                 child: const Text('Cancel'),
               ),
             ),
@@ -260,7 +282,8 @@ class _MfaEnrollmentScreenState extends State<MfaEnrollmentScreen> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Verify & Enable'),
               ),
             ),

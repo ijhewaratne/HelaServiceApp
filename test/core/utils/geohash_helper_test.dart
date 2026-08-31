@@ -9,7 +9,10 @@ void main() {
         final hash = GeohashHelper.encode(6.9271, 79.8612, precision: 9);
         expect(hash, isNotEmpty);
         expect(hash.length, equals(9));
-        expect(RegExp(r'^[0-9bcdefghjkmnpqrstuvwxyz]+$').hasMatch(hash), isTrue);
+        expect(
+          RegExp(r'^[0-9bcdefghjkmnpqrstuvwxyz]+$').hasMatch(hash),
+          isTrue,
+        );
       });
 
       test('encodes with default precision of 9', () {
@@ -58,13 +61,13 @@ void main() {
         const lon = 79.8612;
         final hash = GeohashHelper.encode(lat, lon, precision: 9);
         final decoded = GeohashHelper.decode(hash);
-        
+
         expect(decoded, isNotNull);
         expect(decoded.containsKey('latitude'), isTrue);
         expect(decoded.containsKey('longitude'), isTrue);
         expect(decoded.containsKey('latitudeError'), isTrue);
         expect(decoded.containsKey('longitudeError'), isTrue);
-        
+
         // Decoded center should be close to original
         expect((decoded['latitude']! - lat).abs(), lessThan(0.001));
         expect((decoded['longitude']! - lon).abs(), lessThan(0.001));
@@ -75,11 +78,11 @@ void main() {
         const lon = 79.8612;
         final hash = GeohashHelper.encode(lat, lon, precision: 9);
         final decoded = GeohashHelper.decode(hash);
-        
+
         // Center of decoded bbox should be close to original
         final centerLat = decoded['latitude']!;
         final centerLon = decoded['longitude']!;
-        
+
         expect((centerLat - lat).abs(), lessThan(0.001));
         expect((centerLon - lon).abs(), lessThan(0.001));
       });
@@ -87,7 +90,7 @@ void main() {
       test('returns error bounds', () {
         final hash = GeohashHelper.encode(6.9271, 79.8612, precision: 9);
         final decoded = GeohashHelper.decode(hash);
-        
+
         expect(decoded['latitudeError'], greaterThan(0));
         expect(decoded['longitudeError'], greaterThan(0));
       });
@@ -97,21 +100,24 @@ void main() {
       test('returns 8 neighboring geohashes', () {
         final hash = GeohashHelper.encode(6.9271, 79.8612, precision: 9);
         final neighbors = GeohashHelper.getNeighbors(hash);
-        
+
         expect(neighbors.length, equals(8));
         expect(neighbors.contains(hash), isFalse);
-        
+
         // All neighbors should be valid geohashes
         for (final neighbor in neighbors) {
           expect(neighbor.length, equals(hash.length));
-          expect(RegExp(r'^[0-9bcdefghjkmnpqrstuvwxyz]+$').hasMatch(neighbor), isTrue);
+          expect(
+            RegExp(r'^[0-9bcdefghjkmnpqrstuvwxyz]+$').hasMatch(neighbor),
+            isTrue,
+          );
         }
       });
 
       test('neighbors are unique', () {
         final hash = GeohashHelper.encode(6.9271, 79.8612, precision: 9);
         final neighbors = GeohashHelper.getNeighbors(hash);
-        
+
         final uniqueNeighbors = neighbors.toSet();
         expect(uniqueNeighbors.length, equals(neighbors.length));
       });
@@ -120,13 +126,14 @@ void main() {
         final hash = GeohashHelper.encode(6.9271, 79.8612, precision: 9);
         final original = GeohashHelper.decode(hash);
         final neighbors = GeohashHelper.getNeighbors(hash);
-        
+
         // All neighbors should be relatively close
         for (final neighbor in neighbors) {
           final decoded = GeohashHelper.decode(neighbor);
           final latDiff = (decoded['latitude']! - original['latitude']!).abs();
-          final lonDiff = (decoded['longitude']! - original['longitude']!).abs();
-          
+          final lonDiff = (decoded['longitude']! - original['longitude']!)
+              .abs();
+
           // Neighbors should be within ~10km for precision 9
           expect(latDiff, lessThan(0.1));
           expect(lonDiff, lessThan(0.1));
@@ -154,7 +161,7 @@ void main() {
         final p1 = GeohashHelper.precisionForRadius(0.01);
         final p2 = GeohashHelper.precisionForRadius(1);
         final p3 = GeohashHelper.precisionForRadius(100);
-        
+
         expect(p1, greaterThan(p2));
         expect(p2, greaterThan(p3));
       });

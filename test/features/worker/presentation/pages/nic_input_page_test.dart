@@ -51,7 +51,9 @@ void main() {
       await tester.pump();
 
       expect(
-        find.text('Enter valid Sri Lankan NIC (e.g., 853202937V or 198532029372)'),
+        find.text(
+          'Enter valid Sri Lankan NIC (e.g., 853202937V or 198532029372)',
+        ),
         findsNothing,
       );
     });

@@ -140,8 +140,8 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   StreamSubscription<List<SafetyAlert>>? _alertsSubscription;
 
   SafetyBloc({required SafetyRepository repository})
-      : _repository = repository,
-        super(SafetyInitial()) {
+    : _repository = repository,
+      super(SafetyInitial()) {
     on<WatchOpenAlerts>(_onWatch);
     on<LoadBookingAlerts>(_onLoadBookingAlerts);
     on<TriggerSOS>(_onTriggerSOS);
@@ -154,7 +154,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onWatch(
-      WatchOpenAlerts event, Emitter<SafetyState> emit) async {
+    WatchOpenAlerts event,
+    Emitter<SafetyState> emit,
+  ) async {
     await _alertsSubscription?.cancel();
     await emit.forEach(
       _repository.watchOpenAlerts(),
@@ -164,10 +166,11 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onLoadBookingAlerts(
-      LoadBookingAlerts event, Emitter<SafetyState> emit) async {
+    LoadBookingAlerts event,
+    Emitter<SafetyState> emit,
+  ) async {
     emit(SafetyLoading());
-    final result =
-        await _repository.getAlertsForBooking(event.bookingId);
+    final result = await _repository.getAlertsForBooking(event.bookingId);
     result.fold(
       (f) => emit(SafetyError(f.message)),
       (alerts) => emit(BookingAlertsLoaded(alerts)),
@@ -175,7 +178,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onTriggerSOS(
-      TriggerSOS event, Emitter<SafetyState> emit) async {
+    TriggerSOS event,
+    Emitter<SafetyState> emit,
+  ) async {
     emit(SafetyLoading());
     final alert = SafetyAlert(
       id: '',
@@ -197,7 +202,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onAcknowledge(
-      AcknowledgeAlert event, Emitter<SafetyState> emit) async {
+    AcknowledgeAlert event,
+    Emitter<SafetyState> emit,
+  ) async {
     final result = await _repository.acknowledgeAlert(event.alertId);
     result.fold(
       (f) => emit(SafetyError(f.message)),
@@ -205,8 +212,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     );
   }
 
-  Future<void> _onResolve(
-      ResolveAlert event, Emitter<SafetyState> emit) async {
+  Future<void> _onResolve(ResolveAlert event, Emitter<SafetyState> emit) async {
     final result = await _repository.resolveAlert(
       alertId: event.alertId,
       adminId: event.adminId,
@@ -219,7 +225,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onEscalate(
-      EscalateAlert event, Emitter<SafetyState> emit) async {
+    EscalateAlert event,
+    Emitter<SafetyState> emit,
+  ) async {
     final result = await _repository.escalateAlert(event.alertId);
     result.fold(
       (f) => emit(SafetyError(f.message)),
@@ -228,7 +236,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onLogManualContact(
-      LogManualContact event, Emitter<SafetyState> emit) async {
+    LogManualContact event,
+    Emitter<SafetyState> emit,
+  ) async {
     final result = await _repository.logManualContact(
       alertId: event.alertId,
       adminId: event.adminId,
@@ -242,7 +252,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onCheckInScan(
-      RunMissedCheckInScan event, Emitter<SafetyState> emit) async {
+    RunMissedCheckInScan event,
+    Emitter<SafetyState> emit,
+  ) async {
     emit(SafetyLoading());
     final result = await _repository.detectMissedCheckIns();
     result.fold(
@@ -252,7 +264,9 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
   }
 
   Future<void> _onCheckOutScan(
-      RunMissedCheckOutScan event, Emitter<SafetyState> emit) async {
+    RunMissedCheckOutScan event,
+    Emitter<SafetyState> emit,
+  ) async {
     emit(SafetyLoading());
     final result = await _repository.detectMissedCheckOuts();
     result.fold(

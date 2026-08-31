@@ -35,13 +35,15 @@ void main() {
         currency: 'LKR',
       );
 
-      when(mockRepository.processPayment(
-        bookingId: anyNamed('bookingId'),
-        amount: anyNamed('amount'),
-        customerName: anyNamed('customerName'),
-        customerPhone: anyNamed('customerPhone'),
-        customerEmail: anyNamed('customerEmail'),
-      )).thenAnswer((_) async => Right(expectedResult));
+      when(
+        mockRepository.processPayment(
+          bookingId: anyNamed('bookingId'),
+          amount: anyNamed('amount'),
+          customerName: anyNamed('customerName'),
+          customerPhone: anyNamed('customerPhone'),
+          customerEmail: anyNamed('customerEmail'),
+        ),
+      ).thenAnswer((_) async => Right(expectedResult));
 
       // Act
       final result = await mockRepository.processPayment(
@@ -54,27 +56,29 @@ void main() {
 
       // Assert
       expect(result.isRight(), true);
-      result.fold(
-        (failure) => fail('Should not return failure'),
-        (paymentResult) {
-          expect(paymentResult.success, true);
-          expect(paymentResult.paymentId, 'pay_123');
-          expect(paymentResult.amount, 1500.0);
-        },
-      );
+      result.fold((failure) => fail('Should not return failure'), (
+        paymentResult,
+      ) {
+        expect(paymentResult.success, true);
+        expect(paymentResult.paymentId, 'pay_123');
+        expect(paymentResult.amount, 1500.0);
+      });
     });
 
     test('should return failure for invalid amount', () async {
       // Arrange
-      when(mockRepository.processPayment(
-        bookingId: anyNamed('bookingId'),
-        amount: 500, // Below minimum
-        customerName: anyNamed('customerName'),
-        customerPhone: anyNamed('customerPhone'),
-        customerEmail: anyNamed('customerEmail'),
-      )).thenAnswer((_) async => const Left(
-        PaymentFailure('Minimum payment amount is LKR 10.00'),
-      ));
+      when(
+        mockRepository.processPayment(
+          bookingId: anyNamed('bookingId'),
+          amount: 500, // Below minimum
+          customerName: anyNamed('customerName'),
+          customerPhone: anyNamed('customerPhone'),
+          customerEmail: anyNamed('customerEmail'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            const Left(PaymentFailure('Minimum payment amount is LKR 10.00')),
+      );
 
       // Act
       final result = await mockRepository.processPayment(
@@ -95,8 +99,9 @@ void main() {
 
     test('should check payment status', () async {
       // Arrange
-      when(mockRepository.checkPaymentStatus(any))
-          .thenAnswer((_) async => const Right(PaymentStatus.completed));
+      when(
+        mockRepository.checkPaymentStatus(any),
+      ).thenAnswer((_) async => const Right(PaymentStatus.completed));
 
       // Act
       final result = await mockRepository.checkPaymentStatus(testBookingId);
@@ -124,22 +129,22 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getCustomerPaymentHistory('customer_123'))
-          .thenAnswer((_) async => Right(payments));
+      when(
+        mockRepository.getCustomerPaymentHistory('customer_123'),
+      ).thenAnswer((_) async => Right(payments));
 
       // Act
-      final result = await mockRepository.getCustomerPaymentHistory('customer_123');
+      final result = await mockRepository.getCustomerPaymentHistory(
+        'customer_123',
+      );
 
       // Assert
       expect(result.isRight(), true);
-      result.fold(
-        (failure) => fail('Should not return failure'),
-        (history) {
-          expect(history.length, 2);
-          expect(history[0].paymentId, 'pay_1');
-          expect(history[1].paymentId, 'pay_2');
-        },
-      );
+      result.fold((failure) => fail('Should not return failure'), (history) {
+        expect(history.length, 2);
+        expect(history[0].paymentId, 'pay_1');
+        expect(history[1].paymentId, 'pay_2');
+      });
     });
   });
 }

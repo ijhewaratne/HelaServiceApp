@@ -34,7 +34,10 @@ class WalletModel {
     this.transactions,
   });
 
-  factory WalletModel.fromFirestore(DocumentSnapshot doc, {QuerySnapshot? transactionsSnapshot}) {
+  factory WalletModel.fromFirestore(
+    DocumentSnapshot doc, {
+    QuerySnapshot? transactionsSnapshot,
+  }) {
     final data = doc.data() as Map<String, dynamic>;
 
     List<TransactionModel>? transactions;

@@ -10,23 +10,23 @@ class Job {
   final ServiceType serviceType;
   final double locationLat;
   final double locationLng;
-  final String zoneId;          // Must match one of AppConstants.serviceZones
+  final String zoneId; // Must match one of AppConstants.serviceZones
   final JobStatus status;
   final DateTime createdAt;
   final DateTime? acceptedAt;
-  final DateTime? startedAt;    // Worker check-in
-  final DateTime? completedAt;  // Worker check-out
+  final DateTime? startedAt; // Worker check-in
+  final DateTime? completedAt; // Worker check-out
   final String? assignedWorkerId;
   final double estimatedEarnings;
-  final bool isCashPayment;     // v1: primarily cash
+  final bool isCashPayment; // v1: primarily cash
 
   // Safety & Trust
   final String? emergencyContactName;
   final String? emergencyContactPhone;
 
   // PDPA Minimization — minimal address data until dispatch confirmed
-  final String houseNumber;     // e.g. "12/A"
-  final String? landmark;       // e.g. "Near Arpico Supercentre"
+  final String houseNumber; // e.g. "12/A"
+  final String? landmark; // e.g. "Near Arpico Supercentre"
 
   Job({
     required this.id,
@@ -85,27 +85,33 @@ class Job {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'customerId': customerId,
-        'serviceType': serviceType.name,
-        'locationLat': locationLat,
-        'locationLng': locationLng,
-        'zoneId': zoneId,
-        'status': status.name,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'acceptedAt': acceptedAt != null ? Timestamp.fromDate(acceptedAt!) : null,
-        'startedAt': startedAt != null ? Timestamp.fromDate(startedAt!) : null,
-        'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
-        'assignedWorkerId': assignedWorkerId,
-        'estimatedEarnings': estimatedEarnings,
-        'isCashPayment': isCashPayment,
-        'emergencyContactName': emergencyContactName,
-        'emergencyContactPhone': emergencyContactPhone,
-        'houseNumber': houseNumber,
-        'landmark': landmark,
-      };
+    'id': id,
+    'customerId': customerId,
+    'serviceType': serviceType.name,
+    'locationLat': locationLat,
+    'locationLng': locationLng,
+    'zoneId': zoneId,
+    'status': status.name,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'acceptedAt': acceptedAt != null ? Timestamp.fromDate(acceptedAt!) : null,
+    'startedAt': startedAt != null ? Timestamp.fromDate(startedAt!) : null,
+    'completedAt': completedAt != null
+        ? Timestamp.fromDate(completedAt!)
+        : null,
+    'assignedWorkerId': assignedWorkerId,
+    'estimatedEarnings': estimatedEarnings,
+    'isCashPayment': isCashPayment,
+    'emergencyContactName': emergencyContactName,
+    'emergencyContactPhone': emergencyContactPhone,
+    'houseNumber': houseNumber,
+    'landmark': landmark,
+  };
 
-  Job copyWith({JobStatus? status, String? assignedWorkerId, DateTime? acceptedAt}) {
+  Job copyWith({
+    JobStatus? status,
+    String? assignedWorkerId,
+    DateTime? acceptedAt,
+  }) {
     return Job(
       id: id,
       customerId: customerId,

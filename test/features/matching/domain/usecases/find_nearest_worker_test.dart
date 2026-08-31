@@ -22,7 +22,10 @@ void main() {
   setUp(() {
     firestore = FakeFirebaseFirestore();
     workerRepository = WorkerRepositoryImpl(firestore, _MockFirebaseStorage());
-    findNearestWorker = FindNearestWorker(workerRepository, firestore: firestore);
+    findNearestWorker = FindNearestWorker(
+      workerRepository,
+      firestore: firestore,
+    );
   });
 
   Future<void> seedWorker({
@@ -59,35 +62,35 @@ void main() {
     });
   }
 
-  test('returns an approved, in-range worker offering the requested service',
-      () async {
-    await seedWorker(
-      id: 'w1',
-      status: WorkerStatus.approved,
-      services: const [ServiceType.cleaning],
-      lat: customerLat + 0.001,
-      lng: customerLng + 0.001,
-    );
+  test(
+    'returns an approved, in-range worker offering the requested service',
+    () async {
+      await seedWorker(
+        id: 'w1',
+        status: WorkerStatus.approved,
+        services: const [ServiceType.cleaning],
+        lat: customerLat + 0.001,
+        lng: customerLng + 0.001,
+      );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.cleaning,
-      zoneId: 'colombo',
-    ));
+      final result = await findNearestWorker(
+        FindNearestWorkerParams(
+          customerLat: customerLat,
+          customerLng: customerLng,
+          serviceType: ServiceType.cleaning,
+          zoneId: 'colombo',
+        ),
+      );
 
-    expect(result.isRight(), isTrue);
-    result.fold(
-      (_) => fail('Expected a list of workers'),
-      (workers) {
+      expect(result.isRight(), isTrue);
+      result.fold((_) => fail('Expected a list of workers'), (workers) {
         expect(workers.length, 1);
         expect(workers.first.id, 'w1');
-      },
-    );
-  });
+      });
+    },
+  );
 
-  test(
-      'matches a worker for plumbing (regression: ServiceType used to be a '
+  test('matches a worker for plumbing (regression: ServiceType used to be a '
       "separate 5-value enum on Worker that didn't include plumbing/"
       'electrical/acRepair/gardening/other at all)', () async {
     await seedWorker(
@@ -98,21 +101,20 @@ void main() {
       lng: customerLng + 0.001,
     );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.plumbing,
-      zoneId: 'colombo',
-    ));
+    final result = await findNearestWorker(
+      FindNearestWorkerParams(
+        customerLat: customerLat,
+        customerLng: customerLng,
+        serviceType: ServiceType.plumbing,
+        zoneId: 'colombo',
+      ),
+    );
 
     expect(result.isRight(), isTrue);
-    result.fold(
-      (_) => fail('Expected a list of workers'),
-      (workers) {
-        expect(workers.length, 1);
-        expect(workers.first.id, 'w_plumber');
-      },
-    );
+    result.fold((_) => fail('Expected a list of workers'), (workers) {
+      expect(workers.length, 1);
+      expect(workers.first.id, 'w_plumber');
+    });
   });
 
   test('excludes workers who are not approved', () async {
@@ -124,12 +126,14 @@ void main() {
       lng: customerLng,
     );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.cleaning,
-      zoneId: 'colombo',
-    ));
+    final result = await findNearestWorker(
+      FindNearestWorkerParams(
+        customerLat: customerLat,
+        customerLng: customerLng,
+        serviceType: ServiceType.cleaning,
+        zoneId: 'colombo',
+      ),
+    );
 
     result.fold(
       (_) => fail('Expected a list of workers'),
@@ -146,12 +150,14 @@ void main() {
       lng: customerLng,
     );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.cleaning,
-      zoneId: 'colombo',
-    ));
+    final result = await findNearestWorker(
+      FindNearestWorkerParams(
+        customerLat: customerLat,
+        customerLng: customerLng,
+        serviceType: ServiceType.cleaning,
+        zoneId: 'colombo',
+      ),
+    );
 
     result.fold(
       (_) => fail('Expected a list of workers'),
@@ -169,13 +175,15 @@ void main() {
       lng: customerLng,
     );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.cleaning,
-      zoneId: 'colombo',
-      maxRadiusKm: 5.0,
-    ));
+    final result = await findNearestWorker(
+      FindNearestWorkerParams(
+        customerLat: customerLat,
+        customerLng: customerLng,
+        serviceType: ServiceType.cleaning,
+        zoneId: 'colombo',
+        maxRadiusKm: 5.0,
+      ),
+    );
 
     result.fold(
       (_) => fail('Expected a list of workers'),
@@ -183,41 +191,42 @@ void main() {
     );
   });
 
-  test('ranks a closer worker above a farther one for the same service',
-      () async {
-    await seedWorker(
-      id: 'w_close',
-      status: WorkerStatus.approved,
-      services: const [ServiceType.cleaning],
-      lat: customerLat + 0.001,
-      lng: customerLng + 0.001,
-      homeLat: customerLat,
-      homeLng: customerLng,
-    );
-    await seedWorker(
-      id: 'w_further',
-      status: WorkerStatus.approved,
-      services: const [ServiceType.cleaning],
-      lat: customerLat + 0.03,
-      lng: customerLng + 0.03,
-      homeLat: customerLat,
-      homeLng: customerLng,
-    );
+  test(
+    'ranks a closer worker above a farther one for the same service',
+    () async {
+      await seedWorker(
+        id: 'w_close',
+        status: WorkerStatus.approved,
+        services: const [ServiceType.cleaning],
+        lat: customerLat + 0.001,
+        lng: customerLng + 0.001,
+        homeLat: customerLat,
+        homeLng: customerLng,
+      );
+      await seedWorker(
+        id: 'w_further',
+        status: WorkerStatus.approved,
+        services: const [ServiceType.cleaning],
+        lat: customerLat + 0.03,
+        lng: customerLng + 0.03,
+        homeLat: customerLat,
+        homeLng: customerLng,
+      );
 
-    final result = await findNearestWorker(FindNearestWorkerParams(
-      customerLat: customerLat,
-      customerLng: customerLng,
-      serviceType: ServiceType.cleaning,
-      zoneId: 'colombo',
-      topN: 2,
-    ));
+      final result = await findNearestWorker(
+        FindNearestWorkerParams(
+          customerLat: customerLat,
+          customerLng: customerLng,
+          serviceType: ServiceType.cleaning,
+          zoneId: 'colombo',
+          topN: 2,
+        ),
+      );
 
-    result.fold(
-      (_) => fail('Expected a list of workers'),
-      (workers) {
+      result.fold((_) => fail('Expected a list of workers'), (workers) {
         expect(workers.length, 2);
         expect(workers.first.id, 'w_close');
-      },
-    );
-  });
+      });
+    },
+  );
 }

@@ -31,7 +31,8 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                 hintText: 'Search by name or phone...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 8),
               ),
             ),
@@ -56,15 +57,19 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
 
                 if (_search.isNotEmpty) {
                   profiles = profiles
-                      .where((p) =>
-                          p.fullName.toLowerCase().contains(_search) ||
-                          p.mobileNumber.contains(_search))
+                      .where(
+                        (p) =>
+                            p.fullName.toLowerCase().contains(_search) ||
+                            p.mobileNumber.contains(_search),
+                      )
                       .toList();
                 }
 
                 return ListView.separated(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   itemCount: profiles.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 4),
                   itemBuilder: (context, i) =>
@@ -100,19 +105,25 @@ class _CustomerTileState extends State<_CustomerTile> {
   }
 
   Future<void> _toggleStatus(
-      BuildContext context, String userId, String? currentStatus) async {
+    BuildContext context,
+    String userId,
+    String? currentStatus,
+  ) async {
     final isSuspended = currentStatus == 'suspended';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(isSuspended ? 'Reactivate Customer' : 'Suspend Customer'),
-        content: Text(isSuspended
-            ? 'Allow this customer to use the platform again?'
-            : 'Prevent this customer from making new bookings?'),
+        content: Text(
+          isSuspended
+              ? 'Allow this customer to use the platform again?'
+              : 'Prevent this customer from making new bookings?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
@@ -126,17 +137,17 @@ class _CustomerTileState extends State<_CustomerTile> {
     );
     if (confirmed != true || !context.mounted) return;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .update({'status': isSuspended ? 'active' : 'suspended'});
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'status': isSuspended ? 'active' : 'suspended',
+    });
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(isSuspended
-                ? 'Customer reactivated'
-                : 'Customer suspended')),
+          content: Text(
+            isSuspended ? 'Customer reactivated' : 'Customer suspended',
+          ),
+        ),
       );
     }
   }
@@ -150,8 +161,9 @@ class _CustomerTileState extends State<_CustomerTile> {
         final isSuspended = status == 'suspended';
 
         return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: isSuspended
@@ -162,24 +174,28 @@ class _CustomerTileState extends State<_CustomerTile> {
                     ? widget.profile.fullName[0].toUpperCase()
                     : '?',
                 style: TextStyle(
-                    color: isSuspended
-                        ? Colors.red
-                        : const Color(0xFF1B5E20),
-                    fontWeight: FontWeight.bold),
+                  color: isSuspended ? Colors.red : const Color(0xFF1B5E20),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            title: Text(widget.profile.fullName,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(
+              widget.profile.fullName,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.profile.mobileNumber),
                 if (isSuspended)
-                  const Text('SUSPENDED',
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    'SUSPENDED',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
               ],
             ),
             trailing: PopupMenuButton<String>(
@@ -193,9 +209,11 @@ class _CustomerTileState extends State<_CustomerTile> {
                   value: 'toggle',
                   child: Row(
                     children: [
-                      Icon(isSuspended ? Icons.lock_open : Icons.block,
-                          color: isSuspended ? Colors.green : Colors.red,
-                          size: 18),
+                      Icon(
+                        isSuspended ? Icons.lock_open : Icons.block,
+                        color: isSuspended ? Colors.green : Colors.red,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Text(isSuspended ? 'Reactivate' : 'Suspend'),
                     ],

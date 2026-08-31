@@ -9,14 +9,19 @@ class SchedulingRepositoryImpl implements SchedulingRepository {
   final FirebaseFirestore _db;
 
   SchedulingRepositoryImpl({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   // Firestore path: workers/{workerId}/calendar/availability
-  DocumentReference<Map<String, dynamic>> _calendarDoc(String workerId) =>
-      _db.collection('workers').doc(workerId).collection('calendar').doc('availability');
+  DocumentReference<Map<String, dynamic>> _calendarDoc(String workerId) => _db
+      .collection('workers')
+      .doc(workerId)
+      .collection('calendar')
+      .doc('availability');
 
   @override
-  Future<Either<Failure, WorkerCalendar>> getWorkerCalendar(String workerId) async {
+  Future<Either<Failure, WorkerCalendar>> getWorkerCalendar(
+    String workerId,
+  ) async {
     try {
       final snap = await _calendarDoc(workerId).get();
       if (!snap.exists) return Right(WorkerCalendar.empty(workerId));
@@ -27,11 +32,13 @@ class SchedulingRepositoryImpl implements SchedulingRepository {
   }
 
   @override
-  Future<Either<Failure, void>> setWorkerCalendar(WorkerCalendar calendar) async {
+  Future<Either<Failure, void>> setWorkerCalendar(
+    WorkerCalendar calendar,
+  ) async {
     try {
-      await _calendarDoc(calendar.workerId).set(
-        {...calendar.toJson(), 'updatedAt': FieldValue.serverTimestamp()},
-      );
+      await _calendarDoc(
+        calendar.workerId,
+      ).set({...calendar.toJson(), 'updatedAt': FieldValue.serverTimestamp()});
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure('Failed to save calendar: $e'));
@@ -82,9 +89,11 @@ class SchedulingRepositoryImpl implements SchedulingRepository {
         final data = doc.data();
 
         // Service type filter
-        final services = (data['services'] as List<dynamic>?)
-            ?.map((s) => s as String)
-            .toList() ?? [];
+        final services =
+            (data['services'] as List<dynamic>?)
+                ?.map((s) => s as String)
+                .toList() ??
+            [];
         if (!services.contains(serviceType)) continue;
 
         // Calendar availability check

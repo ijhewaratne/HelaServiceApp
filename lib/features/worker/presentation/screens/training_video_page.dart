@@ -48,7 +48,7 @@ class _TrainingVideoPageState extends State<TrainingVideoPage> {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 32),
-            
+
             // Video Player Stub Container
             Container(
               height: 220,
@@ -61,41 +61,58 @@ class _TrainingVideoPageState extends State<TrainingVideoPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.play_circle_fill, size: 64, color: Colors.white),
-                      onPressed: _simulateVideoComplete, // Simulates user watching the video
+                      icon: const Icon(
+                        Icons.play_circle_fill,
+                        size: 64,
+                        color: Colors.white,
+                      ),
+                      onPressed:
+                          _simulateVideoComplete, // Simulates user watching the video
                     ),
                     const SizedBox(height: 8),
-                    const Text('Tap to simulate watching', style: TextStyle(color: Colors.white70)),
+                    const Text(
+                      'Tap to simulate watching',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
             Row(
               children: [
                 Icon(
-                  _hasWatchedVideo ? Icons.check_circle : Icons.radio_button_unchecked, 
-                  color: _hasWatchedVideo ? Colors.green : Colors.grey
+                  _hasWatchedVideo
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: _hasWatchedVideo ? Colors.green : Colors.grey,
                 ),
                 const SizedBox(width: 8),
-                const Text('Video Completed', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text(
+                  'Video Completed',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ],
             ),
 
             const Spacer(),
             BrandedButton(
               label: 'Mark Complete',
-              onPressed: _hasWatchedVideo 
-                ? () {
-                    // Navigate to final step or Dashboard
-                    // context.go('/worker/home');
-                  } 
-                : () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please watch the video completely to proceed.')),
-                    );
-                  },
+              onPressed: _hasWatchedVideo
+                  ? () {
+                      // Navigate to final step or Dashboard
+                      // context.go('/worker/home');
+                    }
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Please watch the video completely to proceed.',
+                          ),
+                        ),
+                      );
+                    },
               backgroundColor: _hasWatchedVideo ? Colors.indigo : Colors.grey,
             ),
           ],

@@ -22,7 +22,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify text was entered
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField).first);
+      final textField = tester.widget<TextFormField>(
+        find.byType(TextFormField).first,
+      );
       expect(textField.controller?.text, '771234567');
     });
 
@@ -66,7 +68,7 @@ void main() {
 
       // Enter valid phone
       await tester.enterText(find.byType(TextFormField).first, '771234567');
-      
+
       // Submit
       await tester.tap(find.text('SEND CODE'));
       await tester.pump(); // Single pump to show loading

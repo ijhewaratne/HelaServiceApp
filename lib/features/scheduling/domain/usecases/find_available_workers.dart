@@ -12,14 +12,14 @@ class FindAvailableWorkers
 
   @override
   Future<Either<Failure, List<String>>> call(
-          FindAvailableWorkersParams params) =>
-      repository.findAvailableWorkers(
-        schedule: params.schedule,
-        serviceType: params.serviceType,
-        nearLat: params.nearLat,
-        nearLng: params.nearLng,
-        radiusKm: params.radiusKm,
-      );
+    FindAvailableWorkersParams params,
+  ) => repository.findAvailableWorkers(
+    schedule: params.schedule,
+    serviceType: params.serviceType,
+    nearLat: params.nearLat,
+    nearLng: params.nearLng,
+    radiusKm: params.radiusKm,
+  );
 }
 
 class FindAvailableWorkersParams extends Equatable {
@@ -38,5 +38,11 @@ class FindAvailableWorkersParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [schedule, serviceType, nearLat, nearLng, radiusKm];
+  List<Object?> get props => [
+    schedule,
+    serviceType,
+    nearLat,
+    nearLng,
+    radiusKm,
+  ];
 }

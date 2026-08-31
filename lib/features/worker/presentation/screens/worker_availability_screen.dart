@@ -10,12 +10,19 @@ class WorkerAvailabilityScreen extends StatefulWidget {
   const WorkerAvailabilityScreen({super.key, required this.workerId});
 
   @override
-  State<WorkerAvailabilityScreen> createState() => _WorkerAvailabilityScreenState();
+  State<WorkerAvailabilityScreen> createState() =>
+      _WorkerAvailabilityScreenState();
 }
 
 class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
   static const _days = [
-    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
   ];
   static const _dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -48,9 +55,17 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
   }
 
   Future<void> _addSlot(String day) async {
-    final start = await _pickTime(context, label: 'Start time', initial: const TimeOfDay(hour: 8, minute: 0));
+    final start = await _pickTime(
+      context,
+      label: 'Start time',
+      initial: const TimeOfDay(hour: 8, minute: 0),
+    );
     if (start == null || !mounted) return;
-    final end = await _pickTime(context, label: 'End time', initial: TimeOfDay(hour: start.hour + 4, minute: 0));
+    final end = await _pickTime(
+      context,
+      label: 'End time',
+      initial: TimeOfDay(hour: start.hour + 4, minute: 0),
+    );
     if (end == null) return;
 
     if (_toMinutes(end) <= _toMinutes(start)) {
@@ -66,7 +81,10 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
       final existing = _recurring[day]?.slots ?? [];
       _recurring[day] = DayAvailability(
         day: day,
-        slots: [...existing, TimeSlot(start: _fmt(start), end: _fmt(end))],
+        slots: [
+          ...existing,
+          TimeSlot(start: _fmt(start), end: _fmt(end)),
+        ],
       );
     });
   }
@@ -100,7 +118,11 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
     setState(() => _exceptions.remove(key));
   }
 
-  static Future<TimeOfDay?> _pickTime(BuildContext context, {required String label, required TimeOfDay initial}) {
+  static Future<TimeOfDay?> _pickTime(
+    BuildContext context, {
+    required String label,
+    required TimeOfDay initial,
+  }) {
     return showTimePicker(
       context: context,
       initialTime: initial,
@@ -130,7 +152,10 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
         if (state is CalendarSaved) {
           setState(() => _isSaving = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Availability saved'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Availability saved'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
         if (state is SchedulingError) {
@@ -150,7 +175,11 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
               if (_isSaving)
                 const Padding(
                   padding: EdgeInsets.all(16),
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 )
               else
                 TextButton.icon(
@@ -168,8 +197,11 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // ── Weekly Schedule ───────────────────────────────
-                      Text('Weekly Schedule',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        'Weekly Schedule',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         'Set the hours you are available each week. Customers can only book within these windows.',
@@ -185,65 +217,107 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
                         final isActive = slots.isNotEmpty;
 
                         return GlassCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          child: Column(
-                            children: [
-                              Row(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              child: Column(
                                 children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: isActive
-                                          ? Theme.of(context).colorScheme.primary
-                                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        color: isActive ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 11,
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: isActive
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .surfaceContainerHighest,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          label,
+                                          style: TextStyle(
+                                            color: isActive
+                                                ? Colors.white
+                                                : Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: isActive
-                                        ? Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: slots.asMap().entries.map((e) {
-                                              final s = e.value;
-                                              return Padding(
-                                                padding: const EdgeInsets.only(bottom: 2),
-                                                child: Row(
-                                                  children: [
-                                                    Text('${s.start} – ${s.end}',
-                                                        style: const TextStyle(fontWeight: FontWeight.w500)),
-                                                    const Spacer(),
-                                                    GestureDetector(
-                                                      onTap: () => _removeSlot(day, e.key),
-                                                      child: const Icon(Icons.close, size: 16, color: Colors.red),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: isActive
+                                            ? Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: slots.asMap().entries.map((
+                                                  e,
+                                                ) {
+                                                  final s = e.value;
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          bottom: 2,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          '${s.start} – ${s.end}',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
+                                                        ),
+                                                        const Spacer(),
+                                                        GestureDetector(
+                                                          onTap: () =>
+                                                              _removeSlot(
+                                                                day,
+                                                                e.key,
+                                                              ),
+                                                          child: const Icon(
+                                                            Icons.close,
+                                                            size: 16,
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              );
-                                            }).toList(),
-                                          )
-                                        : Text('Not available', style: Theme.of(context).textTheme.bodySmall),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.add_circle_outline),
-                                    tooltip: 'Add slot',
-                                    onPressed: () => _addSlot(day),
+                                                  );
+                                                }).toList(),
+                                              )
+                                            : Text(
+                                                'Not available',
+                                                style: Theme.of(
+                                                  context,
+                                                ).textTheme.bodySmall,
+                                              ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.add_circle_outline,
+                                        ),
+                                        tooltip: 'Add slot',
+                                        onPressed: () => _addSlot(day),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ).animate(delay: Duration(milliseconds: i * 40)).fadeIn().slideX(begin: -0.05);
+                            )
+                            .animate(delay: Duration(milliseconds: i * 40))
+                            .fadeIn()
+                            .slideX(begin: -0.05);
                       }),
 
                       const SizedBox(height: 24),
@@ -252,8 +326,11 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Blocked Dates',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Blocked Dates',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                           TextButton.icon(
                             onPressed: _blockDate,
                             icon: const Icon(Icons.block, size: 18),
@@ -270,7 +347,10 @@ class _WorkerAvailabilityScreenState extends State<WorkerAvailabilityScreen> {
                       if (_exceptions.isEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text('No blocked dates.', style: Theme.of(context).textTheme.bodySmall),
+                          child: Text(
+                            'No blocked dates.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         )
                       else
                         Wrap(

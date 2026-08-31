@@ -9,14 +9,13 @@ class SafetyRepositoryImpl implements SafetyRepository {
   final FirebaseFirestore _db;
 
   SafetyRepositoryImpl({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('safety_alerts');
 
   @override
-  Future<Either<Failure, SafetyAlert>> createAlert(
-      SafetyAlert alert) async {
+  Future<Either<Failure, SafetyAlert>> createAlert(SafetyAlert alert) async {
     try {
       final ref = alert.id.isEmpty ? _col.doc() : _col.doc(alert.id);
       final withId = SafetyAlert(
@@ -54,7 +53,8 @@ class SafetyRepositoryImpl implements SafetyRepository {
 
   @override
   Future<Either<Failure, List<SafetyAlert>>> getAlertsForBooking(
-      String bookingId) async {
+    String bookingId,
+  ) async {
     try {
       final snap = await _col
           .where('bookingId', isEqualTo: bookingId)
@@ -112,26 +112,35 @@ class SafetyRepositoryImpl implements SafetyRepository {
       // Collect emergency contacts from the worker and customer documents.
       final contacts = <Map<String, String>>[];
       if (workerId.isNotEmpty) {
-        final workerDoc =
-            await _db.collection('workers').doc(workerId).get();
+        final workerDoc = await _db.collection('workers').doc(workerId).get();
         if (workerDoc.exists) {
           final d = workerDoc.data()!;
           final name = d['emergencyContactName'] as String? ?? '';
           final phone = d['emergencyContactPhone'] as String? ?? '';
           if (phone.isNotEmpty) {
-            contacts.add({'name': name, 'phone': phone, 'role': 'workerEmergency'});
+            contacts.add({
+              'name': name,
+              'phone': phone,
+              'role': 'workerEmergency',
+            });
           }
         }
       }
       if (customerId.isNotEmpty) {
-        final custDoc =
-            await _db.collection('customer_profiles').doc(customerId).get();
+        final custDoc = await _db
+            .collection('customer_profiles')
+            .doc(customerId)
+            .get();
         if (custDoc.exists) {
           final d = custDoc.data()!;
           final name = d['emergencyContactName'] as String? ?? '';
           final phone = d['emergencyContactPhone'] as String? ?? '';
           if (phone.isNotEmpty) {
-            contacts.add({'name': name, 'phone': phone, 'role': 'customerEmergency'});
+            contacts.add({
+              'name': name,
+              'phone': phone,
+              'role': 'customerEmergency',
+            });
           }
         }
       }
@@ -145,7 +154,7 @@ class SafetyRepositoryImpl implements SafetyRepository {
             'method': 'push',
             'initiatedAt': DateTime.now().toIso8601String(),
             'contacts': contacts.length,
-          }
+          },
         ]),
       });
 
@@ -154,11 +163,11 @@ class SafetyRepositoryImpl implements SafetyRepository {
         await FirebaseFunctions.instance
             .httpsCallable('escalateSafetyAlert')
             .call({
-          'alertId': alertId,
-          'workerId': workerId,
-          'customerId': customerId,
-          'contacts': contacts,
-        });
+              'alertId': alertId,
+              'workerId': workerId,
+              'customerId': customerId,
+              'contacts': contacts,
+            });
       } catch (_) {
         // Best-effort — don't fail the escalation if the Function is not yet
         // deployed. The status is already set to 'escalated' above.
@@ -185,7 +194,7 @@ class SafetyRepositoryImpl implements SafetyRepository {
             'calledBy': adminId,
             'calledAt': DateTime.now().toIso8601String(),
             'notes': notes,
-          }
+          },
         ]),
       });
       return const Right(null);
@@ -200,8 +209,7 @@ class SafetyRepositoryImpl implements SafetyRepository {
         .where('status', isEqualTo: 'open')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map(SafetyAlert.fromFirestore).toList());
+        .map((snap) => snap.docs.map(SafetyAlert.fromFirestore).toList());
   }
 
   @override
@@ -289,8 +297,13 @@ class SafetyRepositoryImpl implements SafetyRepository {
           if (dateTs is Timestamp && endTime != null) {
             final date = dateTs.toDate();
             final parts = endTime.split(':');
-            expectedEnd = DateTime(date.year, date.month, date.day,
-                int.parse(parts[0]), int.parse(parts[1]));
+            expectedEnd = DateTime(
+              date.year,
+              date.month,
+              date.day,
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+            );
           }
         }
 

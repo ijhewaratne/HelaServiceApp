@@ -33,12 +33,16 @@ class _NICInputPageState extends State<NICInputPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => ServiceSelectionPage(application: state.application),
+                builder: (_) =>
+                    ServiceSelectionPage(application: state.application),
               ),
             );
           } else if (state is WorkerOnboardingError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -46,7 +50,7 @@ class _NICInputPageState extends State<NICInputPage> {
           if (state is WorkerOnboardingLoading) {
             return Center(child: CircularProgressIndicator());
           }
-          
+
           return SingleChildScrollView(
             padding: EdgeInsets.all(16),
             child: Form(
@@ -67,7 +71,10 @@ class _NICInputPageState extends State<NICInputPage> {
                         SizedBox(height: 8),
                         Text(
                           'Become a Service Provider',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'Earn money flexibly in Colombo area',
@@ -77,7 +84,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     ),
                   ),
                   SizedBox(height: 24),
-                  
+
                   // NIC Field
                   TextFormField(
                     controller: _nicController,
@@ -92,7 +99,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     validator: (value) => NICValidator.validate(value),
                   ),
                   SizedBox(height: 16),
-                  
+
                   // Name Field
                   TextFormField(
                     controller: _nameController,
@@ -101,10 +108,11 @@ class _NICInputPageState extends State<NICInputPage> {
                       prefixIcon: Icon(Icons.person),
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Required' : null,
                   ),
                   SizedBox(height: 16),
-                  
+
                   // Phone Field
                   TextFormField(
                     controller: _phoneController,
@@ -120,7 +128,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     validator: (value) => PhoneValidator.validate(value),
                   ),
                   SizedBox(height: 16),
-                  
+
                   // Address
                   TextFormField(
                     controller: _addressController,
@@ -131,14 +139,19 @@ class _NICInputPageState extends State<NICInputPage> {
                       prefixIcon: Icon(Icons.home),
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Required' : null,
                   ),
                   SizedBox(height: 24),
-                  
+
                   // Emergency Contact Section
                   Text(
                     'Emergency Contact',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -146,7 +159,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   SizedBox(height: 12),
-                  
+
                   TextFormField(
                     controller: _emergencyNameController,
                     decoration: InputDecoration(
@@ -155,7 +168,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     ),
                   ),
                   SizedBox(height: 12),
-                  
+
                   TextFormField(
                     controller: _emergencyPhoneController,
                     decoration: InputDecoration(
@@ -167,7 +180,7 @@ class _NICInputPageState extends State<NICInputPage> {
                     validator: (value) => PhoneValidator.validate(value),
                   ),
                   SizedBox(height: 32),
-                  
+
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
@@ -183,7 +196,10 @@ class _NICInputPageState extends State<NICInputPage> {
                       onPressed: _submit,
                       child: Text(
                         'Continue',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -198,14 +214,16 @@ class _NICInputPageState extends State<NICInputPage> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<WorkerOnboardingBloc>().add(SubmitPersonalInfo(
-        nic: _nicController.text.toUpperCase().trim(),
-        fullName: _nameController.text.trim(),
-        mobileNumber: _phoneController.text.trim(),
-        address: _addressController.text.trim(),
-        emergencyContactName: _emergencyNameController.text.trim(),
-        emergencyContactPhone: _emergencyPhoneController.text.trim(),
-      ));
+      context.read<WorkerOnboardingBloc>().add(
+        SubmitPersonalInfo(
+          nic: _nicController.text.toUpperCase().trim(),
+          fullName: _nameController.text.trim(),
+          mobileNumber: _phoneController.text.trim(),
+          address: _addressController.text.trim(),
+          emergencyContactName: _emergencyNameController.text.trim(),
+          emergencyContactPhone: _emergencyPhoneController.text.trim(),
+        ),
+      );
     }
   }
 

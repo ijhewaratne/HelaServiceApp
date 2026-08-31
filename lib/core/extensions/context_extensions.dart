@@ -6,7 +6,7 @@ extension ContextExtensions on BuildContext {
   void goOnboarding() => go('/worker/onboard/nic');
   void goDashboard() => go('/worker/dashboard');
   void goAuth() => go('/auth');
-  
+
   // Incident reporting from anywhere
   void reportIncident({
     required String reporterId,
@@ -14,12 +14,15 @@ extension ContextExtensions on BuildContext {
     String? jobId,
     String? subjectId,
   }) {
-    go('/incident/report', extra: {
-      'reporterId': reporterId,
-      'reporterType': reporterType,
-      'jobId': jobId,
-      'subjectId': subjectId,
-    });
+    go(
+      '/incident/report',
+      extra: {
+        'reporterId': reporterId,
+        'reporterType': reporterType,
+        'jobId': jobId,
+        'subjectId': subjectId,
+      },
+    );
   }
 }
 

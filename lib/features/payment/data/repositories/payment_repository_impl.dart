@@ -22,17 +22,19 @@ class PaymentRepositoryImpl implements PaymentRepository {
     String? merchantId,
     String? merchantSecret,
     String? notifyUrl,
-  })  : _sandbox = sandbox ??
-            _getBoolFromEnv('PAYHERE_SANDBOX', fallback: true),
-        _merchantId = merchantId ?? dotenv.get('PAYHERE_MERCHANT_ID', fallback: ''),
-        _merchantSecret =
-            merchantSecret ?? dotenv.get('PAYHERE_MERCHANT_SECRET', fallback: ''),
-        _notifyUrl = notifyUrl ??
-            dotenv.get(
-              'PAYHERE_NOTIFY_URL',
-              fallback:
-                  'https://us-central1-helaservice-prod.cloudfunctions.net/payhereNotify',
-            );
+  }) : _sandbox = sandbox ?? _getBoolFromEnv('PAYHERE_SANDBOX', fallback: true),
+       _merchantId =
+           merchantId ?? dotenv.get('PAYHERE_MERCHANT_ID', fallback: ''),
+       _merchantSecret =
+           merchantSecret ??
+           dotenv.get('PAYHERE_MERCHANT_SECRET', fallback: ''),
+       _notifyUrl =
+           notifyUrl ??
+           dotenv.get(
+             'PAYHERE_NOTIFY_URL',
+             fallback:
+                 'https://us-central1-helaservice-prod.cloudfunctions.net/payhereNotify',
+           );
 
   static bool _getBoolFromEnv(String key, {bool fallback = false}) {
     final value = dotenv.get(key, fallback: fallback.toString());
@@ -79,8 +81,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
       // Call the server-side generatePayHereUrl callable so the merchant
       // secret is never exposed to the client.
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('generatePayHereUrl');
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'generatePayHereUrl',
+      );
       final result = await callable.call({
         'type': 'booking',
         'bookingId': bookingId,
@@ -95,10 +98,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
       final orderId = data['orderId'] as String? ?? bookingId;
 
       if (checkoutUrl == null || checkoutUrl.isEmpty) {
-        return const Left(PaymentFailure(
-          'Could not generate checkout URL from server.',
-          type: PaymentFailureType.initialization,
-        ));
+        return const Left(
+          PaymentFailure(
+            'Could not generate checkout URL from server.',
+            type: PaymentFailureType.initialization,
+          ),
+        );
       }
 
       // Write a pending payment record. The actual confirmation will come
@@ -170,9 +175,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
       return Right(status);
     } catch (e) {
-      return Left(
-        PaymentFailure('Failed to check payment status: $e'),
-      );
+      return Left(PaymentFailure('Failed to check payment status: $e'));
     }
   }
 
@@ -193,7 +196,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
       });
 
       // Also update booking
-      final paymentDoc = await _firestore.collection('payments').doc(paymentId).get();
+      final paymentDoc = await _firestore
+          .collection('payments')
+          .doc(paymentId)
+          .get();
       if (paymentDoc.exists) {
         final bookingId = paymentDoc.data()?['orderId'] as String?;
         if (bookingId != null) {

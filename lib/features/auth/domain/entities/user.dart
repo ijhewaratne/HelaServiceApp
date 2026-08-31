@@ -9,9 +9,9 @@ enum UserType { customer, worker, admin, superAdmin, unknown }
 enum UserStatus { active, inactive, suspended, pendingVerification }
 
 /// Consolidated User entity for authentication
-/// 
+///
 /// Phase 2: Architecture Refactoring - Consolidates AppUser and UserEntity
-/// 
+///
 /// This is the single source of truth for user identity across the app.
 class User extends Equatable {
   final String uid;
@@ -65,7 +65,8 @@ class User extends Equatable {
   bool get isWorker => userType == UserType.worker;
 
   /// Check if user is an admin (includes super admin)
-  bool get isAdmin => userType == UserType.admin || userType == UserType.superAdmin;
+  bool get isAdmin =>
+      userType == UserType.admin || userType == UserType.superAdmin;
 
   /// Check if user is a super admin
   bool get isSuperAdmin => userType == UserType.superAdmin;
@@ -149,7 +150,10 @@ class User extends Equatable {
   }
 
   /// Create from Firebase User
-  factory User.fromFirebaseUser(firebase.User firebaseUser, {UserType? userType}) {
+  factory User.fromFirebaseUser(
+    firebase.User firebaseUser, {
+    UserType? userType,
+  }) {
     return User(
       uid: firebaseUser.uid,
       phoneNumber: firebaseUser.phoneNumber ?? '',
@@ -168,7 +172,7 @@ class User extends Equatable {
   /// Create from Firebase User and Firestore document
   factory User.fromFirebase(firebase.User firebaseUser, DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>?;
-    
+
     return User(
       uid: firebaseUser.uid,
       phoneNumber: firebaseUser.phoneNumber ?? '',
@@ -178,10 +182,15 @@ class User extends Equatable {
       userType: _parseUserType(data?['userType'] as String?),
       status: _parseUserStatus(data?['status'] as String?),
       isEmailVerified: firebaseUser.emailVerified,
-      isPhoneVerified: (data?['isPhoneVerified'] as bool?) ?? firebaseUser.phoneNumber != null,
+      isPhoneVerified:
+          (data?['isPhoneVerified'] as bool?) ??
+          firebaseUser.phoneNumber != null,
       isOnboarded: (data?['isOnboarded'] as bool?) ?? false,
-      createdAt: firebaseUser.metadata.creationTime ?? 
-          (data?['createdAt'] != null ? (data!['createdAt'] as Timestamp).toDate() : null),
+      createdAt:
+          firebaseUser.metadata.creationTime ??
+          (data?['createdAt'] != null
+              ? (data!['createdAt'] as Timestamp).toDate()
+              : null),
       lastSignInAt: firebaseUser.metadata.lastSignInTime,
       metadata: data,
     );
@@ -218,16 +227,17 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        uid,
-        phoneNumber,
-        email,
-        userType,
-        status,
-        isOnboarded,
-      ];
+    uid,
+    phoneNumber,
+    email,
+    userType,
+    status,
+    isOnboarded,
+  ];
 
   @override
-  String toString() => 'User(uid: $uid, type: ${userType.name}, status: ${status.name})';
+  String toString() =>
+      'User(uid: $uid, type: ${userType.name}, status: ${status.name})';
 }
 
 /// Extension methods for User

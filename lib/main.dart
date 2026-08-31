@@ -28,32 +28,30 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Crashlytics
   await CrashReportingService().initialize();
-  
+
   // Dependency Injection
   await di.init();
-  
+
   // Initialize services
   await di.initServices();
-  
+
   // Initialize Firebase App Check for API security
   await _initializeAppCheck();
-  
+
   // Set BLoC observer for analytics (use PerformanceBlocObserver in debug)
-  Bloc.observer = kDebugMode 
+  Bloc.observer = kDebugMode
       ? PerformanceBlocObserver(trackEventProcessingTime: true)
       : AnalyticsBlocObserver();
-  
+
   runApp(const HelaServiceApp());
 }
 
 /// Initialize Firebase App Check to protect backend resources
-/// 
+///
 /// Sprint 5: Security Hardening
 /// - Uses Play Integrity for Android (production)
 /// - Uses Debug provider for Android (development)
@@ -62,7 +60,7 @@ void main() async {
 Future<void> _initializeAppCheck() async {
   try {
     final appCheck = FirebaseAppCheck.instance;
-    
+
     if (kDebugMode) {
       // Debug provider for development
       await appCheck.activate(
@@ -78,7 +76,7 @@ Future<void> _initializeAppCheck() async {
       );
       debugPrint('🔒 Firebase App Check initialized (PRODUCTION mode)');
     }
-    
+
     // Set token refresh interval (optional, default is reasonable)
     // Token is automatically refreshed every 1 hour
   } catch (e) {

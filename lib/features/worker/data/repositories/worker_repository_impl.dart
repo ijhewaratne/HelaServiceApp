@@ -63,23 +63,23 @@ class WorkerRepositoryImpl implements WorkerRepository {
   }) async {
     try {
       final ref = _storage
-        .ref()
-        .child('workers')
-        .child(workerId)
-        .child(isFront ? 'nic_front.jpg' : 'nic_back.jpg');
-      
+          .ref()
+          .child('workers')
+          .child(workerId)
+          .child(isFront ? 'nic_front.jpg' : 'nic_back.jpg');
+
       final uploadTask = await ref.putFile(
         file,
         SettableMetadata(contentType: 'image/jpeg'),
       );
-      
+
       final url = await uploadTask.ref.getDownloadURL();
-      
+
       // Update worker document
       await _firestore.collection('workers').doc(workerId).update({
         isFront ? 'nicFrontUrl' : 'nicBackUrl': url,
       });
-      
+
       return Right(url);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -93,18 +93,18 @@ class WorkerRepositoryImpl implements WorkerRepository {
   }) async {
     try {
       final ref = _storage
-        .ref()
-        .child('workers')
-        .child(workerId)
-        .child('profile.jpg');
-      
+          .ref()
+          .child('workers')
+          .child(workerId)
+          .child('profile.jpg');
+
       final uploadTask = await ref.putFile(file);
       final url = await uploadTask.ref.getDownloadURL();
-      
+
       await _firestore.collection('workers').doc(workerId).update({
         'profilePhotoUrl': url,
       });
-      
+
       return Right(url);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -146,11 +146,14 @@ class WorkerRepositoryImpl implements WorkerRepository {
       };
 
       if (isOnline) {
-        final workerDoc =
-            await _firestore.collection('workers').doc(workerId).get();
+        final workerDoc = await _firestore
+            .collection('workers')
+            .doc(workerId)
+            .get();
         if (workerDoc.exists) {
           final d = workerDoc.data()!;
-          final services = (d['services'] as List<dynamic>?)
+          final services =
+              (d['services'] as List<dynamic>?)
                   ?.map((s) => s as String)
                   .toList() ??
               [];
@@ -204,11 +207,11 @@ class WorkerRepositoryImpl implements WorkerRepository {
   Future<Either<Failure, bool>> checkNICExists(String nic) async {
     try {
       final query = await _firestore
-        .collection('workers')
-        .where('nic', isEqualTo: nic)
-        .limit(1)
-        .get();
-      
+          .collection('workers')
+          .where('nic', isEqualTo: nic)
+          .limit(1)
+          .get();
+
       return Right(query.docs.isNotEmpty);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -216,7 +219,9 @@ class WorkerRepositoryImpl implements WorkerRepository {
   }
 
   @override
-  Future<Either<Failure, app.WorkerApplication>> submitApplication(app.WorkerApplication application) async {
+  Future<Either<Failure, app.WorkerApplication>> submitApplication(
+    app.WorkerApplication application,
+  ) async {
     try {
       String? workerId;
       try {
@@ -225,8 +230,9 @@ class WorkerRepositoryImpl implements WorkerRepository {
         workerId = null;
       }
       final applications = _firestore.collection('worker_applications');
-      final docRef =
-          workerId == null ? applications.doc() : applications.doc(workerId);
+      final docRef = workerId == null
+          ? applications.doc()
+          : applications.doc(workerId);
       final data = application.copyWith(id: docRef.id).toJson();
       await docRef.set(data);
       return Right(application.copyWith(id: docRef.id));
@@ -236,17 +242,19 @@ class WorkerRepositoryImpl implements WorkerRepository {
   }
 
   @override
-  Future<Either<Failure, app.WorkerApplication>> getApplicationStatus(String workerId) async {
+  Future<Either<Failure, app.WorkerApplication>> getApplicationStatus(
+    String workerId,
+  ) async {
     try {
       final doc = await _firestore
-        .collection('worker_applications')
-        .doc(workerId)
-        .get();
-      
+          .collection('worker_applications')
+          .doc(workerId)
+          .get();
+
       if (!doc.exists) {
         return const Left(NotFoundFailure('Application not found'));
       }
-      
+
       return Right(app.WorkerApplication.fromJson(doc.data()!));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -261,9 +269,10 @@ class WorkerRepositoryImpl implements WorkerRepository {
         'hasCompletedTraining': true,
         'trainingCompletedAt': FieldValue.serverTimestamp(),
       });
-      
-      final applicationRef =
-          _firestore.collection('worker_applications').doc(workerId);
+
+      final applicationRef = _firestore
+          .collection('worker_applications')
+          .doc(workerId);
       final applicationDoc = await applicationRef.get();
       if (applicationDoc.exists) {
         await applicationRef.update({
@@ -271,7 +280,7 @@ class WorkerRepositoryImpl implements WorkerRepository {
           'trainingCompletedAt': FieldValue.serverTimestamp(),
         });
       }
-      
+
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -290,7 +299,7 @@ class WorkerRepositoryImpl implements WorkerRepository {
         'currentLng': lng,
         'lastLocationUpdate': FieldValue.serverTimestamp(),
       });
-      
+
       // Also update worker_locations for matching
       await _firestore.collection('worker_locations').doc(workerId).set({
         'lat': lat,
@@ -299,7 +308,7 @@ class WorkerRepositoryImpl implements WorkerRepository {
         'geohash': GeohashHelper.encode(lat, lng),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      
+
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -318,17 +327,21 @@ class WorkerRepositoryImpl implements WorkerRepository {
       address: (data['address'] as String?) ?? '',
       emergencyContactName: (data['emergencyContactName'] as String?) ?? '',
       emergencyContactPhone: (data['emergencyContactPhone'] as String?) ?? '',
-      services: (data['services'] as List<dynamic>?)
-        ?.map((s) => ServiceType.values.byName(s as String))
-        .toList() ?? [],
+      services:
+          (data['services'] as List<dynamic>?)
+              ?.map((s) => ServiceType.values.byName(s as String))
+              .toList() ??
+          [],
       profilePhotoUrl: data['profilePhotoUrl'] as String?,
       nicFrontUrl: data['nicFrontUrl'] as String?,
       nicBackUrl: data['nicBackUrl'] as String?,
-      status: WorkerStatus.values.byName(data['status'] as String? ?? 'pending'),
+      status: WorkerStatus.values.byName(
+        data['status'] as String? ?? 'pending',
+      ),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      approvedAt: data['approvedAt'] != null 
-        ? (data['approvedAt'] as Timestamp).toDate() 
-        : null,
+      approvedAt: data['approvedAt'] != null
+          ? (data['approvedAt'] as Timestamp).toDate()
+          : null,
       isOnline: data['isOnline'] as bool? ?? false,
       currentLat: (data['currentLat'] as num?)?.toDouble(),
       currentLng: (data['currentLng'] as num?)?.toDouble(),
@@ -337,8 +350,8 @@ class WorkerRepositoryImpl implements WorkerRepository {
       rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
       totalJobs: data['totalJobs'] as int? ?? 0,
       lastJobCompletedAt: data['lastJobCompletedAt'] != null
-        ? (data['lastJobCompletedAt'] as Timestamp).toDate()
-        : null,
+          ? (data['lastJobCompletedAt'] as Timestamp).toDate()
+          : null,
       hasAcceptedContract: data['hasAcceptedContract'] as bool? ?? false,
     );
   }
@@ -346,28 +359,34 @@ class WorkerRepositoryImpl implements WorkerRepository {
   @override
   Future<WorkerProfile?> getWorkerProfile(String workerId) async {
     final result = await getWorker(workerId);
-    return result.fold((_) => null, (worker) => WorkerProfile(
-      uid: worker.id,
-      nic: worker.nic,
-      name: worker.fullName,
-      phone: worker.mobileNumber,
-      district: '',
-      serviceTypes: worker.services.map((s) => s.name).toList(),
-      languages: [],
-      verificationStatus: worker.status.name,
-      rating: worker.rating,
-      completedJobs: worker.totalJobs,
-      isAvailable: worker.isOnline,
-      availabilityMode: 'part_time',
-      homeLat: worker.homeLat,
-      homeLng: worker.homeLng,
-    ));
+    return result.fold(
+      (_) => null,
+      (worker) => WorkerProfile(
+        uid: worker.id,
+        nic: worker.nic,
+        name: worker.fullName,
+        phone: worker.mobileNumber,
+        district: '',
+        serviceTypes: worker.services.map((s) => s.name).toList(),
+        languages: [],
+        verificationStatus: worker.status.name,
+        rating: worker.rating,
+        completedJobs: worker.totalJobs,
+        isAvailable: worker.isOnline,
+        availabilityMode: 'part_time',
+        homeLat: worker.homeLat,
+        homeLng: worker.homeLng,
+      ),
+    );
   }
 
   @override
   Future<WorkerDocument?> getWorkerDocuments(String workerId) async {
     try {
-      final doc = await _firestore.collection('worker_documents').doc(workerId).get();
+      final doc = await _firestore
+          .collection('worker_documents')
+          .doc(workerId)
+          .get();
       if (!doc.exists) return null;
       return WorkerDocument.fromJson(doc.data()!);
     } catch (_) {
@@ -379,7 +398,11 @@ class WorkerRepositoryImpl implements WorkerRepository {
   Future<void> updateWorkerProfile(WorkerProfile profile) async {}
 
   @override
-  Future<void> uploadDocument(String workerId, String docType, String filePath) async {}
+  Future<void> uploadDocument(
+    String workerId,
+    String docType,
+    String filePath,
+  ) async {}
 
   @override
   Future<void> updateAvailability(String workerId, bool isAvailable) async {

@@ -52,29 +52,25 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerLoaded] when successful',
       build: () {
-        when(mockRepository.getWorker('worker_123'))
-            .thenAnswer((_) async => Right(worker));
+        when(
+          mockRepository.getWorker('worker_123'),
+        ).thenAnswer((_) async => Right(worker));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadWorker(workerId: 'worker_123')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerLoaded(worker: worker),
-      ],
+      expect: () => [WorkerLoading(), WorkerLoaded(worker: worker)],
     );
 
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerError] when repository fails',
       build: () {
-        when(mockRepository.getWorker('worker_123'))
-            .thenAnswer((_) async => Left(ServerFailure('Network error')));
+        when(
+          mockRepository.getWorker('worker_123'),
+        ).thenAnswer((_) async => Left(ServerFailure('Network error')));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadWorker(workerId: 'worker_123')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerError(message: 'Network error'),
-      ],
+      expect: () => [WorkerLoading(), WorkerError(message: 'Network error')],
     );
   });
 
@@ -82,22 +78,25 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerOnlineStatusUpdated] and starts tracking when going online',
       build: () {
-        when(mockRepository.updateOnlineStatus(
-          workerId: anyNamed('workerId'),
-          isOnline: anyNamed('isOnline'),
-          lat: anyNamed('lat'),
-          lng: anyNamed('lng'),
-        )).thenAnswer((_) async => const Right(null));
-        when(mockLocationService.startTracking(any))
-            .thenAnswer((_) async {});
+        when(
+          mockRepository.updateOnlineStatus(
+            workerId: anyNamed('workerId'),
+            isOnline: anyNamed('isOnline'),
+            lat: anyNamed('lat'),
+            lng: anyNamed('lng'),
+          ),
+        ).thenAnswer((_) async => const Right(null));
+        when(mockLocationService.startTracking(any)).thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(UpdateOnlineStatus(
-        workerId: 'worker_123',
-        isOnline: true,
-        lat: 6.9271,
-        lng: 79.8612,
-      )),
+      act: (bloc) => bloc.add(
+        UpdateOnlineStatus(
+          workerId: 'worker_123',
+          isOnline: true,
+          lat: 6.9271,
+          lng: 79.8612,
+        ),
+      ),
       expect: () => [
         WorkerLoading(),
         WorkerOnlineStatusUpdated(isOnline: true),
@@ -108,20 +107,19 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerOnlineStatusUpdated] and stops tracking when going offline',
       build: () {
-        when(mockRepository.updateOnlineStatus(
-          workerId: anyNamed('workerId'),
-          isOnline: anyNamed('isOnline'),
-          lat: anyNamed('lat'),
-          lng: anyNamed('lng'),
-        )).thenAnswer((_) async => const Right(null));
-        when(mockLocationService.stopTracking())
-            .thenAnswer((_) async {});
+        when(
+          mockRepository.updateOnlineStatus(
+            workerId: anyNamed('workerId'),
+            isOnline: anyNamed('isOnline'),
+            lat: anyNamed('lat'),
+            lng: anyNamed('lng'),
+          ),
+        ).thenAnswer((_) async => const Right(null));
+        when(mockLocationService.stopTracking()).thenAnswer((_) async {});
         return bloc;
       },
-      act: (bloc) => bloc.add(UpdateOnlineStatus(
-        workerId: 'worker_123',
-        isOnline: false,
-      )),
+      act: (bloc) =>
+          bloc.add(UpdateOnlineStatus(workerId: 'worker_123', isOnline: false)),
       expect: () => [
         WorkerLoading(),
         WorkerOnlineStatusUpdated(isOnline: false),
@@ -132,24 +130,25 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerError] when update fails',
       build: () {
-        when(mockRepository.updateOnlineStatus(
-          workerId: anyNamed('workerId'),
-          isOnline: anyNamed('isOnline'),
-          lat: anyNamed('lat'),
-          lng: anyNamed('lng'),
-        )).thenAnswer((_) async => Left(ServerFailure('Update failed')));
+        when(
+          mockRepository.updateOnlineStatus(
+            workerId: anyNamed('workerId'),
+            isOnline: anyNamed('isOnline'),
+            lat: anyNamed('lat'),
+            lng: anyNamed('lng'),
+          ),
+        ).thenAnswer((_) async => Left(ServerFailure('Update failed')));
         return bloc;
       },
-      act: (bloc) => bloc.add(UpdateOnlineStatus(
-        workerId: 'worker_123',
-        isOnline: true,
-        lat: 6.9271,
-        lng: 79.8612,
-      )),
-      expect: () => [
-        WorkerLoading(),
-        WorkerError(message: 'Update failed'),
-      ],
+      act: (bloc) => bloc.add(
+        UpdateOnlineStatus(
+          workerId: 'worker_123',
+          isOnline: true,
+          lat: 6.9271,
+          lng: 79.8612,
+        ),
+      ),
+      expect: () => [WorkerLoading(), WorkerError(message: 'Update failed')],
     );
   });
 
@@ -157,29 +156,25 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerNICCheckResult] when NIC exists',
       build: () {
-        when(mockRepository.checkNICExists('123456789V'))
-            .thenAnswer((_) async => const Right(true));
+        when(
+          mockRepository.checkNICExists('123456789V'),
+        ).thenAnswer((_) async => const Right(true));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckNICExists(nic: '123456789V')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerNICCheckResult(exists: true),
-      ],
+      expect: () => [WorkerLoading(), WorkerNICCheckResult(exists: true)],
     );
 
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerNICCheckResult] when NIC does not exist',
       build: () {
-        when(mockRepository.checkNICExists('987654321V'))
-            .thenAnswer((_) async => const Right(false));
+        when(
+          mockRepository.checkNICExists('987654321V'),
+        ).thenAnswer((_) async => const Right(false));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckNICExists(nic: '987654321V')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerNICCheckResult(exists: false),
-      ],
+      expect: () => [WorkerLoading(), WorkerNICCheckResult(exists: false)],
     );
   });
 
@@ -200,8 +195,9 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerApplicationSubmitted] when successful',
       build: () {
-        when(mockRepository.submitApplication(application))
-            .thenAnswer((_) async => Right(application));
+        when(
+          mockRepository.submitApplication(application),
+        ).thenAnswer((_) async => Right(application));
         return bloc;
       },
       act: (bloc) => bloc.add(SubmitApplication(application: application)),
@@ -216,15 +212,13 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerTrainingCompleted] when successful',
       build: () {
-        when(mockRepository.completeTraining('worker_123'))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          mockRepository.completeTraining('worker_123'),
+        ).thenAnswer((_) async => const Right(null));
         return bloc;
       },
       act: (bloc) => bloc.add(CompleteTraining(workerId: 'worker_123')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerTrainingCompleted(),
-      ],
+      expect: () => [WorkerLoading(), WorkerTrainingCompleted()],
     );
   });
 
@@ -232,15 +226,13 @@ void main() {
     blocTest<WorkerBloc, WorkerState>(
       'emits [WorkerLoading, WorkerContractAccepted] when successful',
       build: () {
-        when(mockRepository.acceptContract('worker_123'))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          mockRepository.acceptContract('worker_123'),
+        ).thenAnswer((_) async => const Right(null));
         return bloc;
       },
       act: (bloc) => bloc.add(AcceptContract(workerId: 'worker_123')),
-      expect: () => [
-        WorkerLoading(),
-        WorkerContractAccepted(),
-      ],
+      expect: () => [WorkerLoading(), WorkerContractAccepted()],
     );
   });
 }

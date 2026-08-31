@@ -48,32 +48,31 @@ class CustomerProfile extends Equatable {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) =>
-      CustomerProfile(
-        id: id ?? this.id,
-        userId: userId ?? this.userId,
-        fullName: fullName ?? this.fullName,
-        mobileNumber: mobileNumber ?? this.mobileNumber,
-        email: email ?? this.email,
-        profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
-        defaultAddress: defaultAddress ?? this.defaultAddress,
-        notes: notes ?? this.notes,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  }) => CustomerProfile(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    fullName: fullName ?? this.fullName,
+    mobileNumber: mobileNumber ?? this.mobileNumber,
+    email: email ?? this.email,
+    profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+    defaultAddress: defaultAddress ?? this.defaultAddress,
+    notes: notes ?? this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'userId': userId,
-        'fullName': fullName,
-        'mobileNumber': mobileNumber,
-        'email': email,
-        'profilePhotoUrl': profilePhotoUrl,
-        'defaultAddress': defaultAddress?.toJson(),
-        'notes': notes,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
-      };
+    'id': id,
+    'userId': userId,
+    'fullName': fullName,
+    'mobileNumber': mobileNumber,
+    'email': email,
+    'profilePhotoUrl': profilePhotoUrl,
+    'defaultAddress': defaultAddress?.toJson(),
+    'notes': notes,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+  };
 
   factory CustomerProfile.fromJson(Map<String, dynamic> json, {String? id}) =>
       CustomerProfile(
@@ -90,11 +89,13 @@ class CustomerProfile extends Equatable {
         createdAt: json['createdAt'] is Timestamp
             ? (json['createdAt'] as Timestamp).toDate()
             : DateTime.parse(
-                json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+                json['createdAt'] as String? ??
+                    DateTime.now().toIso8601String(),
+              ),
         updatedAt: json['updatedAt'] != null
             ? (json['updatedAt'] is Timestamp
-                ? (json['updatedAt'] as Timestamp).toDate()
-                : DateTime.parse(json['updatedAt'] as String))
+                  ? (json['updatedAt'] as Timestamp).toDate()
+                  : DateTime.parse(json['updatedAt'] as String))
             : null,
       );
 

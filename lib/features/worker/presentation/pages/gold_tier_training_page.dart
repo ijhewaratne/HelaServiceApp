@@ -12,10 +12,11 @@ class _Question {
   final List<String> options;
   final int correctIndex;
 
-  const _Question(
-      {required this.text,
-      required this.options,
-      required this.correctIndex});
+  const _Question({
+    required this.text,
+    required this.options,
+    required this.correctIndex,
+  });
 }
 
 class _Module {
@@ -52,7 +53,8 @@ final _modules = <_Module>[
     ],
     questions: [
       _Question(
-        text: 'What should you do if you are running more than 10 minutes late?',
+        text:
+            'What should you do if you are running more than 10 minutes late?',
         options: [
           'Continue without informing the customer',
           'Contact the customer through the app',
@@ -139,7 +141,8 @@ final _modules = <_Module>[
     ],
     questions: [
       _Question(
-        text: 'A friend asks for the address of one of your customers. You should:',
+        text:
+            'A friend asks for the address of one of your customers. You should:',
         options: [
           'Share it — they might need a cleaner too',
           'Never share customer personal data with anyone',
@@ -195,7 +198,8 @@ final _modules = <_Module>[
         correctIndex: 2,
       ),
       _Question(
-        text: 'A customer asks you to do extra work not in the booking. You should:',
+        text:
+            'A customer asks you to do extra work not in the booking. You should:',
         options: [
           'Do it for free to keep them happy',
           'Refuse and leave',
@@ -231,7 +235,8 @@ final _modules = <_Module>[
     ],
     questions: [
       _Question(
-        text: 'A customer offers to pay you cash to avoid the app fee. You should:',
+        text:
+            'A customer offers to pay you cash to avoid the app fee. You should:',
         options: [
           'Accept — it is more money for you',
           'Accept only if the amount is small',
@@ -241,7 +246,8 @@ final _modules = <_Module>[
         correctIndex: 2,
       ),
       _Question(
-        text: 'What percentage of the booking price do you receive as earnings?',
+        text:
+            'What percentage of the booking price do you receive as earnings?',
         options: ['100%', '90%', '80%', '70%'],
         correctIndex: 2,
       ),
@@ -310,22 +316,25 @@ class _GoldTierTrainingPageState extends State<GoldTierTrainingPage> {
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              _ProgressHeader(passed: passed.length, total: _modules.length),
-              const SizedBox(height: 20),
-              if (allPassed) _CompletionBanner(),
-              const SizedBox(height: 8),
-              ...List.generate(_modules.length, (i) {
-                final mod = _modules[i];
-                final isPassed = passed.contains(mod.id);
-                return _ModuleCard(
-                  module: mod,
-                  isPassed: isPassed,
-                  index: i + 1,
-                  onComplete: _refresh,
-                );
-              }),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _ProgressHeader(passed: passed.length, total: _modules.length),
+                const SizedBox(height: 20),
+                if (allPassed) _CompletionBanner(),
+                const SizedBox(height: 8),
+                ...List.generate(_modules.length, (i) {
+                  final mod = _modules[i];
+                  final isPassed = passed.contains(mod.id);
+                  return _ModuleCard(
+                    module: mod,
+                    isPassed: isPassed,
+                    index: i + 1,
+                    onComplete: _refresh,
+                  );
+                }),
+              ],
+            ),
           );
         },
       ),
@@ -346,33 +355,48 @@ class _ProgressHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.workspace_premium,
-              color: AppTheme.primaryColor, size: 24),
-          const SizedBox(width: 10),
-          Text('Gold Tier Training',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
-          const Spacer(),
-          Text('$passed / $total',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.primaryColor)),
-        ]),
-        const SizedBox(height: 10),
-        LinearProgressIndicator(
-          value: total > 0 ? passed / total : 0,
-          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
-          valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Complete all $total modules and pass each quiz (≥ 70%) to earn Gold Tier status.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.workspace_premium,
+                color: AppTheme.primaryColor,
+                size: 24,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Gold Tier Training',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$passed / $total',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: AppTheme.primaryColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          LinearProgressIndicator(
+            value: total > 0 ? passed / total : 0,
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
+            valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Complete all $total modules and pass each quiz (≥ 70%) to earn Gold Tier status.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -386,22 +410,35 @@ class _CompletionBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+        ),
       ),
-      child: Row(children: [
-        const Icon(Icons.star, color: Color(0xFFF59E0B), size: 28),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Training Complete!',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Color(0xFFF59E0B))),
-          const SizedBox(height: 4),
-          Text(
-            'You\'ve passed all modules. Your Gold Tier application will be reviewed within 5 business days.',
-            style: Theme.of(context).textTheme.bodySmall,
+      child: Row(
+        children: [
+          const Icon(Icons.star, color: Color(0xFFF59E0B), size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Training Complete!',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFF59E0B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'You\'ve passed all modules. Your Gold Tier application will be reviewed within 5 business days.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
-        ])),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -454,13 +491,16 @@ class _ModuleCard extends StatelessWidget {
         title: Text(
           '$index. ${module.title}',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              decoration: isPassed ? TextDecoration.none : null),
+            fontWeight: FontWeight.w600,
+            decoration: isPassed ? TextDecoration.none : null,
+          ),
         ),
-        subtitle: Text(module.summary,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall),
+        subtitle: Text(
+          module.summary,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
         trailing: isPassed
             ? const Icon(Icons.check_circle, color: AppTheme.successColor)
             : const Icon(Icons.arrow_forward_ios, size: 14),
@@ -525,15 +565,12 @@ class _ModuleDetailPageState extends State<_ModuleDetailPage> {
         .doc(uid)
         .collection('training_progress')
         .doc('gold_tier')
-        .set(
-      {
-        '${widget.module.id}_passed': true,
-        '${widget.module.id}_score': _score,
-        '${widget.module.id}_completedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
-    );
+        .set({
+          '${widget.module.id}_passed': true,
+          '${widget.module.id}_score': _score,
+          '${widget.module.id}_completedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
     widget.onComplete();
   }
 
@@ -575,60 +612,83 @@ class _ContentView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(module.summary,
-              style: Theme.of(context).textTheme.bodyMedium),
-        ),
-        const SizedBox(height: 24),
-        Text('Key Points',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
-        ...module.keyPoints.map((point) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Icon(Icons.check_circle_outline,
-                color: AppTheme.primaryColor, size: 18),
-            const SizedBox(width: 10),
-            Expanded(child: Text(point)),
-          ]),
-        )),
-        const SizedBox(height: 24),
-        if (isPassed)
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
+              color: AppTheme.primaryColor.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(children: [
-              const Icon(Icons.check_circle, color: AppTheme.successColor),
-              const SizedBox(width: 10),
-              Text('Quiz passed!',
-                  style: TextStyle(
-                      color: AppTheme.successColor, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              TextButton(
-                  onPressed: onStartQuiz,
-                  child: const Text('Retake')),
-            ]),
-          )
-        else
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: onStartQuiz,
-              child: Text('Take Quiz (${module.questions.length} questions)'),
+            child: Text(
+              module.summary,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
-      ]),
+          const SizedBox(height: 24),
+          Text(
+            'Key Points',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          ...module.keyPoints.map(
+            (point) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: AppTheme.primaryColor,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(point)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (isPassed)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.successColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: AppTheme.successColor),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Quiz passed!',
+                    style: TextStyle(
+                      color: AppTheme.successColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: onStartQuiz,
+                    child: const Text('Retake'),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: onStartQuiz,
+                child: Text('Take Quiz (${module.questions.length} questions)'),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -666,70 +726,88 @@ class _QuizView extends StatelessWidget {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Quiz — ${module.title}',
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text('You need 70% to pass.',
-            style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 20),
-        ...List.generate(module.questions.length, (qi) {
-          final q = module.questions[qi];
-          return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${qi + 1}. ${q.text}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            ...List.generate(q.options.length, (oi) {
-              final selected = answers[qi] == oi;
-              return GestureDetector(
-                onTap: () => onAnswer(qi, oi),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: selected
-                            ? AppTheme.primaryColor
-                            : Theme.of(context).colorScheme.outline,
-                        width: selected ? 2 : 1),
-                    color: selected
-                        ? AppTheme.primaryColor.withValues(alpha: 0.07)
-                        : null,
-                  ),
-                  child: Row(children: [
-                    Icon(
-                      selected
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked,
-                      color: selected
-                          ? AppTheme.primaryColor
-                          : Theme.of(context).colorScheme.outline,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(q.options[oi])),
-                  ]),
-                ),
-              );
-            }),
-            const SizedBox(height: 16),
-          ]);
-        }),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: answers.length == module.questions.length
-                ? onSubmit
-                : null,
-            child: const Text('Submit Answers'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quiz — ${module.title}',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-        ),
-      ]),
+          const SizedBox(height: 4),
+          Text(
+            'You need 70% to pass.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 20),
+          ...List.generate(module.questions.length, (qi) {
+            final q = module.questions[qi];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${qi + 1}. ${q.text}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                ...List.generate(q.options.length, (oi) {
+                  final selected = answers[qi] == oi;
+                  return GestureDetector(
+                    onTap: () => onAnswer(qi, oi),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: selected
+                              ? AppTheme.primaryColor
+                              : Theme.of(context).colorScheme.outline,
+                          width: selected ? 2 : 1,
+                        ),
+                        color: selected
+                            ? AppTheme.primaryColor.withValues(alpha: 0.07)
+                            : null,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: selected
+                                ? AppTheme.primaryColor
+                                : Theme.of(context).colorScheme.outline,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(q.options[oi])),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+            );
+          }),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: answers.length == module.questions.length
+                  ? onSubmit
+                  : null,
+              child: const Text('Submit Answers'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -753,42 +831,46 @@ class _QuizResultView extends StatelessWidget {
     final pct = (score / total * 100).round();
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(
-          passed ? Icons.check_circle : Icons.cancel,
-          size: 72,
-          color: passed ? AppTheme.successColor : AppTheme.errorColor,
-        ),
-        const SizedBox(height: 20),
-        Text(
-          passed ? 'Quiz Passed!' : 'Try Again',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: passed ? AppTheme.successColor : AppTheme.errorColor,
-              fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '$score / $total correct  ($pct%)',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          passed
-              ? 'Great work! Module progress saved.'
-              : 'You need at least 70% to pass. Re-read the module and try again.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 32),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: onDone,
-            child: const Text('Back to Training'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            passed ? Icons.check_circle : Icons.cancel,
+            size: 72,
+            color: passed ? AppTheme.successColor : AppTheme.errorColor,
           ),
-        ),
-      ]),
+          const SizedBox(height: 20),
+          Text(
+            passed ? 'Quiz Passed!' : 'Try Again',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: passed ? AppTheme.successColor : AppTheme.errorColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$score / $total correct  ($pct%)',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            passed
+                ? 'Great work! Module progress saved.'
+                : 'You need at least 70% to pass. Re-read the module and try again.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: onDone,
+              child: const Text('Back to Training'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

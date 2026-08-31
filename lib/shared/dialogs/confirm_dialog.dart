@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// A reusable confirmation dialog
-/// 
+///
 /// Phase 1: Critical Security & Stability - Created missing file
 class ConfirmDialog extends StatelessWidget {
   final String title;
@@ -45,7 +45,7 @@ class ConfirmDialog extends StatelessWidget {
 }
 
 /// Show a confirmation dialog and return the result
-/// 
+///
 /// Returns true if confirmed, false if cancelled
 Future<bool> showConfirmDialog(
   BuildContext context, {
@@ -77,7 +77,8 @@ Future<bool> showDeleteConfirmDialog(
   return showConfirmDialog(
     context,
     title: 'Delete Confirmation',
-    message: 'Are you sure you want to delete $itemName? This action cannot be undone.',
+    message:
+        'Are you sure you want to delete $itemName? This action cannot be undone.',
     confirmText: 'Delete',
     cancelText: 'Cancel',
     isDestructive: true,

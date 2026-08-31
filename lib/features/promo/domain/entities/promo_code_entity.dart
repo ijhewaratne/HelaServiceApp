@@ -3,18 +3,10 @@ import 'package:equatable/equatable.dart';
 import '../../../booking/domain/entities/booking.dart';
 
 /// Discount type for promo codes
-enum DiscountType {
-  percentage,
-  fixed,
-}
+enum DiscountType { percentage, fixed }
 
 /// Promo code status
-enum PromoCodeStatus {
-  active,
-  inactive,
-  expired,
-  exhausted,
-}
+enum PromoCodeStatus { active, inactive, expired, exhausted }
 
 /// Promo code entity
 ///
@@ -211,13 +203,13 @@ class PromoCodeEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        code,
-        discountType,
-        discountAmount,
-        validUntil,
-        currentUses,
-        maxUses,
-      ];
+    code,
+    discountType,
+    discountAmount,
+    validUntil,
+    currentUses,
+    maxUses,
+  ];
 }
 
 /// Validation result for promo code

@@ -70,58 +70,49 @@ void main() {
 
   group('PromoRepositoryImpl', () {
     group('validatePromoCode', () {
-      test(
-        'returns a failure even for a promo code that satisfies every '
-        'business rule (valid window, uses remaining, order above minimum) '
-        'because Firestore lookups are not implemented yet',
-        () async {
-          await seedActivePromoCode(firestore);
+      test('returns a failure even for a promo code that satisfies every '
+          'business rule (valid window, uses remaining, order above minimum) '
+          'because Firestore lookups are not implemented yet', () async {
+        await seedActivePromoCode(firestore);
 
-          final result = await repository.validatePromoCode(
-            code: 'SAVE10',
-            orderAmount: 1000,
-            serviceType: ServiceType.cleaning,
-            zoneId: 'colombo-1',
-            userId: 'user_123',
-          );
+        final result = await repository.validatePromoCode(
+          code: 'SAVE10',
+          orderAmount: 1000,
+          serviceType: ServiceType.cleaning,
+          zoneId: 'colombo-1',
+          userId: 'user_123',
+        );
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) {
-              expect(failure, isA<GenericFailure>());
-              expect(failure.message, 'Not implemented');
-            },
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
-        },
-      );
+        expect(result.isLeft(), isTrue);
+        result.fold((failure) {
+          expect(failure, isA<GenericFailure>());
+          expect(failure.message, 'Not implemented');
+        }, (_) => fail('Expected a Left(Failure), got a Right'));
+      });
 
-      test(
-        'returns the same generic failure for an expired promo code '
-        '(expiry is not yet distinguished from any other case)',
-        () async {
-          await seedActivePromoCode(
-            firestore,
-            code: 'EXPIRED5',
-            validFrom: DateTime(2020),
-            validUntil: DateTime(2021), // expired well before "now"
-          );
+      test('returns the same generic failure for an expired promo code '
+          '(expiry is not yet distinguished from any other case)', () async {
+        await seedActivePromoCode(
+          firestore,
+          code: 'EXPIRED5',
+          validFrom: DateTime(2020),
+          validUntil: DateTime(2021), // expired well before "now"
+        );
 
-          final result = await repository.validatePromoCode(
-            code: 'EXPIRED5',
-            orderAmount: 1000,
-            serviceType: ServiceType.cleaning,
-            zoneId: 'colombo-1',
-            userId: 'user_123',
-          );
+        final result = await repository.validatePromoCode(
+          code: 'EXPIRED5',
+          orderAmount: 1000,
+          serviceType: ServiceType.cleaning,
+          zoneId: 'colombo-1',
+          userId: 'user_123',
+        );
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) => expect(failure, isA<GenericFailure>()),
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
-        },
-      );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<GenericFailure>()),
+          (_) => fail('Expected a Left(Failure), got a Right'),
+        );
+      });
 
       test(
         'returns a failure for a promo code that does not exist in Firestore '
@@ -145,49 +136,45 @@ void main() {
     });
 
     group('applyPromoCode', () {
-      test(
-        'returns a failure and does not mutate the promo code usage count '
-        'in Firestore',
-        () async {
-          await seedActivePromoCode(firestore);
+      test('returns a failure and does not mutate the promo code usage count '
+          'in Firestore', () async {
+        await seedActivePromoCode(firestore);
 
-          final result = await repository.applyPromoCode(
-            code: 'SAVE10',
-            userId: 'user_123',
-            bookingId: 'booking_456',
-            orderAmount: 1000,
-          );
+        final result = await repository.applyPromoCode(
+          code: 'SAVE10',
+          userId: 'user_123',
+          bookingId: 'booking_456',
+          orderAmount: 1000,
+        );
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) => expect(failure, isA<GenericFailure>()),
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<GenericFailure>()),
+          (_) => fail('Expected a Left(Failure), got a Right'),
+        );
 
-          // Since applyPromoCode is unimplemented, the usage count in
-          // Firestore must remain untouched.
-          final stored =
-              await firestore.collection('promoCodes').doc('SAVE10').get();
-          expect(stored.data()?['currentUses'], 5);
-        },
-      );
+        // Since applyPromoCode is unimplemented, the usage count in
+        // Firestore must remain untouched.
+        final stored = await firestore
+            .collection('promoCodes')
+            .doc('SAVE10')
+            .get();
+        expect(stored.data()?['currentUses'], 5);
+      });
     });
 
     group('getPromoCode', () {
-      test(
-        'returns a failure even when a matching document exists',
-        () async {
-          await seedActivePromoCode(firestore);
+      test('returns a failure even when a matching document exists', () async {
+        await seedActivePromoCode(firestore);
 
-          final result = await repository.getPromoCode('SAVE10');
+        final result = await repository.getPromoCode('SAVE10');
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) => expect(failure, isA<GenericFailure>()),
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
-        },
-      );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<GenericFailure>()),
+          (_) => fail('Expected a Left(Failure), got a Right'),
+        );
+      });
     });
 
     group('getActivePromoCodes', () {
@@ -209,27 +196,24 @@ void main() {
     });
 
     group('hasUserUsedPromoCode', () {
-      test(
-        'ignores an existing usage record in Firestore and always returns '
-        'false',
-        () async {
-          await firestore.collection('promoUsages').add({
-            'promoCode': 'SAVE10',
-            'userId': 'user_123',
-            'orderAmount': 1000.0,
-            'discountApplied': 100.0,
-            'usedAt': Timestamp.fromDate(DateTime(2026, 1, 5)),
-          });
+      test('ignores an existing usage record in Firestore and always returns '
+          'false', () async {
+        await firestore.collection('promoUsages').add({
+          'promoCode': 'SAVE10',
+          'userId': 'user_123',
+          'orderAmount': 1000.0,
+          'discountApplied': 100.0,
+          'usedAt': Timestamp.fromDate(DateTime(2026, 1, 5)),
+        });
 
-          final result = await repository.hasUserUsedPromoCode(
-            userId: 'user_123',
-            promoCode: 'SAVE10',
-          );
+        final result = await repository.hasUserUsedPromoCode(
+          userId: 'user_123',
+          promoCode: 'SAVE10',
+        );
 
-          expect(result.isRight(), isTrue);
-          expect(result.getOrElse(() => true), isFalse);
-        },
-      );
+        expect(result.isRight(), isTrue);
+        expect(result.getOrElse(() => true), isFalse);
+      });
 
       test('returns false for a user with no usage history either', () async {
         final result = await repository.hasUserUsedPromoCode(
@@ -253,8 +237,7 @@ void main() {
             'usedAt': Timestamp.fromDate(DateTime(2026, 1, 5)),
           });
 
-          final result =
-              await repository.getUserPromoUsage(userId: 'user_123');
+          final result = await repository.getUserPromoUsage(userId: 'user_123');
 
           expect(result.isRight(), isTrue);
           result.fold(
@@ -296,55 +279,52 @@ void main() {
             (_) => fail('Expected a Left(Failure), got a Right'),
           );
 
-          final stored =
-              await firestore.collection('promoCodes').doc('NEWCODE').get();
+          final stored = await firestore
+              .collection('promoCodes')
+              .doc('NEWCODE')
+              .get();
           expect(stored.exists, isFalse);
         },
       );
 
-      test(
-        'updatePromoCode returns a failure and does not change an existing '
-        'document',
-        () async {
-          await seedActivePromoCode(firestore);
-          final updated = buildPromoEntity(
-            code: 'SAVE10',
-            discountAmount: 999,
-          );
+      test('updatePromoCode returns a failure and does not change an existing '
+          'document', () async {
+        await seedActivePromoCode(firestore);
+        final updated = buildPromoEntity(code: 'SAVE10', discountAmount: 999);
 
-          final result = await repository.updatePromoCode(updated);
+        final result = await repository.updatePromoCode(updated);
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) => expect(failure, isA<GenericFailure>()),
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<GenericFailure>()),
+          (_) => fail('Expected a Left(Failure), got a Right'),
+        );
 
-          final stored =
-              await firestore.collection('promoCodes').doc('SAVE10').get();
-          expect(stored.data()?['minOrderAmount'], 500);
-        },
-      );
+        final stored = await firestore
+            .collection('promoCodes')
+            .doc('SAVE10')
+            .get();
+        expect(stored.data()?['minOrderAmount'], 500);
+      });
 
-      test(
-        'deactivatePromoCode returns a failure and leaves the document '
-        'untouched',
-        () async {
-          await seedActivePromoCode(firestore);
+      test('deactivatePromoCode returns a failure and leaves the document '
+          'untouched', () async {
+        await seedActivePromoCode(firestore);
 
-          final result = await repository.deactivatePromoCode('SAVE10');
+        final result = await repository.deactivatePromoCode('SAVE10');
 
-          expect(result.isLeft(), isTrue);
-          result.fold(
-            (failure) => expect(failure, isA<GenericFailure>()),
-            (_) => fail('Expected a Left(Failure), got a Right'),
-          );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<GenericFailure>()),
+          (_) => fail('Expected a Left(Failure), got a Right'),
+        );
 
-          final stored =
-              await firestore.collection('promoCodes').doc('SAVE10').get();
-          expect(stored.exists, isTrue);
-        },
-      );
+        final stored = await firestore
+            .collection('promoCodes')
+            .doc('SAVE10')
+            .get();
+        expect(stored.exists, isTrue);
+      });
 
       test('getPromoCodeStatistics returns a failure', () async {
         await seedActivePromoCode(firestore);

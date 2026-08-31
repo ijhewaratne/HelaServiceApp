@@ -12,12 +12,12 @@ class GenerateRecurringBookings
 
   @override
   Future<Either<Failure, List<String>>> call(
-          GenerateRecurringBookingsParams params) =>
-      repository.generateRecurringBookings(
-        parentBookingId: params.parentBookingId,
-        schedule: params.schedule,
-        bookingTemplate: params.bookingTemplate,
-      );
+    GenerateRecurringBookingsParams params,
+  ) => repository.generateRecurringBookings(
+    parentBookingId: params.parentBookingId,
+    schedule: params.schedule,
+    bookingTemplate: params.bookingTemplate,
+  );
 }
 
 class GenerateRecurringBookingsParams extends Equatable {

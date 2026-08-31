@@ -62,7 +62,10 @@ class WalletRepositoryImpl implements WalletRepository {
     String? startAfter,
   }) async {
     try {
-      final walletDoc = await _firestore.collection('wallets').doc(userId).get();
+      final walletDoc = await _firestore
+          .collection('wallets')
+          .doc(userId)
+          .get();
 
       if (!walletDoc.exists) {
         return await getWallet(userId);
@@ -87,10 +90,12 @@ class WalletRepositoryImpl implements WalletRepository {
 
       final transactionsSnapshot = await query.get();
 
-      return Right(WalletModel.fromFirestore(
-        walletDoc,
-        transactionsSnapshot: transactionsSnapshot,
-      ).toEntity());
+      return Right(
+        WalletModel.fromFirestore(
+          walletDoc,
+          transactionsSnapshot: transactionsSnapshot,
+        ).toEntity(),
+      );
     } catch (e) {
       return Left(ServerFailure('Failed to get wallet with transactions: $e'));
     }
@@ -109,79 +114,77 @@ class WalletRepositoryImpl implements WalletRepository {
       }
 
       // Use Firestore transaction for atomic operation
-      return await _firestore.runTransaction<Either<Failure, WalletEntity>>(
-        (transaction) async {
-          final walletRef = _firestore.collection('wallets').doc(userId);
-          final snapshot = await transaction.get(walletRef);
+      return await _firestore.runTransaction<Either<Failure, WalletEntity>>((
+        transaction,
+      ) async {
+        final walletRef = _firestore.collection('wallets').doc(userId);
+        final snapshot = await transaction.get(walletRef);
 
-          if (!snapshot.exists) {
-            // Create wallet first
-            transaction.set(walletRef, {
-              'balance': amount,
-              'heldBalance': 0,
-              'totalCredited': amount,
-              'totalDebited': 0,
-              'isActive': true,
-              'isFrozen': false,
-              'createdAt': FieldValue.serverTimestamp(),
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-          } else {
-            final currentBalance =
-                ((snapshot.data()?['balance'] ?? 0) as num).toInt();
-            final currentTotalCredited =
-                ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt();
-
-            final newBalance = currentBalance + amount;
-            final newTotalCredited = currentTotalCredited + amount;
-
-            transaction.update(walletRef, {
-              'balance': newBalance,
-              'totalCredited': newTotalCredited,
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-          }
-
-          // Add transaction record
-          final transactionRef =
-              _firestore.collection('wallet_transactions').doc();
-          transaction.set(transactionRef, {
-            'userId': userId,
-            'type': 'topUp',
-            'amount': amount,
-            'balanceAfter': !snapshot.exists
-                ? amount
-                : ((snapshot.data()?['balance'] ?? 0) as num).toInt() +
-                    amount,
-            'description': description ?? 'Wallet top-up',
-            'paymentMethod': method.name,
-            'status': 'completed',
+        if (!snapshot.exists) {
+          // Create wallet first
+          transaction.set(walletRef, {
+            'balance': amount,
+            'heldBalance': 0,
+            'totalCredited': amount,
+            'totalDebited': 0,
+            'isActive': true,
+            'isFrozen': false,
             'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
           });
+        } else {
+          final currentBalance = ((snapshot.data()?['balance'] ?? 0) as num)
+              .toInt();
+          final currentTotalCredited =
+              ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt();
 
-          final updatedWallet = WalletModel(
-            userId: userId,
-            balance: !snapshot.exists
-                ? amount
-                : ((snapshot.data()?['balance'] ?? 0) as num).toInt() +
-                    amount,
-            heldBalance:
-                ((snapshot.data()?['heldBalance'] ?? 0) as num).toInt(),
-            totalCredited: !snapshot.exists
-                ? amount
-                : ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt() +
-                    amount,
-            totalDebited:
-                ((snapshot.data()?['totalDebited'] ?? 0) as num).toInt(),
-            isActive: true,
-            isFrozen: false,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          );
+          final newBalance = currentBalance + amount;
+          final newTotalCredited = currentTotalCredited + amount;
 
-          return Right(updatedWallet.toEntity());
-        },
-      );
+          transaction.update(walletRef, {
+            'balance': newBalance,
+            'totalCredited': newTotalCredited,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        // Add transaction record
+        final transactionRef = _firestore
+            .collection('wallet_transactions')
+            .doc();
+        transaction.set(transactionRef, {
+          'userId': userId,
+          'type': 'topUp',
+          'amount': amount,
+          'balanceAfter': !snapshot.exists
+              ? amount
+              : ((snapshot.data()?['balance'] ?? 0) as num).toInt() + amount,
+          'description': description ?? 'Wallet top-up',
+          'paymentMethod': method.name,
+          'status': 'completed',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        final updatedWallet = WalletModel(
+          userId: userId,
+          balance: !snapshot.exists
+              ? amount
+              : ((snapshot.data()?['balance'] ?? 0) as num).toInt() + amount,
+          heldBalance: ((snapshot.data()?['heldBalance'] ?? 0) as num).toInt(),
+          totalCredited: !snapshot.exists
+              ? amount
+              : ((snapshot.data()?['totalCredited'] ?? 0) as num).toInt() +
+                    amount,
+          totalDebited: ((snapshot.data()?['totalDebited'] ?? 0) as num)
+              .toInt(),
+          isActive: true,
+          isFrozen: false,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        return Right(updatedWallet.toEntity());
+      });
     } catch (e) {
       return Left(ServerFailure('Failed to top up wallet: $e'));
     }
@@ -199,63 +202,65 @@ class WalletRepositoryImpl implements WalletRepository {
         return Left(ValidationFailure('Amount must be greater than 0'));
       }
 
-      return await _firestore.runTransaction<Either<Failure, WalletEntity>>(
-        (transaction) async {
-          final walletRef = _firestore.collection('wallets').doc(userId);
-          final snapshot = await transaction.get(walletRef);
+      return await _firestore.runTransaction<Either<Failure, WalletEntity>>((
+        transaction,
+      ) async {
+        final walletRef = _firestore.collection('wallets').doc(userId);
+        final snapshot = await transaction.get(walletRef);
 
-          if (!snapshot.exists) {
-            return Left(ValidationFailure('Wallet not found'));
-          }
+        if (!snapshot.exists) {
+          return Left(ValidationFailure('Wallet not found'));
+        }
 
-          final walletData = snapshot.data()!;
-          final currentBalance = (walletData['balance'] as num?)?.toInt() ?? 0;
-          final isFrozen = walletData['isFrozen'] as bool? ?? false;
-          final isActive = walletData['isActive'] as bool? ?? true;
+        final walletData = snapshot.data()!;
+        final currentBalance = (walletData['balance'] as num?)?.toInt() ?? 0;
+        final isFrozen = walletData['isFrozen'] as bool? ?? false;
+        final isActive = walletData['isActive'] as bool? ?? true;
 
-          if (!isActive) {
-            return Left(ValidationFailure('Wallet is inactive'));
-          }
+        if (!isActive) {
+          return Left(ValidationFailure('Wallet is inactive'));
+        }
 
-          if (isFrozen) {
-            return Left(ValidationFailure('Wallet is frozen'));
-          }
+        if (isFrozen) {
+          return Left(ValidationFailure('Wallet is frozen'));
+        }
 
-          if (currentBalance < amount) {
-            return Left(ValidationFailure('Insufficient balance'));
-          }
+        if (currentBalance < amount) {
+          return Left(ValidationFailure('Insufficient balance'));
+        }
 
-          final currentTotalDebited =
-              ((walletData['totalDebited'] ?? 0) as num).toInt();
-          final newBalance = currentBalance - amount;
-          final newTotalDebited = currentTotalDebited + amount;
+        final currentTotalDebited = ((walletData['totalDebited'] ?? 0) as num)
+            .toInt();
+        final newBalance = currentBalance - amount;
+        final newTotalDebited = currentTotalDebited + amount;
 
-          transaction.update(walletRef, {
-            'balance': newBalance,
-            'totalDebited': newTotalDebited,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+        transaction.update(walletRef, {
+          'balance': newBalance,
+          'totalDebited': newTotalDebited,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
-          // Add transaction record
-          final transactionRef =
-              _firestore.collection('wallet_transactions').doc();
-          transaction.set(transactionRef, {
-            'userId': userId,
-            'type': 'payment',
-            'amount': -amount,
-            'balanceAfter': newBalance,
-            'description': description ?? 'Payment for booking',
-            'relatedBookingId': bookingId,
-            'status': 'completed',
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+        // Add transaction record
+        final transactionRef = _firestore
+            .collection('wallet_transactions')
+            .doc();
+        transaction.set(transactionRef, {
+          'userId': userId,
+          'type': 'payment',
+          'amount': -amount,
+          'balanceAfter': newBalance,
+          'description': description ?? 'Payment for booking',
+          'relatedBookingId': bookingId,
+          'status': 'completed',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-          return Right(WalletModel.fromFirestore(snapshot).copyWith(
-            balance: newBalance,
-            totalDebited: newTotalDebited,
-          ).toEntity());
-        },
-      );
+        return Right(
+          WalletModel.fromFirestore(snapshot)
+              .copyWith(balance: newBalance, totalDebited: newTotalDebited)
+              .toEntity(),
+        );
+      });
     } catch (e) {
       return Left(ServerFailure('Failed to process payment: $e'));
     }
@@ -269,49 +274,51 @@ class WalletRepositoryImpl implements WalletRepository {
     String? description,
   }) async {
     try {
-      return await _firestore.runTransaction<Either<Failure, WalletEntity>>(
-        (transaction) async {
-          final walletRef = _firestore.collection('wallets').doc(userId);
-          final snapshot = await transaction.get(walletRef);
+      return await _firestore.runTransaction<Either<Failure, WalletEntity>>((
+        transaction,
+      ) async {
+        final walletRef = _firestore.collection('wallets').doc(userId);
+        final snapshot = await transaction.get(walletRef);
 
-          if (!snapshot.exists) {
-            return Left(ValidationFailure('Wallet not found'));
-          }
+        if (!snapshot.exists) {
+          return Left(ValidationFailure('Wallet not found'));
+        }
 
-          final walletData = snapshot.data()!;
-          final currentBalance = ((walletData['balance'] ?? 0) as num).toInt();
-          final currentTotalCredited =
-              ((walletData['totalCredited'] ?? 0) as num).toInt();
+        final walletData = snapshot.data()!;
+        final currentBalance = ((walletData['balance'] ?? 0) as num).toInt();
+        final currentTotalCredited = ((walletData['totalCredited'] ?? 0) as num)
+            .toInt();
 
-          final newBalance = currentBalance + amount;
-          final newTotalCredited = currentTotalCredited + amount;
+        final newBalance = currentBalance + amount;
+        final newTotalCredited = currentTotalCredited + amount;
 
-          transaction.update(walletRef, {
-            'balance': newBalance,
-            'totalCredited': newTotalCredited,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+        transaction.update(walletRef, {
+          'balance': newBalance,
+          'totalCredited': newTotalCredited,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
-          // Add transaction record
-          final transactionRef =
-              _firestore.collection('wallet_transactions').doc();
-          transaction.set(transactionRef, {
-            'userId': userId,
-            'type': 'refund',
-            'amount': amount,
-            'balanceAfter': newBalance,
-            'description': description ?? 'Refund for cancelled booking',
-            'relatedBookingId': bookingId,
-            'status': 'completed',
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+        // Add transaction record
+        final transactionRef = _firestore
+            .collection('wallet_transactions')
+            .doc();
+        transaction.set(transactionRef, {
+          'userId': userId,
+          'type': 'refund',
+          'amount': amount,
+          'balanceAfter': newBalance,
+          'description': description ?? 'Refund for cancelled booking',
+          'relatedBookingId': bookingId,
+          'status': 'completed',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-          return Right(WalletModel.fromFirestore(snapshot).copyWith(
-            balance: newBalance,
-            totalCredited: newTotalCredited,
-          ).toEntity());
-        },
-      );
+        return Right(
+          WalletModel.fromFirestore(snapshot)
+              .copyWith(balance: newBalance, totalCredited: newTotalCredited)
+              .toEntity(),
+        );
+      });
     } catch (e) {
       return Left(ServerFailure('Failed to process refund: $e'));
     }
@@ -338,13 +345,17 @@ class WalletRepositoryImpl implements WalletRepository {
       }
 
       if (startDate != null) {
-        query = query.where('createdAt',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+        query = query.where(
+          'createdAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+        );
       }
 
       if (endDate != null) {
-        query = query.where('createdAt',
-            isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+        query = query.where(
+          'createdAt',
+          isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+        );
       }
 
       if (startAfter != null) {
@@ -359,9 +370,11 @@ class WalletRepositoryImpl implements WalletRepository {
 
       final snapshot = await query.get();
 
-      return Right(snapshot.docs
-          .map((d) => TransactionModel.fromFirestore(d).toEntity())
-          .toList());
+      return Right(
+        snapshot.docs
+            .map((d) => TransactionModel.fromFirestore(d).toEntity())
+            .toList(),
+      );
     } catch (e) {
       return Left(ServerFailure('Failed to get transactions: $e'));
     }
@@ -424,14 +437,17 @@ class WalletRepositoryImpl implements WalletRepository {
         .doc(userId)
         .snapshots()
         .map<Either<Failure, int>>((snapshot) {
-      if (!snapshot.exists) {
-        return const Right(0);
-      }
-      final data = snapshot.data();
-      return Right(((data?['balance'] ?? 0) as num).toInt());
-    }).handleError((e) {
-      return Left<Failure, int>(ServerFailure('Failed to watch balance: $e'));
-    });
+          if (!snapshot.exists) {
+            return const Right(0);
+          }
+          final data = snapshot.data();
+          return Right(((data?['balance'] ?? 0) as num).toInt());
+        })
+        .handleError((e) {
+          return Left<Failure, int>(
+            ServerFailure('Failed to watch balance: $e'),
+          );
+        });
   }
 
   @override
@@ -453,13 +469,14 @@ class WalletRepositoryImpl implements WalletRepository {
       final walletResult = await getWallet(userId);
       if (walletResult.isLeft()) {
         return Left(
-            walletResult.fold((l) => l, (r) => ServerFailure('Unknown error')));
+          walletResult.fold((l) => l, (r) => ServerFailure('Unknown error')),
+        );
       }
 
       final wallet = walletResult.getOrElse(() => throw Exception());
 
-      DateTime start = startDate ??
-          DateTime.now().subtract(const Duration(days: 30));
+      DateTime start =
+          startDate ?? DateTime.now().subtract(const Duration(days: 30));
       DateTime end = endDate ?? DateTime.now();
 
       final transactions = await getTransactions(

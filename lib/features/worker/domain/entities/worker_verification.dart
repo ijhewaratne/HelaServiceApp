@@ -108,52 +108,48 @@ class WorkerVerification extends Equatable {
     DateTime? tierGrantedAt,
     String? reviewedBy,
     String? notes,
-  }) =>
-      WorkerVerification(
-        workerId: workerId,
-        tier: tier ?? this.tier,
-        nicVerified: nicVerified ?? this.nicVerified,
-        phoneVerified: phoneVerified ?? this.phoneVerified,
-        backgroundCheckPassed:
-            backgroundCheckPassed ?? this.backgroundCheckPassed,
-        trainingCompleted: trainingCompleted ?? this.trainingCompleted,
-        firstJobCompleted: firstJobCompleted ?? this.firstJobCompleted,
-        minRatingMet: minRatingMet ?? this.minRatingMet,
-        hundredJobsCompleted:
-            hundredJobsCompleted ?? this.hundredJobsCompleted,
-        goldRatingMet: goldRatingMet ?? this.goldRatingMet,
-        zeroComplaintsLast30Days:
-            zeroComplaintsLast30Days ?? this.zeroComplaintsLast30Days,
-        twoFiftyJobsCompleted:
-            twoFiftyJobsCompleted ?? this.twoFiftyJobsCompleted,
-        partnerRatingMet: partnerRatingMet ?? this.partnerRatingMet,
-        exclusiveZoneGranted:
-            exclusiveZoneGranted ?? this.exclusiveZoneGranted,
-        tierGrantedAt: tierGrantedAt ?? this.tierGrantedAt,
-        reviewedBy: reviewedBy ?? this.reviewedBy,
-        notes: notes ?? this.notes,
-      );
+  }) => WorkerVerification(
+    workerId: workerId,
+    tier: tier ?? this.tier,
+    nicVerified: nicVerified ?? this.nicVerified,
+    phoneVerified: phoneVerified ?? this.phoneVerified,
+    backgroundCheckPassed: backgroundCheckPassed ?? this.backgroundCheckPassed,
+    trainingCompleted: trainingCompleted ?? this.trainingCompleted,
+    firstJobCompleted: firstJobCompleted ?? this.firstJobCompleted,
+    minRatingMet: minRatingMet ?? this.minRatingMet,
+    hundredJobsCompleted: hundredJobsCompleted ?? this.hundredJobsCompleted,
+    goldRatingMet: goldRatingMet ?? this.goldRatingMet,
+    zeroComplaintsLast30Days:
+        zeroComplaintsLast30Days ?? this.zeroComplaintsLast30Days,
+    twoFiftyJobsCompleted: twoFiftyJobsCompleted ?? this.twoFiftyJobsCompleted,
+    partnerRatingMet: partnerRatingMet ?? this.partnerRatingMet,
+    exclusiveZoneGranted: exclusiveZoneGranted ?? this.exclusiveZoneGranted,
+    tierGrantedAt: tierGrantedAt ?? this.tierGrantedAt,
+    reviewedBy: reviewedBy ?? this.reviewedBy,
+    notes: notes ?? this.notes,
+  );
 
   Map<String, dynamic> toJson() => {
-        'workerId': workerId,
-        'tier': tier.name,
-        'nicVerified': nicVerified,
-        'phoneVerified': phoneVerified,
-        'backgroundCheckPassed': backgroundCheckPassed,
-        'trainingCompleted': trainingCompleted,
-        'firstJobCompleted': firstJobCompleted,
-        'minRatingMet': minRatingMet,
-        'hundredJobsCompleted': hundredJobsCompleted,
-        'goldRatingMet': goldRatingMet,
-        'zeroComplaintsLast30Days': zeroComplaintsLast30Days,
-        'twoFiftyJobsCompleted': twoFiftyJobsCompleted,
-        'partnerRatingMet': partnerRatingMet,
-        'exclusiveZoneGranted': exclusiveZoneGranted,
-        'tierGrantedAt':
-            tierGrantedAt != null ? Timestamp.fromDate(tierGrantedAt!) : null,
-        'reviewedBy': reviewedBy,
-        'notes': notes,
-      };
+    'workerId': workerId,
+    'tier': tier.name,
+    'nicVerified': nicVerified,
+    'phoneVerified': phoneVerified,
+    'backgroundCheckPassed': backgroundCheckPassed,
+    'trainingCompleted': trainingCompleted,
+    'firstJobCompleted': firstJobCompleted,
+    'minRatingMet': minRatingMet,
+    'hundredJobsCompleted': hundredJobsCompleted,
+    'goldRatingMet': goldRatingMet,
+    'zeroComplaintsLast30Days': zeroComplaintsLast30Days,
+    'twoFiftyJobsCompleted': twoFiftyJobsCompleted,
+    'partnerRatingMet': partnerRatingMet,
+    'exclusiveZoneGranted': exclusiveZoneGranted,
+    'tierGrantedAt': tierGrantedAt != null
+        ? Timestamp.fromDate(tierGrantedAt!)
+        : null,
+    'reviewedBy': reviewedBy,
+    'notes': notes,
+  };
 
   factory WorkerVerification.fromJson(Map<String, dynamic> json) =>
       WorkerVerification(
@@ -164,21 +160,17 @@ class WorkerVerification extends Equatable {
         ),
         nicVerified: json['nicVerified'] as bool? ?? false,
         phoneVerified: json['phoneVerified'] as bool? ?? false,
-        backgroundCheckPassed:
-            json['backgroundCheckPassed'] as bool? ?? false,
+        backgroundCheckPassed: json['backgroundCheckPassed'] as bool? ?? false,
         trainingCompleted: json['trainingCompleted'] as bool? ?? false,
         firstJobCompleted: json['firstJobCompleted'] as bool? ?? false,
         minRatingMet: json['minRatingMet'] as bool? ?? false,
-        hundredJobsCompleted:
-            json['hundredJobsCompleted'] as bool? ?? false,
+        hundredJobsCompleted: json['hundredJobsCompleted'] as bool? ?? false,
         goldRatingMet: json['goldRatingMet'] as bool? ?? false,
         zeroComplaintsLast30Days:
             json['zeroComplaintsLast30Days'] as bool? ?? false,
-        twoFiftyJobsCompleted:
-            json['twoFiftyJobsCompleted'] as bool? ?? false,
+        twoFiftyJobsCompleted: json['twoFiftyJobsCompleted'] as bool? ?? false,
         partnerRatingMet: json['partnerRatingMet'] as bool? ?? false,
-        exclusiveZoneGranted:
-            json['exclusiveZoneGranted'] as bool? ?? false,
+        exclusiveZoneGranted: json['exclusiveZoneGranted'] as bool? ?? false,
         tierGrantedAt: json['tierGrantedAt'] != null
             ? (json['tierGrantedAt'] as Timestamp).toDate()
             : null,
@@ -193,20 +185,28 @@ class WorkerVerification extends Equatable {
 extension VerificationTierX on VerificationTier {
   String get label {
     switch (this) {
-      case VerificationTier.green:  return 'Green';
-      case VerificationTier.blue:   return 'Blue';
-      case VerificationTier.gold:   return 'Gold';
-      case VerificationTier.partner: return 'Partner';
+      case VerificationTier.green:
+        return 'Green';
+      case VerificationTier.blue:
+        return 'Blue';
+      case VerificationTier.gold:
+        return 'Gold';
+      case VerificationTier.partner:
+        return 'Partner';
     }
   }
 
   /// Multiplier applied to worker's base rate
   double get rateMultiplier {
     switch (this) {
-      case VerificationTier.green:   return 1.0;
-      case VerificationTier.blue:    return 1.1;
-      case VerificationTier.gold:    return 1.25;
-      case VerificationTier.partner: return 1.40;
+      case VerificationTier.green:
+        return 1.0;
+      case VerificationTier.blue:
+        return 1.1;
+      case VerificationTier.gold:
+        return 1.25;
+      case VerificationTier.partner:
+        return 1.40;
     }
   }
 

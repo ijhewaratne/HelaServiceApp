@@ -41,8 +41,7 @@ void main() {
       expect(rehydrated.estimatedEarnings, 1500.0);
     });
 
-    test('falls back to searching status for an unrecognized status value',
-        () {
+    test('falls back to searching status for an unrecognized status value', () {
       final map = buildJob().toMap();
       map['status'] = 'some_future_status_this_app_version_does_not_know';
 
@@ -83,24 +82,31 @@ void main() {
   });
 
   group('validJobTransitions', () {
-    test('searching can move to assigned or cancelled, not directly to completed',
-        () {
-      final transitions = validJobTransitions[JobStatus.searching]!;
-      expect(transitions, contains(JobStatus.assigned));
-      expect(transitions, contains(JobStatus.cancelled));
-      expect(transitions, isNot(contains(JobStatus.completed)));
-    });
+    test(
+      'searching can move to assigned or cancelled, not directly to completed',
+      () {
+        final transitions = validJobTransitions[JobStatus.searching]!;
+        expect(transitions, contains(JobStatus.assigned));
+        expect(transitions, contains(JobStatus.cancelled));
+        expect(transitions, isNot(contains(JobStatus.completed)));
+      },
+    );
 
-    test('terminal states (completed, cancelled) allow no further transitions',
-        () {
-      expect(validJobTransitions[JobStatus.completed], isEmpty);
-      expect(validJobTransitions[JobStatus.cancelled], isEmpty);
-    });
+    test(
+      'terminal states (completed, cancelled) allow no further transitions',
+      () {
+        expect(validJobTransitions[JobStatus.completed], isEmpty);
+        expect(validJobTransitions[JobStatus.cancelled], isEmpty);
+      },
+    );
 
     test('every JobStatus has an entry in the transition table', () {
       for (final status in JobStatus.values) {
-        expect(validJobTransitions.containsKey(status), isTrue,
-            reason: '$status is missing from validJobTransitions');
+        expect(
+          validJobTransitions.containsKey(status),
+          isTrue,
+          reason: '$status is missing from validJobTransitions',
+        );
       }
     });
 

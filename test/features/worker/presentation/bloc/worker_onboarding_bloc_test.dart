@@ -47,41 +47,45 @@ void main() {
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
       'emits [WorkerOnboardingLoading, PersonalInfoSubmitted] when successful',
       build: () {
-        when(mockRepository.checkNICExists(nic))
-            .thenAnswer((_) async => const Right(false));
-        when(mockRepository.submitApplication(any))
-            .thenAnswer((_) async => Right(application));
+        when(
+          mockRepository.checkNICExists(nic),
+        ).thenAnswer((_) async => const Right(false));
+        when(
+          mockRepository.submitApplication(any),
+        ).thenAnswer((_) async => Right(application));
         return bloc;
       },
-      act: (bloc) => bloc.add(SubmitPersonalInfo(
-        nic: nic,
-        fullName: fullName,
-        mobileNumber: mobileNumber,
-        address: address,
-        emergencyContactName: emergencyContactName,
-        emergencyContactPhone: emergencyContactPhone,
-      )),
-      expect: () => [
-        WorkerOnboardingLoading(),
-        isA<PersonalInfoSubmitted>(),
-      ],
+      act: (bloc) => bloc.add(
+        SubmitPersonalInfo(
+          nic: nic,
+          fullName: fullName,
+          mobileNumber: mobileNumber,
+          address: address,
+          emergencyContactName: emergencyContactName,
+          emergencyContactPhone: emergencyContactPhone,
+        ),
+      ),
+      expect: () => [WorkerOnboardingLoading(), isA<PersonalInfoSubmitted>()],
     );
 
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
       'emits [WorkerOnboardingLoading, WorkerOnboardingError] when NIC exists',
       build: () {
-        when(mockRepository.checkNICExists(nic))
-            .thenAnswer((_) async => const Right(true));
+        when(
+          mockRepository.checkNICExists(nic),
+        ).thenAnswer((_) async => const Right(true));
         return bloc;
       },
-      act: (bloc) => bloc.add(SubmitPersonalInfo(
-        nic: nic,
-        fullName: fullName,
-        mobileNumber: mobileNumber,
-        address: address,
-        emergencyContactName: emergencyContactName,
-        emergencyContactPhone: emergencyContactPhone,
-      )),
+      act: (bloc) => bloc.add(
+        SubmitPersonalInfo(
+          nic: nic,
+          fullName: fullName,
+          mobileNumber: mobileNumber,
+          address: address,
+          emergencyContactName: emergencyContactName,
+          emergencyContactPhone: emergencyContactPhone,
+        ),
+      ),
       expect: () => [
         WorkerOnboardingLoading(),
         WorkerOnboardingError('This NIC is already registered'),
@@ -107,13 +111,13 @@ void main() {
       'emits ServicesSelected when services are selected',
       build: () => bloc,
       seed: () => PersonalInfoSubmitted(initialApplication),
-      act: (bloc) => bloc.add(SelectServices(const [
-        app.ServiceType.cleaning,
-        app.ServiceType.cooking,
-      ])),
-      expect: () => [
-        isA<ServicesSelected>(),
-      ],
+      act: (bloc) => bloc.add(
+        SelectServices(const [
+          app.ServiceType.cleaning,
+          app.ServiceType.cooking,
+        ]),
+      ),
+      expect: () => [isA<ServicesSelected>()],
     );
   });
 
@@ -134,15 +138,13 @@ void main() {
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
       'emits ApplicationApproved when application is approved',
       build: () {
-        when(mockRepository.getApplicationStatus('worker_123'))
-            .thenAnswer((_) async => Right(application));
+        when(
+          mockRepository.getApplicationStatus('worker_123'),
+        ).thenAnswer((_) async => Right(application));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
-      expect: () => [
-        WorkerOnboardingLoading(),
-        isA<ApplicationApproved>(),
-      ],
+      expect: () => [WorkerOnboardingLoading(), isA<ApplicationApproved>()],
     );
 
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
@@ -151,15 +153,13 @@ void main() {
         final trainingApp = application.copyWith(
           status: app.ApplicationStatus.trainingRequired,
         );
-        when(mockRepository.getApplicationStatus('worker_123'))
-            .thenAnswer((_) async => Right(trainingApp));
+        when(
+          mockRepository.getApplicationStatus('worker_123'),
+        ).thenAnswer((_) async => Right(trainingApp));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
-      expect: () => [
-        WorkerOnboardingLoading(),
-        isA<TrainingRequired>(),
-      ],
+      expect: () => [WorkerOnboardingLoading(), isA<TrainingRequired>()],
     );
 
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
@@ -169,15 +169,13 @@ void main() {
           status: app.ApplicationStatus.rejected,
           rejectionReason: 'Invalid documents',
         );
-        when(mockRepository.getApplicationStatus('worker_123'))
-            .thenAnswer((_) async => Right(rejectedApp));
+        when(
+          mockRepository.getApplicationStatus('worker_123'),
+        ).thenAnswer((_) async => Right(rejectedApp));
         return bloc;
       },
       act: (bloc) => bloc.add(CheckApplicationStatus('worker_123')),
-      expect: () => [
-        WorkerOnboardingLoading(),
-        isA<ApplicationRejected>(),
-      ],
+      expect: () => [WorkerOnboardingLoading(), isA<ApplicationRejected>()],
     );
   });
 
@@ -198,16 +196,14 @@ void main() {
     blocTest<WorkerOnboardingBloc, WorkerOnboardingState>(
       'emits ApplicationApproved when training is completed',
       build: () {
-        when(mockRepository.completeTraining('app_123'))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          mockRepository.completeTraining('app_123'),
+        ).thenAnswer((_) async => const Right(null));
         return bloc;
       },
       seed: () => TrainingRequired(application),
       act: (bloc) => bloc.add(CompleteTraining()),
-      expect: () => [
-        WorkerOnboardingLoading(),
-        isA<ApplicationApproved>(),
-      ],
+      expect: () => [WorkerOnboardingLoading(), isA<ApplicationApproved>()],
     );
   });
 }

@@ -61,22 +61,21 @@ void main() {
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingCreated] when successful',
       build: () {
-        when(mockRepository.createBooking(testBooking))
-            .thenAnswer((_) async => Right(testBooking));
+        when(
+          mockRepository.createBooking(testBooking),
+        ).thenAnswer((_) async => Right(testBooking));
         return bloc;
       },
       act: (bloc) => bloc.add(CreateBooking(bookingData: testBooking)),
-      expect: () => [
-        BookingLoading(),
-        BookingCreated(booking: testBooking),
-      ],
+      expect: () => [BookingLoading(), BookingCreated(booking: testBooking)],
     );
 
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingError] when creation fails',
       build: () {
-        when(mockRepository.createBooking(testBooking))
-            .thenAnswer((_) async => Left(ServerFailure('Creation failed')));
+        when(
+          mockRepository.createBooking(testBooking),
+        ).thenAnswer((_) async => Left(ServerFailure('Creation failed')));
         return bloc;
       },
       act: (bloc) => bloc.add(CreateBooking(bookingData: testBooking)),
@@ -91,29 +90,25 @@ void main() {
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingLoaded] when successful',
       build: () {
-        when(mockRepository.getBooking('booking_123'))
-            .thenAnswer((_) async => Right(testBooking));
+        when(
+          mockRepository.getBooking('booking_123'),
+        ).thenAnswer((_) async => Right(testBooking));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadBooking(bookingId: 'booking_123')),
-      expect: () => [
-        BookingLoading(),
-        BookingLoaded(booking: testBooking),
-      ],
+      expect: () => [BookingLoading(), BookingLoaded(booking: testBooking)],
     );
 
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingError] when not found',
       build: () {
-        when(mockRepository.getBooking('booking_123'))
-            .thenAnswer((_) async => Left(NotFoundFailure('Not found')));
+        when(
+          mockRepository.getBooking('booking_123'),
+        ).thenAnswer((_) async => Left(NotFoundFailure('Not found')));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadBooking(bookingId: 'booking_123')),
-      expect: () => [
-        BookingLoading(),
-        BookingError(message: 'Not found'),
-      ],
+      expect: () => [BookingLoading(), BookingError(message: 'Not found')],
     );
   });
 
@@ -121,8 +116,9 @@ void main() {
     blocTest<BookingBloc, BookingState>(
       'emits [BookingLoading, BookingCancelled] when successful',
       build: () {
-        when(mockRepository.cancelBooking('booking_123'))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          mockRepository.cancelBooking('booking_123'),
+        ).thenAnswer((_) async => const Right(null));
         return bloc;
       },
       act: (bloc) => bloc.add(CancelBooking(bookingId: 'booking_123')),

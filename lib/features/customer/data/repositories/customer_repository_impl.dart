@@ -13,9 +13,14 @@ class CustomerRepositoryImpl implements CustomerRepository {
   CustomerRepositoryImpl(this._firestore);
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getCustomerProfile(String customerId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getCustomerProfile(
+    String customerId,
+  ) async {
     try {
-      final doc = await _firestore.collection(_collection).doc(customerId).get();
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .get();
       if (!doc.exists) {
         return const Left(GenericFailure('Customer not found'));
       }
@@ -40,8 +45,11 @@ class CustomerRepositoryImpl implements CustomerRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      
-      await _firestore.collection(_collection).doc(customerId).set(customerData);
+
+      await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .set(customerData);
       return Right(customerData);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
@@ -62,14 +70,17 @@ class CustomerRepositoryImpl implements CustomerRepository {
         'userId': customerId,
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      
-      await _firestore.collection(_collection).doc(customerId).set(
-        updateData,
-        SetOptions(merge: true),
-      );
-      
+
+      await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .set(updateData, SetOptions(merge: true));
+
       // Get updated profile
-      final doc = await _firestore.collection(_collection).doc(customerId).get();
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .get();
       return Right(doc.data()!);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
@@ -100,7 +111,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
           .where('customerId', isEqualTo: customerId)
           .orderBy('createdAt', descending: true)
           .get();
-      
+
       return Right(querySnapshot.docs.map((doc) => doc.data()).toList());
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
@@ -114,11 +125,14 @@ class CustomerRepositoryImpl implements CustomerRepository {
     String customerId,
   ) async {
     try {
-      final doc = await _firestore.collection(_collection).doc(customerId).get();
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .get();
       if (!doc.exists) {
         return const Right([]);
       }
-      
+
       final data = doc.data();
       final addressesList = (data?['savedAddresses'] as List<dynamic>?) ?? [];
       final addresses = addressesList
@@ -144,12 +158,12 @@ class CustomerRepositoryImpl implements CustomerRepository {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'customerId': customerId,
       };
-      
+
       await _firestore.collection(_collection).doc(customerId).set({
         'savedAddresses': FieldValue.arrayUnion([addressWithId]),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      
+
       return Right(Address.fromJson(addressWithId));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
@@ -166,34 +180,37 @@ class CustomerRepositoryImpl implements CustomerRepository {
   ) async {
     try {
       // Get current addresses
-      final doc = await _firestore.collection(_collection).doc(customerId).get();
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .get();
       if (!doc.exists) {
         return const Left(GenericFailure('Customer not found'));
       }
-      
+
       final data = doc.data();
       final addresses = List<Map<String, dynamic>>.from(
         (data?['savedAddresses'] as List<dynamic>?) ?? [],
       );
-      
+
       // Find and update the address
       final index = addresses.indexWhere((a) => a['id'] == addressId);
       if (index == -1) {
         return const Left(GenericFailure('Address not found'));
       }
-      
+
       final updatedJson = address.toJson();
       addresses[index] = {
         ...updatedJson,
         'id': addressId,
         'customerId': customerId,
       };
-      
+
       await _firestore.collection(_collection).doc(customerId).update({
         'savedAddresses': addresses,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      
+
       return Right(Address.fromJson(addresses[index]));
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
@@ -209,31 +226,34 @@ class CustomerRepositoryImpl implements CustomerRepository {
   ) async {
     try {
       // Get current addresses
-      final doc = await _firestore.collection(_collection).doc(customerId).get();
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(customerId)
+          .get();
       if (!doc.exists) {
         return const Left(GenericFailure('Customer not found'));
       }
-      
+
       final data = doc.data();
       final addresses = List<Map<String, dynamic>>.from(
         (data?['savedAddresses'] as List<dynamic>?) ?? [],
       );
-      
+
       // Remove the address
       final addressToRemove = addresses.firstWhere(
         (a) => a['id'] == addressId,
         orElse: () => {},
       );
-      
+
       if (addressToRemove.isEmpty) {
         return const Left(GenericFailure('Address not found'));
       }
-      
+
       await _firestore.collection(_collection).doc(customerId).update({
         'savedAddresses': FieldValue.arrayRemove([addressToRemove]),
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      
+
       return const Right(null);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));

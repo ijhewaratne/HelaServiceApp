@@ -11,8 +11,8 @@ class AnalyticsBlocObserver extends BlocObserver {
   AnalyticsBlocObserver({
     AnalyticsService? analytics,
     CrashReportingService? crashReporting,
-  })  : _analytics = analytics ?? AnalyticsService(),
-        _crashReporting = crashReporting ?? CrashReportingService();
+  }) : _analytics = analytics ?? AnalyticsService(),
+       _crashReporting = crashReporting ?? CrashReportingService();
 
   @override
   void onCreate(BlocBase bloc) {
@@ -26,7 +26,9 @@ class AnalyticsBlocObserver extends BlocObserver {
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
     if (kDebugMode) {
-      debugPrint('🔄 ${bloc.runtimeType}: ${change.currentState.runtimeType} → ${change.nextState.runtimeType}');
+      debugPrint(
+        '🔄 ${bloc.runtimeType}: ${change.currentState.runtimeType} → ${change.nextState.runtimeType}',
+      );
     }
 
     // Track state changes that might indicate errors
@@ -43,7 +45,7 @@ class AnalyticsBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    
+
     // Log to Crashlytics
     _crashReporting.logError(
       error,

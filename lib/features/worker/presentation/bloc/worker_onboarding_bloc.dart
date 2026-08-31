@@ -8,10 +8,12 @@ import '../../domain/repositories/worker_repository.dart';
 part 'worker_onboarding_event.dart';
 part 'worker_onboarding_state.dart';
 
-class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingState> {
+class WorkerOnboardingBloc
+    extends Bloc<WorkerOnboardingEvent, WorkerOnboardingState> {
   final WorkerRepository repository;
 
-  WorkerOnboardingBloc({required this.repository}) : super(WorkerOnboardingInitial()) {
+  WorkerOnboardingBloc({required this.repository})
+    : super(WorkerOnboardingInitial()) {
     on<SubmitPersonalInfo>(_onSubmitPersonalInfo);
     on<SelectServices>(_onSelectServices);
     on<UploadNICFront>(_onUploadNICFront);
@@ -46,7 +48,7 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
     );
 
     final result = await repository.submitApplication(application);
-    
+
     result.fold(
       (failure) => emit(WorkerOnboardingError(failure.message)),
       (app) => emit(PersonalInfoSubmitted(app)),
@@ -73,13 +75,13 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
   ) async {
     final current = state;
     WorkerApplication? application;
-    
+
     if (current is ServicesSelected) {
       application = current.application;
     } else if (current is DocumentsUploading) {
       application = current.application;
     }
-    
+
     if (application != null) {
       emit(DocumentsUploading(application, isFront: true));
 
@@ -91,9 +93,8 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
 
       result.fold(
         (failure) => emit(WorkerOnboardingError(failure.message)),
-        (url) => emit(NICFrontUploaded(
-          application!.copyWith(nicFrontUrl: url),
-        )),
+        (url) =>
+            emit(NICFrontUploaded(application!.copyWith(nicFrontUrl: url))),
       );
     }
   }
@@ -112,16 +113,15 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
         isFront: false,
       );
 
-      result.fold(
-        (failure) => emit(WorkerOnboardingError(failure.message)),
-        (url) {
-          final updated = current.application.copyWith(
-            nicBackUrl: url,
-            status: ApplicationStatus.underReview,
-          );
-          emit(DocumentsCompleted(updated));
-        },
-      );
+      result.fold((failure) => emit(WorkerOnboardingError(failure.message)), (
+        url,
+      ) {
+        final updated = current.application.copyWith(
+          nicBackUrl: url,
+          status: ApplicationStatus.underReview,
+        );
+        emit(DocumentsCompleted(updated));
+      });
     }
   }
 
@@ -131,13 +131,13 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
   ) async {
     final current = state;
     String? workerId;
-    
+
     if (current is PersonalInfoSubmitted) {
       workerId = current.application.id;
     } else if (current is ServicesSelected) {
       workerId = current.application.id;
     }
-    
+
     if (workerId != null) {
       final result = await repository.uploadProfilePhoto(
         workerId: workerId,
@@ -156,21 +156,20 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
   ) async {
     emit(WorkerOnboardingLoading());
     final result = await repository.getApplicationStatus(event.workerId);
-    
-    result.fold(
-      (failure) => emit(WorkerOnboardingError(failure.message)),
-      (application) {
-        if (application.status == ApplicationStatus.approved) {
-          emit(ApplicationApproved(application));
-        } else if (application.status == ApplicationStatus.trainingRequired) {
-          emit(TrainingRequired(application));
-        } else if (application.status == ApplicationStatus.rejected) {
-          emit(ApplicationRejected(application, application.rejectionReason));
-        } else {
-          emit(ApplicationUnderReview(application));
-        }
-      },
-    );
+
+    result.fold((failure) => emit(WorkerOnboardingError(failure.message)), (
+      application,
+    ) {
+      if (application.status == ApplicationStatus.approved) {
+        emit(ApplicationApproved(application));
+      } else if (application.status == ApplicationStatus.trainingRequired) {
+        emit(TrainingRequired(application));
+      } else if (application.status == ApplicationStatus.rejected) {
+        emit(ApplicationRejected(application, application.rejectionReason));
+      } else {
+        emit(ApplicationUnderReview(application));
+      }
+    });
   }
 
   Future<void> _onCompleteTraining(
@@ -181,15 +180,17 @@ class WorkerOnboardingBloc extends Bloc<WorkerOnboardingEvent, WorkerOnboardingS
     if (current is TrainingRequired) {
       emit(WorkerOnboardingLoading());
       final result = await repository.completeTraining(current.application.id!);
-      
+
       result.fold(
         (failure) => emit(WorkerOnboardingError(failure.message)),
-        (_) => emit(ApplicationApproved(
-          current.application.copyWith(
-            hasCompletedTraining: true,
-            status: ApplicationStatus.approved,
+        (_) => emit(
+          ApplicationApproved(
+            current.application.copyWith(
+              hasCompletedTraining: true,
+              status: ApplicationStatus.approved,
+            ),
           ),
-        )),
+        ),
       );
     }
   }

@@ -29,17 +29,13 @@ class AdminAuditLogScreen extends StatelessWidget {
           final docs = snap.data!.docs;
           return ListView.separated(
             itemCount: docs.length,
-            separatorBuilder: (_, __) =>
-                const Divider(height: 1, indent: 56),
+            separatorBuilder: (_, __) => const Divider(height: 1, indent: 56),
             itemBuilder: (context, i) {
               final data = docs[i].data() as Map<String, dynamic>;
-              final actionType =
-                  data['actionType'] as String? ?? 'unknown';
-              final entityType =
-                  data['entityType'] as String? ?? '';
+              final actionType = data['actionType'] as String? ?? 'unknown';
+              final entityType = data['entityType'] as String? ?? '';
               final entityId = data['entityId'] as String? ?? '';
-              final adminId =
-                  data['adminUserId'] as String? ?? 'system';
+              final adminId = data['adminUserId'] as String? ?? 'system';
               final ts = data['createdAt'];
               DateTime? time;
               if (ts is Timestamp) time = ts.toDate();
@@ -56,7 +52,9 @@ class AdminAuditLogScreen extends StatelessWidget {
                 title: Text(
                   _formatAction(actionType),
                   style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w500),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 subtitle: Text(
                   '$entityType${entityId.isNotEmpty ? ' · ${entityId.substring(0, entityId.length > 8 ? 8 : entityId.length)}...' : ''}\nAdmin: ${adminId.length > 8 ? adminId.substring(0, 8) : adminId}...',
@@ -65,8 +63,7 @@ class AdminAuditLogScreen extends StatelessWidget {
                 trailing: time != null
                     ? Text(
                         '${time.day}/${time.month}/${time.year}\n${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                            color: Colors.grey[500], fontSize: 11),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 11),
                         textAlign: TextAlign.right,
                       )
                     : null,
@@ -91,18 +88,16 @@ class AdminAuditLogScreen extends StatelessWidget {
 
   IconData _actionIcon(String action) {
     if (action.startsWith('approve')) return Icons.check_circle;
-    if (action.startsWith('hide'))    return Icons.visibility_off;
-    if (action.startsWith('flag'))    return Icons.flag;
+    if (action.startsWith('hide')) return Icons.visibility_off;
+    if (action.startsWith('flag')) return Icons.flag;
     if (action.startsWith('suspend')) return Icons.block;
-    if (action.startsWith('update'))  return Icons.edit;
+    if (action.startsWith('update')) return Icons.edit;
     return Icons.history;
   }
 
   String _formatAction(String action) {
     return action
-        .replaceAllMapped(RegExp(r'_([a-z])'),
-            (m) => ' ${m[1]!.toUpperCase()}')
-        .replaceFirst(
-            action[0], action[0].toUpperCase());
+        .replaceAllMapped(RegExp(r'_([a-z])'), (m) => ' ${m[1]!.toUpperCase()}')
+        .replaceFirst(action[0], action[0].toUpperCase());
   }
 }

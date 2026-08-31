@@ -18,8 +18,9 @@ void main() {
 
   setUp(() {
     mockRepository = MockAuthRepository();
-    when(mockRepository.authStateChanges)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockRepository.authStateChanges,
+    ).thenAnswer((_) => const Stream.empty());
     // Use default AnalyticsService — all methods are no-ops when Firebase
     // is not initialized, so no stubs needed.
     authBloc = AuthBloc(authRepository: mockRepository);
@@ -113,7 +114,9 @@ void main() {
       expect(find.text('Please enter 6-digit OTP'), findsOneWidget);
     });
 
-    testWidgets('shows loading indicator during authentication', (tester) async {
+    testWidgets('shows loading indicator during authentication', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestableWidget());
 
       authBloc.emit(AuthLoading());
@@ -143,7 +146,9 @@ void main() {
       authBloc.emit(AuthLoading());
       await tester.pump();
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextFormField>(
+        find.byType(TextFormField),
+      );
       expect(textField.enabled, false);
     });
 
@@ -154,7 +159,10 @@ void main() {
 
     testWidgets('phone input field shows correct hint', (tester) async {
       await tester.pumpWidget(createTestableWidget());
-      expect(find.text('Enter 9-digit number without leading 0'), findsOneWidget);
+      expect(
+        find.text('Enter 9-digit number without leading 0'),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -5,8 +5,8 @@ import 'recurrence_rule.dart';
 /// The scheduling portion of a booking request
 class BookingSchedule extends Equatable {
   final DateTime date;
-  final String startTime;  // "HH:mm" 24-hour
-  final String endTime;    // "HH:mm" 24-hour
+  final String startTime; // "HH:mm" 24-hour
+  final String endTime; // "HH:mm" 24-hour
   final int durationHours;
   final String timezone;
   final RecurrenceRule recurrence;
@@ -26,8 +26,19 @@ class BookingSchedule extends Equatable {
   String get displayLabel {
     final d = date;
     const months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const days = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return '${days[d.weekday]} ${d.day} ${months[d.month]}, $startTime – $endTime';
@@ -40,24 +51,23 @@ class BookingSchedule extends Equatable {
     int? durationHours,
     String? timezone,
     RecurrenceRule? recurrence,
-  }) =>
-      BookingSchedule(
-        date: date ?? this.date,
-        startTime: startTime ?? this.startTime,
-        endTime: endTime ?? this.endTime,
-        durationHours: durationHours ?? this.durationHours,
-        timezone: timezone ?? this.timezone,
-        recurrence: recurrence ?? this.recurrence,
-      );
+  }) => BookingSchedule(
+    date: date ?? this.date,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    durationHours: durationHours ?? this.durationHours,
+    timezone: timezone ?? this.timezone,
+    recurrence: recurrence ?? this.recurrence,
+  );
 
   Map<String, dynamic> toJson() => {
-        'date': Timestamp.fromDate(date),
-        'startTime': startTime,
-        'endTime': endTime,
-        'durationHours': durationHours,
-        'timezone': timezone,
-        'recurrence': recurrence.toJson(),
-      };
+    'date': Timestamp.fromDate(date),
+    'startTime': startTime,
+    'endTime': endTime,
+    'durationHours': durationHours,
+    'timezone': timezone,
+    'recurrence': recurrence.toJson(),
+  };
 
   factory BookingSchedule.fromJson(Map<String, dynamic> json) =>
       BookingSchedule(
@@ -68,11 +78,17 @@ class BookingSchedule extends Equatable {
         timezone: json['timezone'] as String? ?? 'Asia/Colombo',
         recurrence: json['recurrence'] != null
             ? RecurrenceRule.fromJson(
-                json['recurrence'] as Map<String, dynamic>)
+                json['recurrence'] as Map<String, dynamic>,
+              )
             : RecurrenceRule.once,
       );
 
   @override
-  List<Object?> get props =>
-      [date, startTime, endTime, durationHours, recurrence];
+  List<Object?> get props => [
+    date,
+    startTime,
+    endTime,
+    durationHours,
+    recurrence,
+  ];
 }

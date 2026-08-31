@@ -13,48 +13,41 @@ class ReferralRepositoryImpl implements ReferralRepository {
   @override
   Future<Either<Failure, UserReferralInfo>> getUserReferralInfo(
     String userId,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, ReferralEntity>> getReferral(
     String referralId,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, List<ReferralEntity>>> getUserReferrals(
     String userId, {
     ReferralStatus? status,
     int limit = 50,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, ReferralEntity>> applyReferralCode({
     required String referralCode,
     required String newUserId,
-  }) async =>
-      const Left(GenericFailure('Not implemented'));
+  }) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, ReferralEntity>> completeReferral({
     required String referralId,
     required String bookingId,
-  }) async =>
-      const Left(GenericFailure('Not implemented'));
+  }) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, ReferralStatistics>> getReferralStatistics(
     String userId,
-  ) async =>
-      const Left(GenericFailure('Not implemented'));
+  ) async => const Left(GenericFailure('Not implemented'));
 
   @override
   Future<Either<Failure, List<ReferralLeaderboardEntry>>> getLeaderboard({
     int limit = 10,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, bool>> isReferralCodeValid(String code) async =>
@@ -67,25 +60,21 @@ class ReferralRepositoryImpl implements ReferralRepository {
   @override
   Stream<Either<Failure, List<ReferralEntity>>> watchUserReferrals(
     String userId,
-  ) =>
-      Stream.value(const Right([]));
+  ) => Stream.value(const Right([]));
 
   @override
   Future<Either<Failure, List<ReferralEntity>>> getAllReferrals({
     DateTime? startDate,
     DateTime? endDate,
     int limit = 100,
-  }) async =>
-      const Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, void>> updateRewardAmount({
     required String referralId,
     required double newAmount,
-  }) async =>
-      const Left(GenericFailure('Not implemented'));
+  }) async => const Left(GenericFailure('Not implemented'));
 
   @override
-  Future<Either<Failure, int>> processPendingRewards() async =>
-      const Right(0);
+  Future<Either<Failure, int>> processPendingRewards() async => const Right(0);
 }

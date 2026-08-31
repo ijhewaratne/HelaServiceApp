@@ -113,16 +113,16 @@ class WorkerProfileCard extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: 28,
-            backgroundImage:
-                photoUrl != null ? NetworkImage(photoUrl!) : null,
+            backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
             backgroundColor: const Color(0xFF0F7A7A).withValues(alpha: 0.15),
             child: photoUrl == null
                 ? Text(
                     name.isNotEmpty ? name[0].toUpperCase() : 'W',
                     style: const TextStyle(
-                        color: Color(0xFF0F7A7A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20),
+                      color: Color(0xFF0F7A7A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   )
                 : null,
           ),
@@ -156,9 +156,11 @@ class WorkerProfileCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(width: 8),
-                    Icon(Icons.check_circle_outline,
-                        size: 13,
-                        color: Theme.of(context).colorScheme.outline),
+                    Icon(
+                      Icons.check_circle_outline,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       '$completedJobs jobs',
@@ -175,8 +177,10 @@ class WorkerProfileCard extends StatelessWidget {
             ElevatedButton(
               onPressed: onSelect,
               style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
               ),
               child: const Text('Select', style: TextStyle(fontSize: 13)),
             ),

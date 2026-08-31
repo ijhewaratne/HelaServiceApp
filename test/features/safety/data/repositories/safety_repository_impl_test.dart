@@ -60,8 +60,10 @@ void main() {
       final created = result.fold((_) => throw Exception(), (a) => a);
       expect(created.id, isNotEmpty);
 
-      final stored =
-          await firestore.collection('safety_alerts').doc(created.id).get();
+      final stored = await firestore
+          .collection('safety_alerts')
+          .doc(created.id)
+          .get();
       expect(stored.exists, isTrue);
       final data = stored.data()!;
       expect(data['bookingId'], 'booking_1');
@@ -92,42 +94,52 @@ void main() {
 
   group('acknowledgeAlert', () {
     test('updates status to acknowledged and stamps acknowledgedAt', () async {
-      await firestore.collection('safety_alerts').doc('alert_1').set(
-        buildAlert(id: 'alert_1').toJson(),
-      );
+      await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .set(buildAlert(id: 'alert_1').toJson());
 
       final result = await repository.acknowledgeAlert('alert_1');
 
       expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('safety_alerts').doc('alert_1').get();
+      final stored = await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .get();
       expect(stored.data()?['status'], 'acknowledged');
       expect(stored.data()?['acknowledgedAt'], isNotNull);
     });
   });
 
   group('resolveAlert', () {
-    test('updates status, resolvedBy, resolutionNotes and resolvedAt',
-        () async {
-      await firestore.collection('safety_alerts').doc('alert_1').set(
-        buildAlert(id: 'alert_1').toJson(),
-      );
+    test(
+      'updates status, resolvedBy, resolutionNotes and resolvedAt',
+      () async {
+        await firestore
+            .collection('safety_alerts')
+            .doc('alert_1')
+            .set(buildAlert(id: 'alert_1').toJson());
 
-      final result = await repository.resolveAlert(
-        alertId: 'alert_1',
-        adminId: 'admin_42',
-        notes: 'False alarm, confirmed with worker by phone.',
-      );
+        final result = await repository.resolveAlert(
+          alertId: 'alert_1',
+          adminId: 'admin_42',
+          notes: 'False alarm, confirmed with worker by phone.',
+        );
 
-      expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('safety_alerts').doc('alert_1').get();
-      expect(stored.data()?['status'], 'resolved');
-      expect(stored.data()?['resolvedBy'], 'admin_42');
-      expect(stored.data()?['resolutionNotes'],
-          'False alarm, confirmed with worker by phone.');
-      expect(stored.data()?['resolvedAt'], isNotNull);
-    });
+        expect(result.isRight(), isTrue);
+        final stored = await firestore
+            .collection('safety_alerts')
+            .doc('alert_1')
+            .get();
+        expect(stored.data()?['status'], 'resolved');
+        expect(stored.data()?['resolvedBy'], 'admin_42');
+        expect(
+          stored.data()?['resolutionNotes'],
+          'False alarm, confirmed with worker by phone.',
+        );
+        expect(stored.data()?['resolvedAt'], isNotNull);
+      },
+    );
   });
 
   group('escalateAlert', () {
@@ -142,54 +154,65 @@ void main() {
     });
 
     test(
-        'sets status to escalated and collects emergency contacts from worker and customer',
-        () async {
-      await firestore.collection('safety_alerts').doc('alert_1').set(
-        buildAlert(id: 'alert_1').toJson(),
-      );
-      await firestore.collection('workers').doc('worker_1').set({
-        'emergencyContactName': 'Worker EC',
-        'emergencyContactPhone': '+94770000001',
-      });
-      await firestore.collection('customer_profiles').doc('customer_1').set({
-        'emergencyContactName': 'Customer EC',
-        'emergencyContactPhone': '+94770000002',
-      });
+      'sets status to escalated and collects emergency contacts from worker and customer',
+      () async {
+        await firestore
+            .collection('safety_alerts')
+            .doc('alert_1')
+            .set(buildAlert(id: 'alert_1').toJson());
+        await firestore.collection('workers').doc('worker_1').set({
+          'emergencyContactName': 'Worker EC',
+          'emergencyContactPhone': '+94770000001',
+        });
+        await firestore.collection('customer_profiles').doc('customer_1').set({
+          'emergencyContactName': 'Customer EC',
+          'emergencyContactPhone': '+94770000002',
+        });
 
-      final result = await repository.escalateAlert('alert_1');
+        final result = await repository.escalateAlert('alert_1');
 
-      expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('safety_alerts').doc('alert_1').get();
-      final data = stored.data()!;
-      expect(data['status'], 'escalated');
-      expect(data['escalatedAt'], isNotNull);
+        expect(result.isRight(), isTrue);
+        final stored = await firestore
+            .collection('safety_alerts')
+            .doc('alert_1')
+            .get();
+        final data = stored.data()!;
+        expect(data['status'], 'escalated');
+        expect(data['escalatedAt'], isNotNull);
 
-      final contacts =
-          List<Map<String, dynamic>>.from(data['escalationContacts'] as List);
-      expect(contacts.length, 2);
-      expect(
-        contacts.any((c) =>
-            c['role'] == 'workerEmergency' && c['phone'] == '+94770000001'),
-        isTrue,
-      );
-      expect(
-        contacts.any((c) =>
-            c['role'] == 'customerEmergency' &&
-            c['phone'] == '+94770000002'),
-        isTrue,
-      );
+        final contacts = List<Map<String, dynamic>>.from(
+          data['escalationContacts'] as List,
+        );
+        expect(contacts.length, 2);
+        expect(
+          contacts.any(
+            (c) =>
+                c['role'] == 'workerEmergency' && c['phone'] == '+94770000001',
+          ),
+          isTrue,
+        );
+        expect(
+          contacts.any(
+            (c) =>
+                c['role'] == 'customerEmergency' &&
+                c['phone'] == '+94770000002',
+          ),
+          isTrue,
+        );
 
-      final attempts =
-          List<Map<String, dynamic>>.from(data['escalationAttempts'] as List);
-      expect(attempts, isNotEmpty);
-      expect(attempts.last['method'], 'push');
-    });
+        final attempts = List<Map<String, dynamic>>.from(
+          data['escalationAttempts'] as List,
+        );
+        expect(attempts, isNotEmpty);
+        expect(attempts.last['method'], 'push');
+      },
+    );
 
     test('skips contacts with no emergency phone on file', () async {
-      await firestore.collection('safety_alerts').doc('alert_1').set(
-        buildAlert(id: 'alert_1').toJson(),
-      );
+      await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .set(buildAlert(id: 'alert_1').toJson());
       await firestore.collection('workers').doc('worker_1').set({
         'emergencyContactName': 'Worker EC',
         'emergencyContactPhone': '',
@@ -198,19 +221,23 @@ void main() {
       final result = await repository.escalateAlert('alert_1');
 
       expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('safety_alerts').doc('alert_1').get();
+      final stored = await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .get();
       final contacts = List<Map<String, dynamic>>.from(
-          stored.data()?['escalationContacts'] as List);
+        stored.data()?['escalationContacts'] as List,
+      );
       expect(contacts, isEmpty);
     });
   });
 
   group('logManualContact', () {
     test('appends a manual contact attempt to escalationAttempts', () async {
-      await firestore.collection('safety_alerts').doc('alert_1').set(
-        buildAlert(id: 'alert_1').toJson(),
-      );
+      await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .set(buildAlert(id: 'alert_1').toJson());
 
       final result = await repository.logManualContact(
         alertId: 'alert_1',
@@ -220,10 +247,13 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('safety_alerts').doc('alert_1').get();
+      final stored = await firestore
+          .collection('safety_alerts')
+          .doc('alert_1')
+          .get();
       final attempts = List<Map<String, dynamic>>.from(
-          stored.data()?['escalationAttempts'] as List);
+        stored.data()?['escalationAttempts'] as List,
+      );
       expect(attempts, hasLength(1));
       expect(attempts.first['method'], 'phone');
       expect(attempts.first['calledBy'], 'admin_42');
@@ -236,10 +266,13 @@ void main() {
           .collection('safety_alerts')
           .doc('open_1')
           .set(buildAlert(id: 'open_1').toJson());
-      await firestore.collection('safety_alerts').doc('resolved_1').set(
-            buildAlert(id: 'resolved_1')
-                .copyWith(status: AlertStatus.resolved)
-                .toJson(),
+      await firestore
+          .collection('safety_alerts')
+          .doc('resolved_1')
+          .set(
+            buildAlert(
+              id: 'resolved_1',
+            ).copyWith(status: AlertStatus.resolved).toJson(),
           );
 
       final result = await repository.getOpenAlerts();
@@ -252,10 +285,14 @@ void main() {
     });
 
     test('getAlertsForBooking filters by bookingId', () async {
-      await firestore.collection('safety_alerts').doc('a1').set(
-          buildAlert(id: 'a1', bookingId: 'booking_A').toJson());
-      await firestore.collection('safety_alerts').doc('a2').set(
-          buildAlert(id: 'a2', bookingId: 'booking_B').toJson());
+      await firestore
+          .collection('safety_alerts')
+          .doc('a1')
+          .set(buildAlert(id: 'a1', bookingId: 'booking_A').toJson());
+      await firestore
+          .collection('safety_alerts')
+          .doc('a2')
+          .set(buildAlert(id: 'a2', bookingId: 'booking_B').toJson());
 
       final result = await repository.getAlertsForBooking('booking_A');
 
@@ -269,83 +306,90 @@ void main() {
 
   group('detectMissedCheckIns', () {
     test(
-        'creates an alert for a workerArrived booking whose scheduled start is past the grace period',
-        () async {
-      final now = DateTime.now();
-      await firestore.collection('bookings').doc('booking_late').set({
-        'status': 'workerArrived',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkIn': null,
-        'scheduledDate': Timestamp.fromDate(
-            now.subtract(const Duration(minutes: 20))),
-      });
+      'creates an alert for a workerArrived booking whose scheduled start is past the grace period',
+      () async {
+        final now = DateTime.now();
+        await firestore.collection('bookings').doc('booking_late').set({
+          'status': 'workerArrived',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkIn': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 20)),
+          ),
+        });
 
-      final result = await repository.detectMissedCheckIns(
-        gracePeriod: const Duration(minutes: 15),
-      );
+        final result = await repository.detectMissedCheckIns(
+          gracePeriod: const Duration(minutes: 15),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected alerts'), (created) {
-        expect(created, hasLength(1));
-        expect(created.single.bookingId, 'booking_late');
-        expect(created.single.type, AlertType.missedCheckIn);
-      });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected alerts'), (created) {
+          expect(created, hasLength(1));
+          expect(created.single.bookingId, 'booking_late');
+          expect(created.single.type, AlertType.missedCheckIn);
+        });
 
-      final alertsSnap = await firestore
-          .collection('safety_alerts')
-          .where('bookingId', isEqualTo: 'booking_late')
-          .get();
-      expect(alertsSnap.docs, hasLength(1));
-    });
+        final alertsSnap = await firestore
+            .collection('safety_alerts')
+            .where('bookingId', isEqualTo: 'booking_late')
+            .get();
+        expect(alertsSnap.docs, hasLength(1));
+      },
+    );
 
     test(
-        'does not create an alert while still within the grace period (boundary)',
-        () async {
-      final now = DateTime.now();
-      // Scheduled only 30s ago; well within a 1-minute grace period.
-      await firestore.collection('bookings').doc('booking_recent').set({
-        'status': 'workerArrived',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkIn': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(seconds: 30))),
-      });
+      'does not create an alert while still within the grace period (boundary)',
+      () async {
+        final now = DateTime.now();
+        // Scheduled only 30s ago; well within a 1-minute grace period.
+        await firestore.collection('bookings').doc('booking_recent').set({
+          'status': 'workerArrived',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkIn': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(seconds: 30)),
+          ),
+        });
 
-      final result = await repository.detectMissedCheckIns(
-        gracePeriod: const Duration(minutes: 1),
-      );
+        final result = await repository.detectMissedCheckIns(
+          gracePeriod: const Duration(minutes: 1),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, isEmpty);
-      });
-    });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, isEmpty);
+        });
+      },
+    );
 
-    test('creates an alert once the scheduled start is past a short grace period (boundary)',
-        () async {
-      final now = DateTime.now();
-      // Scheduled 65s ago against a 1-minute grace period: past the cutoff.
-      await firestore.collection('bookings').doc('booking_boundary').set({
-        'status': 'workerArrived',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkIn': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(seconds: 65))),
-      });
+    test(
+      'creates an alert once the scheduled start is past a short grace period (boundary)',
+      () async {
+        final now = DateTime.now();
+        // Scheduled 65s ago against a 1-minute grace period: past the cutoff.
+        await firestore.collection('bookings').doc('booking_boundary').set({
+          'status': 'workerArrived',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkIn': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(seconds: 65)),
+          ),
+        });
 
-      final result = await repository.detectMissedCheckIns(
-        gracePeriod: const Duration(minutes: 1),
-      );
+        final result = await repository.detectMissedCheckIns(
+          gracePeriod: const Duration(minutes: 1),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, hasLength(1));
-        expect(created.single.bookingId, 'booking_boundary');
-      });
-    });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, hasLength(1));
+          expect(created.single.bookingId, 'booking_boundary');
+        });
+      },
+    );
 
     test('skips bookings that already have a checkIn recorded', () async {
       final now = DateTime.now();
@@ -353,9 +397,12 @@ void main() {
         'status': 'workerArrived',
         'workerId': 'worker_1',
         'customerId': 'customer_1',
-        'checkIn': Timestamp.fromDate(now.subtract(const Duration(minutes: 10))),
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(minutes: 30))),
+        'checkIn': Timestamp.fromDate(
+          now.subtract(const Duration(minutes: 10)),
+        ),
+        'scheduledDate': Timestamp.fromDate(
+          now.subtract(const Duration(minutes: 30)),
+        ),
       });
 
       final result = await repository.detectMissedCheckIns();
@@ -373,8 +420,9 @@ void main() {
         'workerId': 'worker_1',
         'customerId': 'customer_1',
         'checkIn': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(minutes: 30))),
+        'scheduledDate': Timestamp.fromDate(
+          now.subtract(const Duration(minutes: 30)),
+        ),
       });
 
       final result = await repository.detectMissedCheckIns();
@@ -385,123 +433,136 @@ void main() {
       });
     });
 
-    test('does not duplicate an alert if one already exists for the booking',
-        () async {
-      final now = DateTime.now();
-      await firestore.collection('bookings').doc('booking_dup').set({
-        'status': 'workerArrived',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkIn': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(minutes: 30))),
-      });
-      await firestore.collection('safety_alerts').doc('existing_alert').set(
-        buildAlert(
-          id: 'existing_alert',
-          bookingId: 'booking_dup',
-          type: AlertType.missedCheckIn,
-        ).toJson(),
-      );
+    test(
+      'does not duplicate an alert if one already exists for the booking',
+      () async {
+        final now = DateTime.now();
+        await firestore.collection('bookings').doc('booking_dup').set({
+          'status': 'workerArrived',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkIn': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 30)),
+          ),
+        });
+        await firestore
+            .collection('safety_alerts')
+            .doc('existing_alert')
+            .set(
+              buildAlert(
+                id: 'existing_alert',
+                bookingId: 'booking_dup',
+                type: AlertType.missedCheckIn,
+              ).toJson(),
+            );
 
-      final result = await repository.detectMissedCheckIns();
+        final result = await repository.detectMissedCheckIns();
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, isEmpty);
-      });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, isEmpty);
+        });
 
-      final alertsSnap = await firestore
-          .collection('safety_alerts')
-          .where('bookingId', isEqualTo: 'booking_dup')
-          .get();
-      expect(alertsSnap.docs, hasLength(1));
-    });
+        final alertsSnap = await firestore
+            .collection('safety_alerts')
+            .where('bookingId', isEqualTo: 'booking_dup')
+            .get();
+        expect(alertsSnap.docs, hasLength(1));
+      },
+    );
   });
 
   group('detectMissedCheckOuts', () {
     test(
-        'creates an alert using the schedule.endTime when past the grace period',
-        () async {
-      final now = DateTime.now();
-      // End time computed as "5 minutes ago" using today's date + explicit HH:mm.
-      final expectedEnd = now.subtract(const Duration(minutes: 40));
-      final endTimeStr =
-          '${expectedEnd.hour.toString().padLeft(2, '0')}:${expectedEnd.minute.toString().padLeft(2, '0')}';
+      'creates an alert using the schedule.endTime when past the grace period',
+      () async {
+        final now = DateTime.now();
+        // End time computed as "5 minutes ago" using today's date + explicit HH:mm.
+        final expectedEnd = now.subtract(const Duration(minutes: 40));
+        final endTimeStr =
+            '${expectedEnd.hour.toString().padLeft(2, '0')}:${expectedEnd.minute.toString().padLeft(2, '0')}';
 
-      await firestore.collection('bookings').doc('booking_co_1').set({
-        'status': 'inProgress',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkOut': null,
-        'schedule': {
-          'date': Timestamp.fromDate(
-              DateTime(expectedEnd.year, expectedEnd.month, expectedEnd.day)),
-          'endTime': endTimeStr,
-        },
-      });
+        await firestore.collection('bookings').doc('booking_co_1').set({
+          'status': 'inProgress',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkOut': null,
+          'schedule': {
+            'date': Timestamp.fromDate(
+              DateTime(expectedEnd.year, expectedEnd.month, expectedEnd.day),
+            ),
+            'endTime': endTimeStr,
+          },
+        });
 
-      final result = await repository.detectMissedCheckOuts(
-        gracePeriod: const Duration(minutes: 30),
-      );
+        final result = await repository.detectMissedCheckOuts(
+          gracePeriod: const Duration(minutes: 30),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, hasLength(1));
-        expect(created.single.type, AlertType.missedCheckOut);
-        expect(created.single.bookingId, 'booking_co_1');
-      });
-    });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, hasLength(1));
+          expect(created.single.type, AlertType.missedCheckOut);
+          expect(created.single.bookingId, 'booking_co_1');
+        });
+      },
+    );
 
     test(
-        'falls back to scheduledDate + durationHours when schedule map is absent',
-        () async {
-      final now = DateTime.now();
-      // scheduledDate 3 hours ago + 1 hour duration => expected end 2h ago.
-      await firestore.collection('bookings').doc('booking_co_2').set({
-        'status': 'inProgress',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkOut': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(hours: 3))),
-        'durationHours': 1,
-      });
+      'falls back to scheduledDate + durationHours when schedule map is absent',
+      () async {
+        final now = DateTime.now();
+        // scheduledDate 3 hours ago + 1 hour duration => expected end 2h ago.
+        await firestore.collection('bookings').doc('booking_co_2').set({
+          'status': 'inProgress',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkOut': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(hours: 3)),
+          ),
+          'durationHours': 1,
+        });
 
-      final result = await repository.detectMissedCheckOuts(
-        gracePeriod: const Duration(minutes: 30),
-      );
+        final result = await repository.detectMissedCheckOuts(
+          gracePeriod: const Duration(minutes: 30),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, hasLength(1));
-        expect(created.single.bookingId, 'booking_co_2');
-      });
-    });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, hasLength(1));
+          expect(created.single.bookingId, 'booking_co_2');
+        });
+      },
+    );
 
-    test('does not flag a booking whose expected end is still within the grace period (boundary)',
-        () async {
-      final now = DateTime.now();
-      // scheduledDate 1 hour ago + 1 hour duration => expected end "now" (not yet passed).
-      await firestore.collection('bookings').doc('booking_co_3').set({
-        'status': 'inProgress',
-        'workerId': 'worker_1',
-        'customerId': 'customer_1',
-        'checkOut': null,
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(hours: 1))),
-        'durationHours': 1,
-      });
+    test(
+      'does not flag a booking whose expected end is still within the grace period (boundary)',
+      () async {
+        final now = DateTime.now();
+        // scheduledDate 1 hour ago + 1 hour duration => expected end "now" (not yet passed).
+        await firestore.collection('bookings').doc('booking_co_3').set({
+          'status': 'inProgress',
+          'workerId': 'worker_1',
+          'customerId': 'customer_1',
+          'checkOut': null,
+          'scheduledDate': Timestamp.fromDate(
+            now.subtract(const Duration(hours: 1)),
+          ),
+          'durationHours': 1,
+        });
 
-      final result = await repository.detectMissedCheckOuts(
-        gracePeriod: const Duration(minutes: 30),
-      );
+        final result = await repository.detectMissedCheckOuts(
+          gracePeriod: const Duration(minutes: 30),
+        );
 
-      expect(result.isRight(), isTrue);
-      result.fold((_) => fail('expected list'), (created) {
-        expect(created, isEmpty);
-      });
-    });
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('expected list'), (created) {
+          expect(created, isEmpty);
+        });
+      },
+    );
 
     test('skips bookings that already have a checkOut recorded', () async {
       final now = DateTime.now();
@@ -509,9 +570,12 @@ void main() {
         'status': 'inProgress',
         'workerId': 'worker_1',
         'customerId': 'customer_1',
-        'checkOut': Timestamp.fromDate(now.subtract(const Duration(minutes: 5))),
-        'scheduledDate':
-            Timestamp.fromDate(now.subtract(const Duration(hours: 3))),
+        'checkOut': Timestamp.fromDate(
+          now.subtract(const Duration(minutes: 5)),
+        ),
+        'scheduledDate': Timestamp.fromDate(
+          now.subtract(const Duration(hours: 3)),
+        ),
         'durationHours': 1,
       });
 

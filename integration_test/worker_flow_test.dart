@@ -26,7 +26,10 @@ void main() {
       // Step 3: Enter personal details
       expect(find.text('Personal Information'), findsOneWidget);
       await tester.enterText(find.byType(TextField).at(0), 'Kamal Perera');
-      await tester.enterText(find.byType(TextField).at(1), '123 Galle Road, Colombo');
+      await tester.enterText(
+        find.byType(TextField).at(1),
+        '123 Galle Road, Colombo',
+      );
       await tester.enterText(find.byType(TextField).at(2), 'Sunil Perera');
       await tester.enterText(find.byType(TextField).at(3), '+94771234568');
       await tester.tap(find.text('Continue'));
@@ -43,7 +46,7 @@ void main() {
       expect(find.text('Upload Documents'), findsOneWidget);
       expect(find.text('NIC Front'), findsOneWidget);
       expect(find.text('NIC Back'), findsOneWidget);
-      
+
       // Navigate back for now (file picker needs separate testing)
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
@@ -59,7 +62,7 @@ void main() {
 
       // Find online toggle
       expect(find.text('Go Online'), findsOneWidget);
-      
+
       // Toggle online
       await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
@@ -78,7 +81,7 @@ void main() {
 
       // Verify job offers section exists
       expect(find.text('Available Jobs'), findsOneWidget);
-      
+
       // Check for job offer card or empty state
       final jobList = find.byType(ListView);
       if (jobList.evaluate().isNotEmpty) {
@@ -148,9 +151,12 @@ void main() {
 
         // Verify completion dialog
         expect(find.text('Confirm Job Completion'), findsOneWidget);
-        
+
         // Enter final details
-        await tester.enterText(find.byType(TextField).first, 'Job completed successfully');
+        await tester.enterText(
+          find.byType(TextField).first,
+          'Job completed successfully',
+        );
         await tester.tap(find.text('Confirm'));
         await tester.pumpAndSettle();
       }

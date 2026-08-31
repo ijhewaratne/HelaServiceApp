@@ -3,11 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/theme.dart';
 
 /// Phase 5: UI/UX Polish - Theme Provider
-/// 
+///
 /// Manages dark mode state and persists user preference.
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'is_dark_mode';
-  
+
   final SharedPreferences _prefs;
   ThemeMode _themeMode;
 

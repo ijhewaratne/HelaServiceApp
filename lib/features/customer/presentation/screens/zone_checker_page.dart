@@ -25,12 +25,13 @@ class _ZoneCheckerPageState extends State<ZoneCheckerPage> {
     await Future.delayed(const Duration(seconds: 2));
 
     final address = _addressController.text.toLowerCase();
-    
+
     // Simple mock logic relying on Sri Lanka Zone rules defined earlier
-    bool available = address.contains('colombo') || 
-                     address.contains('kollupitiya') || 
-                     address.contains('bambalapitiya') ||
-                     address.contains('kotte');
+    bool available =
+        address.contains('colombo') ||
+        address.contains('kollupitiya') ||
+        address.contains('bambalapitiya') ||
+        address.contains('kotte');
 
     setState(() {
       _isChecking = false;
@@ -82,10 +83,14 @@ class _ZoneCheckerPageState extends State<ZoneCheckerPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _isAvailable! ? Colors.green.shade50 : Colors.red.shade50,
+                  color: _isAvailable!
+                      ? Colors.green.shade50
+                      : Colors.red.shade50,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _isAvailable! ? Colors.green.shade200 : Colors.red.shade200,
+                    color: _isAvailable!
+                        ? Colors.green.shade200
+                        : Colors.red.shade200,
                   ),
                 ),
                 child: Row(
@@ -98,11 +103,13 @@ class _ZoneCheckerPageState extends State<ZoneCheckerPage> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        _isAvailable! 
+                        _isAvailable!
                             ? 'Great news! We have workers available in your area.'
                             : 'Sorry, we are not currently launching services in that zone. We hope to expand soon.',
                         style: TextStyle(
-                          color: _isAvailable! ? Colors.green.shade800 : Colors.red.shade800,
+                          color: _isAvailable!
+                              ? Colors.green.shade800
+                              : Colors.red.shade800,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -113,14 +120,18 @@ class _ZoneCheckerPageState extends State<ZoneCheckerPage> {
 
             const Spacer(),
             BrandedButton(
-              label: _isAvailable == true ? 'Continue to Booking' : 'Check Area',
-              onPressed: _isAvailable == true 
+              label: _isAvailable == true
+                  ? 'Continue to Booking'
+                  : 'Check Area',
+              onPressed: _isAvailable == true
                   ? () {
                       // Navigate to Service Selection page
                       // context.go('/customer/book/services');
                     }
                   : _checkAvailability,
-              backgroundColor: _isAvailable == false ? Colors.grey : Colors.indigo,
+              backgroundColor: _isAvailable == false
+                  ? Colors.grey
+                  : Colors.indigo,
             ),
           ],
         ),

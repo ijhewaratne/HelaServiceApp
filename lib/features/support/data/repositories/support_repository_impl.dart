@@ -8,14 +8,15 @@ class SupportRepositoryImpl implements SupportRepository {
   final FirebaseFirestore _db;
 
   SupportRepositoryImpl({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('support_tickets');
 
   @override
   Future<Either<Failure, SupportTicket>> createTicket(
-      SupportTicket ticket) async {
+    SupportTicket ticket,
+  ) async {
     try {
       final ref = _col.doc();
       final withId = SupportTicket(
@@ -37,7 +38,8 @@ class SupportRepositoryImpl implements SupportRepository {
 
   @override
   Future<Either<Failure, List<SupportTicket>>> getCustomerTickets(
-      String customerId) async {
+    String customerId,
+  ) async {
     try {
       final snap = await _col
           .where('customerId', isEqualTo: customerId)

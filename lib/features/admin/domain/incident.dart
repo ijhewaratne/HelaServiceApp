@@ -28,7 +28,9 @@ class Incident {
       description: json['description'] as String? ?? '',
       severity: json['severity'] as String? ?? 'low',
       status: json['status'] as String? ?? 'open',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
     );
   }
 

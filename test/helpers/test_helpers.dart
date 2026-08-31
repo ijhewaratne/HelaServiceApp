@@ -3,11 +3,11 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Test Helpers for Firebase mocking
-/// 
+///
 /// Phase 4: Testing Infrastructure
 class TestHelpers {
   /// Create a mock Firebase Auth instance
-  /// 
+  ///
   /// [signedIn] - Whether the user is signed in
   /// [uid] - User ID
   /// [phoneNumber] - User phone number
@@ -84,8 +84,14 @@ class TestHelpers {
   /// Clear all test data
   static Future<void> clearTestData(FakeFirebaseFirestore firestore) async {
     // Get all collections and delete documents
-    final collections = ['users', 'bookings', 'workers', 'payments', 'incidents'];
-    
+    final collections = [
+      'users',
+      'bookings',
+      'workers',
+      'payments',
+      'incidents',
+    ];
+
     for (final collection in collections) {
       final snapshot = await firestore.collection(collection).get();
       for (final doc in snapshot.docs) {
@@ -113,71 +119,69 @@ class TestFixtures {
 
   /// Test addresses
   static Map<String, dynamic> get testAddress => {
-        'houseNumber': '42',
-        'street': 'Galle Road',
-        'landmark': 'Near Temple',
-        'city': 'Colombo',
-        'district': 'Colombo',
-        'zoneId': 'col_03_04',
-        'latitude': 6.8940,
-        'longitude': 79.8580,
-      };
+    'houseNumber': '42',
+    'street': 'Galle Road',
+    'landmark': 'Near Temple',
+    'city': 'Colombo',
+    'district': 'Colombo',
+    'zoneId': 'col_03_04',
+    'latitude': 6.8940,
+    'longitude': 79.8580,
+  };
 
   /// Test booking data
   static Map<String, dynamic> get testBooking => {
-        'customerId': 'customer-1',
-        'serviceType': 'cleaning',
-        'status': 'pending',
-        'scheduledDate': DateTime(2026, 4, 15).toIso8601String(),
-        'estimatedPrice': 2500.00,
-        'address': testAddress,
-        'notes': 'Test booking',
-      };
+    'customerId': 'customer-1',
+    'serviceType': 'cleaning',
+    'status': 'pending',
+    'scheduledDate': DateTime(2026, 4, 15).toIso8601String(),
+    'estimatedPrice': 2500.00,
+    'address': testAddress,
+    'notes': 'Test booking',
+  };
 
   /// Test worker data
   static Map<String, dynamic> get testWorker => {
-        'uid': 'worker-1',
-        'nic': '853202937V',
-        'phoneNumber': '0771234567',
-        'services': ['cleaning', 'plumbing'],
-        'isVerified': true,
-        'isOnline': false,
-        'rating': 4.5,
-      };
+    'uid': 'worker-1',
+    'nic': '853202937V',
+    'phoneNumber': '0771234567',
+    'services': ['cleaning', 'plumbing'],
+    'isVerified': true,
+    'isOnline': false,
+    'rating': 4.5,
+  };
 
   /// Test payment data
   static Map<String, dynamic> get testPayment => {
-        'bookingId': 'booking-1',
-        'amount': 2500.00,
-        'currency': 'LKR',
-        'status': 'completed',
-        'paymentMethod': 'payhere',
-      };
+    'bookingId': 'booking-1',
+    'amount': 2500.00,
+    'currency': 'LKR',
+    'status': 'completed',
+    'paymentMethod': 'payhere',
+  };
 }
 
 /// Custom matchers for tests
 class CustomMatchers {
   /// Matcher for Either Right values
   static Matcher isRight() => predicate<dynamic>(
-        (value) => ((value as dynamic).isRight() as bool?) ?? false,
-        'is Right',
-      );
+    (value) => ((value as dynamic).isRight() as bool?) ?? false,
+    'is Right',
+  );
 
   /// Matcher for Either Left values
   static Matcher isLeft() => predicate<dynamic>(
-        (value) => ((value as dynamic).isLeft() as bool?) ?? false,
-        'is Left',
-      );
+    (value) => ((value as dynamic).isLeft() as bool?) ?? false,
+    'is Left',
+  );
 
   /// Matcher for specific failure type
   static Matcher isFailure<T>() => predicate<dynamic>(
-        (value) =>
-            ((((value as dynamic).isLeft() as bool?) ?? false) &&
-                (((value as dynamic).fold(
-                      (failure) => failure is T,
-                      (_) => false,
-                    ) as bool?) ??
-                    false)),
-        'is $T',
-      );
+    (value) =>
+        ((((value as dynamic).isLeft() as bool?) ?? false) &&
+        (((value as dynamic).fold((failure) => failure is T, (_) => false)
+                as bool?) ??
+            false)),
+    'is $T',
+  );
 }

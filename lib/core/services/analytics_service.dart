@@ -28,10 +28,7 @@ class AnalyticsService {
   // ==================== USER LIFECYCLE ====================
 
   /// Log user signup
-  Future<void> logSignUp({
-    required String method,
-    String? userType,
-  }) async {
+  Future<void> logSignUp({required String method, String? userType}) async {
     await _logEvent(
       name: 'sign_up',
       parameters: {
@@ -42,10 +39,7 @@ class AnalyticsService {
   }
 
   /// Log login
-  Future<void> logLogin({
-    required String method,
-    String? userType,
-  }) async {
+  Future<void> logLogin({required String method, String? userType}) async {
     await _logEvent(
       name: 'login',
       parameters: {
@@ -72,28 +66,22 @@ class AnalyticsService {
 
     try {
       await _analytics!.setUserId(id: userId);
-      
+
       if (userType != null) {
-        await _analytics!.setUserProperty(
-          name: 'user_type',
-          value: userType,
-        );
+        await _analytics!.setUserProperty(name: 'user_type', value: userType);
       }
-      
+
       if (zone != null) {
-        await _analytics!.setUserProperty(
-          name: 'zone',
-          value: zone,
-        );
+        await _analytics!.setUserProperty(name: 'zone', value: zone);
       }
-      
+
       if (membershipLevel != null) {
         await _analytics!.setUserProperty(
           name: 'membership_level',
           value: membershipLevel,
         );
       }
-      
+
       if (totalBookings != null) {
         await _analytics!.setUserProperty(
           name: 'total_bookings',
@@ -333,10 +321,7 @@ class AnalyticsService {
   }
 
   /// Log search
-  Future<void> logSearch({
-    required String query,
-    int? resultsCount,
-  }) async {
+  Future<void> logSearch({required String query, int? resultsCount}) async {
     await _logEvent(
       name: 'search',
       parameters: {
@@ -436,10 +421,7 @@ class AnalyticsService {
   }) async {
     await _logEvent(
       name: 'screen_load_time',
-      parameters: {
-        'screen_name': screenName,
-        'load_time_ms': loadTimeMs,
-      },
+      parameters: {'screen_name': screenName, 'load_time_ms': loadTimeMs},
     );
   }
 
@@ -511,10 +493,7 @@ class AnalyticsService {
     }
 
     try {
-      await _analytics!.logEvent(
-        name: name,
-        parameters: parameters,
-      );
+      await _analytics!.logEvent(name: name, parameters: parameters);
     } catch (e) {
       debugPrint('Analytics error: $e');
     }

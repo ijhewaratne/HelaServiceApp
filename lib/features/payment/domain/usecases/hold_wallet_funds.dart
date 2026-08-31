@@ -9,7 +9,7 @@ import '../../../../core/usecases/usecase.dart';
 class HoldWalletFunds implements UseCase<void, HoldWalletFundsParams> {
   final FirebaseFirestore _db;
   HoldWalletFunds({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<Either<Failure, void>> call(HoldWalletFundsParams params) async {
@@ -30,7 +30,8 @@ class HoldWalletFunds implements UseCase<void, HoldWalletFundsParams> {
 
         if (available < amountCents) {
           throw Exception(
-              'Insufficient available balance: $available < $amountCents');
+            'Insufficient available balance: $available < $amountCents',
+          );
         }
 
         tx.update(ref, {
@@ -39,8 +40,7 @@ class HoldWalletFunds implements UseCase<void, HoldWalletFundsParams> {
         });
 
         // Mirror held amount onto the booking (LKR, matching Booking.heldAmount)
-        final bookingRef =
-            _db.collection('bookings').doc(params.bookingId);
+        final bookingRef = _db.collection('bookings').doc(params.bookingId);
         tx.update(bookingRef, {'heldAmount': params.amount});
       });
       return const Right(null);

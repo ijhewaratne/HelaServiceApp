@@ -107,7 +107,8 @@ class Worker extends Equatable {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       address: address ?? this.address,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
-      emergencyContactPhone: emergencyContactPhone ?? this.emergencyContactPhone,
+      emergencyContactPhone:
+          emergencyContactPhone ?? this.emergencyContactPhone,
       services: services ?? this.services,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       nicFrontUrl: nicFrontUrl ?? this.nicFrontUrl,
@@ -176,12 +177,16 @@ class Worker extends Equatable {
       address: json['address'] as String? ?? '',
       emergencyContactName: json['emergencyContactName'] as String? ?? '',
       emergencyContactPhone: json['emergencyContactPhone'] as String? ?? '',
-      services: (json['services'] as List<dynamic>?)
-          ?.map((s) => ServiceType.values.firstWhere(
-            (e) => e.name == s as String?,
-            orElse: () => ServiceType.cleaning,
-          ))
-          .toList() ?? [],
+      services:
+          (json['services'] as List<dynamic>?)
+              ?.map(
+                (s) => ServiceType.values.firstWhere(
+                  (e) => e.name == s as String?,
+                  orElse: () => ServiceType.cleaning,
+                ),
+              )
+              .toList() ??
+          [],
       profilePhotoUrl: json['profilePhotoUrl'] as String?,
       nicFrontUrl: json['nicFrontUrl'] as String?,
       nicBackUrl: json['nicBackUrl'] as String?,
@@ -218,45 +223,45 @@ class Worker extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        nic,
-        fullName,
-        mobileNumber,
-        address,
-        emergencyContactName,
-        emergencyContactPhone,
-        services,
-        profilePhotoUrl,
-        nicFrontUrl,
-        nicBackUrl,
-        status,
-        createdAt,
-        approvedAt,
-        isOnline,
-        currentLat,
-        currentLng,
-        homeLat,
-        homeLng,
-        rating,
-        totalJobs,
-        lastJobCompletedAt,
-        hasAcceptedContract,
-        verificationTier,
-        businessName,
-        bio,
-        experienceYears,
-        serviceRadiusKm,
-        district,
-      ];
+    id,
+    nic,
+    fullName,
+    mobileNumber,
+    address,
+    emergencyContactName,
+    emergencyContactPhone,
+    services,
+    profilePhotoUrl,
+    nicFrontUrl,
+    nicBackUrl,
+    status,
+    createdAt,
+    approvedAt,
+    isOnline,
+    currentLat,
+    currentLng,
+    homeLat,
+    homeLng,
+    rating,
+    totalJobs,
+    lastJobCompletedAt,
+    hasAcceptedContract,
+    verificationTier,
+    businessName,
+    bio,
+    experienceYears,
+    serviceRadiusKm,
+    district,
+  ];
 }
 
 enum WorkerStatus {
-  pending,      // Applied, waiting for doc upload
-  underReview,  // Docs uploaded, admin reviewing
+  pending, // Applied, waiting for doc upload
+  underReview, // Docs uploaded, admin reviewing
   trainingRequired, // Needs to complete training
-  approved,     // Can go online
-  rejected,     // Application rejected
-  suspended,    // Temporarily suspended
+  approved, // Can go online
+  rejected, // Application rejected
+  suspended, // Temporarily suspended
 }
 
 extension WorkerStatusExtension on WorkerStatus {

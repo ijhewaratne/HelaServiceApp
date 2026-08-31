@@ -30,7 +30,8 @@ class ReferenceContact {
   final String name;
   final String phone;
   final String relation;
-  final String verificationStatus; // pending / called_confirmed / called_refused / no_answer
+  final String
+  verificationStatus; // pending / called_confirmed / called_refused / no_answer
   final String? callNotes;
 
   const ReferenceContact({
@@ -47,10 +48,10 @@ class AdminRepository {
   final FirebaseFirestore _firestore;
 
   AdminRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<Either<Failure, List<BlueTierVerification>>>
-      getBlueTierPendingVerifications() async {
+  getBlueTierPendingVerifications() async {
     try {
       final snap = await _firestore
           .collection('worker_verifications')
@@ -65,24 +66,28 @@ class AdminRepository {
             .asMap()
             .entries
             .map((e) {
-          final r = e.value as Map<String, dynamic>;
-          return ReferenceContact(
-            index: e.key,
-            name: r['name'] as String? ?? '',
-            phone: r['phone'] as String? ?? '',
-            relation: r['relation'] as String? ?? '',
-            verificationStatus: r['verificationStatus'] as String? ?? 'pending',
-            callNotes: r['callNotes'] as String?,
-          );
-        }).toList();
+              final r = e.value as Map<String, dynamic>;
+              return ReferenceContact(
+                index: e.key,
+                name: r['name'] as String? ?? '',
+                phone: r['phone'] as String? ?? '',
+                relation: r['relation'] as String? ?? '',
+                verificationStatus:
+                    r['verificationStatus'] as String? ?? 'pending',
+                callNotes: r['callNotes'] as String?,
+              );
+            })
+            .toList();
         return BlueTierVerification(
           workerId: doc.id,
           status: d['status'] as String? ?? 'pending_review',
-          submittedAt: (d['submittedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          submittedAt:
+              (d['submittedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
           workerName: d['workerName'] as String?,
           references: refs,
           policeClearanceFrontUrl:
-              (d['policeClearance'] as Map<String, dynamic>?)?['frontUrl'] as String?,
+              (d['policeClearance'] as Map<String, dynamic>?)?['frontUrl']
+                  as String?,
         );
       }).toList();
 
@@ -109,8 +114,9 @@ class AdminRepository {
         return const Left(NotFoundFailure('Worker verification not found'));
       }
 
-      final refs =
-          List<Map<String, dynamic>>.from(doc.data()!['references'] as List);
+      final refs = List<Map<String, dynamic>>.from(
+        doc.data()!['references'] as List,
+      );
       if (referenceIndex < refs.length) {
         refs[referenceIndex] = {
           ...refs[referenceIndex],
@@ -134,21 +140,16 @@ class AdminRepository {
   Future<Either<Failure, void>> approveBlueTierUpgrade(String workerId) async {
     try {
       final batch = _firestore.batch();
-      batch.update(
-        _firestore.collection('worker_verifications').doc(workerId),
-        {
-          'status': 'approved',
-          'approvedAt': FieldValue.serverTimestamp(),
-          'currentTier': 'blue',
-        },
-      );
-      batch.update(
-        _firestore.collection('workers').doc(workerId),
-        {
-          'verificationTier': 'blue',
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-      );
+      batch
+          .update(_firestore.collection('worker_verifications').doc(workerId), {
+            'status': 'approved',
+            'approvedAt': FieldValue.serverTimestamp(),
+            'currentTier': 'blue',
+          });
+      batch.update(_firestore.collection('workers').doc(workerId), {
+        'verificationTier': 'blue',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
       await batch.commit();
       return const Right(null);
     } on FirebaseException catch (e) {
@@ -163,10 +164,7 @@ class AdminRepository {
     String reason,
   ) async {
     try {
-      await _firestore
-          .collection('worker_verifications')
-          .doc(workerId)
-          .update({
+      await _firestore.collection('worker_verifications').doc(workerId).update({
         'status': 'rejected',
         'rejectionReason': reason,
         'rejectedAt': FieldValue.serverTimestamp(),
@@ -187,7 +185,10 @@ class AdminRepository {
     try {
       final snap = await _firestore
           .collection('workers')
-          .where('verificationStatus', whereIn: ['pending_review', 'documents_submitted'])
+          .where(
+            'verificationStatus',
+            whereIn: ['pending_review', 'documents_submitted'],
+          )
           .orderBy('createdAt', descending: false)
           .limit(50)
           .get();
@@ -200,11 +201,13 @@ class AdminRepository {
           name: d['fullName'] as String? ?? d['name'] as String? ?? 'Worker',
           phone: d['mobileNumber'] as String? ?? d['phone'] as String? ?? '',
           district: d['district'] as String? ?? 'Colombo',
-          serviceTypes: (d['services'] as List<dynamic>?)
+          serviceTypes:
+              (d['services'] as List<dynamic>?)
                   ?.map((s) => s as String)
                   .toList() ??
               [],
-          languages: (d['languages'] as List<dynamic>?)
+          languages:
+              (d['languages'] as List<dynamic>?)
                   ?.map((l) => l as String)
                   .toList() ??
               ['Sinhala'],
@@ -246,14 +249,17 @@ class AdminRepository {
     try {
       final snap = await _firestore
           .collection('bookings')
-          .where('status', whereIn: [
-            'pending',
-            'confirmed',
-            'workerAssigned',
-            'workerEnRoute',
-            'workerArrived',
-            'inProgress',
-          ])
+          .where(
+            'status',
+            whereIn: [
+              'pending',
+              'confirmed',
+              'workerAssigned',
+              'workerEnRoute',
+              'workerArrived',
+              'inProgress',
+            ],
+          )
           .orderBy('createdAt', descending: true)
           .limit(30)
           .get();
@@ -265,7 +271,8 @@ class AdminRepository {
         String bookingDate = '';
         if (scheduledDate is Timestamp) {
           final dt = scheduledDate.toDate();
-          bookingDate = '${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')}';
+          bookingDate =
+              '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
         } else if (scheduledDate is String) {
           bookingDate = scheduledDate;
         }
@@ -333,7 +340,7 @@ class AdminRepository {
   }
 
   Future<Either<Failure, List<incident_entity.Incident>>>
-      getOpenIncidents() async {
+  getOpenIncidents() async {
     try {
       final unresolvedStatuses = [
         incident_entity.IncidentStatus.pending.name,
@@ -378,7 +385,10 @@ class AdminRepository {
         updateData['resolvedAt'] = FieldValue.serverTimestamp();
       }
 
-      await _firestore.collection('incidents').doc(incidentId).update(updateData);
+      await _firestore
+          .collection('incidents')
+          .doc(incidentId)
+          .update(updateData);
       return const Right(null);
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));

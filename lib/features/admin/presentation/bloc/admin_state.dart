@@ -45,11 +45,11 @@ class AdminState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLoading,
-        errorMessage,
-        pendingWorkers,
-        activeBookings,
-        openIncidents,
-        blueTierPending,
-      ];
+    isLoading,
+    errorMessage,
+    pendingWorkers,
+    activeBookings,
+    openIncidents,
+    blueTierPending,
+  ];
 }

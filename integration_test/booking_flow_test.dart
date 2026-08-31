@@ -33,7 +33,7 @@ void main() {
       expect(find.text('Service Details'), findsOneWidget);
       expect(find.text('Starting from'), findsOneWidget);
       expect(find.text('LKR 1,500'), findsOneWidget);
-      
+
       // Verify service features
       expect(find.text('What\'s Included'), findsOneWidget);
     });
@@ -124,7 +124,7 @@ void main() {
 
       // Yesterday should be disabled or not selectable
       final yesterday = DateTime.now().subtract(const Duration(days: 1));
-      
+
       // Note: Date picker UI may vary, this is a conceptual test
       // The actual implementation should prevent past date selection
     });
@@ -144,12 +144,12 @@ void main() {
         find.byType(TextFormField).first,
         '45/A, Galle Road, Colombo 03',
       );
-      
+
       await tester.enterText(
         find.byType(TextFormField).last,
         'Near Liberty Plaza',
       );
-      
+
       await tester.pumpAndSettle();
 
       // Verify text entered
@@ -226,7 +226,7 @@ void main() {
       // Navigate to payment screen
       await tester.tap(find.text('Home Cleaning'));
       await tester.pumpAndSettle();
-      
+
       await tester.enterText(
         find.byType(TextFormField).first,
         '45/A, Galle Road, Colombo 03',
@@ -235,10 +235,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter promo code
-      await tester.enterText(
-        find.byType(TextField).last,
-        'FIRSTBOOKING',
-      );
+      await tester.enterText(find.byType(TextField).last, 'FIRSTBOOKING');
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
@@ -253,7 +250,7 @@ void main() {
       // Complete booking flow
       await tester.tap(find.text('Home Cleaning'));
       await tester.pumpAndSettle();
-      
+
       await tester.enterText(
         find.byType(TextFormField).first,
         '45/A, Galle Road, Colombo 03',

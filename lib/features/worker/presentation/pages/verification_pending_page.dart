@@ -7,10 +7,12 @@ import 'training_page.dart';
 class VerificationPendingPage extends StatefulWidget {
   final String workerId;
 
-  const VerificationPendingPage({Key? key, required this.workerId}) : super(key: key);
+  const VerificationPendingPage({Key? key, required this.workerId})
+    : super(key: key);
 
   @override
-  _VerificationPendingPageState createState() => _VerificationPendingPageState();
+  _VerificationPendingPageState createState() =>
+      _VerificationPendingPageState();
 }
 
 class _VerificationPendingPageState extends State<VerificationPendingPage> {
@@ -24,7 +26,9 @@ class _VerificationPendingPageState extends State<VerificationPendingPage> {
   Future<void> _checkStatus() async {
     await Future.delayed(Duration(seconds: 2));
     if (mounted) {
-      context.read<WorkerOnboardingBloc>().add(CheckApplicationStatus(widget.workerId));
+      context.read<WorkerOnboardingBloc>().add(
+        CheckApplicationStatus(widget.workerId),
+      );
     }
   }
 
@@ -36,7 +40,9 @@ class _VerificationPendingPageState extends State<VerificationPendingPage> {
           if (state is TrainingRequired) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => TrainingPage(application: state.application)),
+              MaterialPageRoute(
+                builder: (_) => TrainingPage(application: state.application),
+              ),
             );
           } else if (state is ApplicationApproved) {
             Navigator.pushReplacement(
@@ -54,11 +60,7 @@ class _VerificationPendingPageState extends State<VerificationPendingPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.pending_actions,
-                    size: 80,
-                    color: Colors.orange,
-                  ),
+                  Icon(Icons.pending_actions, size: 80, color: Colors.orange),
                   SizedBox(height: 24),
                   Text(
                     'Verification in Progress',
@@ -104,7 +106,10 @@ class _VerificationPendingPageState extends State<VerificationPendingPage> {
       barrierDismissible: false,
       builder: (_) => AlertDialog(
         title: Text('Application Rejected'),
-        content: Text(reason ?? 'Your application did not meet our criteria. Please contact support.'),
+        content: Text(
+          reason ??
+              'Your application did not meet our criteria. Please contact support.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

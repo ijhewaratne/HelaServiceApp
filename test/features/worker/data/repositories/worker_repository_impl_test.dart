@@ -36,21 +36,27 @@ void main() {
 
       expect(result.isRight(), isTrue);
 
-      final stored = await firestore.collection('workers').doc('worker_123').get();
+      final stored = await firestore
+          .collection('workers')
+          .doc('worker_123')
+          .get();
       expect(stored.exists, isTrue);
       expect(stored.data()?['nic'], '123456789V');
       expect(stored.data()?['services'], ['cleaning']);
     });
 
-    test('getWorker returns NotFoundFailure when document is missing', () async {
-      final result = await repository.getWorker('missing-worker');
+    test(
+      'getWorker returns NotFoundFailure when document is missing',
+      () async {
+        final result = await repository.getWorker('missing-worker');
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<NotFoundFailure>()),
-        (_) => fail('Expected failure'),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<NotFoundFailure>()),
+          (_) => fail('Expected failure'),
+        );
+      },
+    );
 
     test('getWorker hydrates stored worker document', () async {
       await firestore.collection('workers').doc('worker_123').set({
@@ -72,14 +78,11 @@ void main() {
       final result = await repository.getWorker('worker_123');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Expected worker'),
-        (worker) {
-          expect(worker.id, 'worker_123');
-          expect(worker.status, WorkerStatus.approved);
-          expect(worker.services, const [ServiceType.cleaning]);
-        },
-      );
+      result.fold((_) => fail('Expected worker'), (worker) {
+        expect(worker.id, 'worker_123');
+        expect(worker.status, WorkerStatus.approved);
+        expect(worker.services, const [ServiceType.cleaning]);
+      });
     });
 
     test('checkNICExists detects existing worker NIC', () async {
@@ -94,30 +97,38 @@ void main() {
       expect(missing.getOrElse(() => true), isFalse);
     });
 
-    test('updateOnlineStatus syncs worker and worker_locations documents', () async {
-      await firestore.collection('workers').doc('worker_123').set({
-        'fullName': 'Test Worker',
-      });
+    test(
+      'updateOnlineStatus syncs worker and worker_locations documents',
+      () async {
+        await firestore.collection('workers').doc('worker_123').set({
+          'fullName': 'Test Worker',
+        });
 
-      final result = await repository.updateOnlineStatus(
-        workerId: 'worker_123',
-        isOnline: true,
-        lat: 6.9271,
-        lng: 79.8612,
-      );
+        final result = await repository.updateOnlineStatus(
+          workerId: 'worker_123',
+          isOnline: true,
+          lat: 6.9271,
+          lng: 79.8612,
+        );
 
-      expect(result.isRight(), isTrue);
+        expect(result.isRight(), isTrue);
 
-      final workerDoc = await firestore.collection('workers').doc('worker_123').get();
-      final locationDoc =
-          await firestore.collection('worker_locations').doc('worker_123').get();
+        final workerDoc = await firestore
+            .collection('workers')
+            .doc('worker_123')
+            .get();
+        final locationDoc = await firestore
+            .collection('worker_locations')
+            .doc('worker_123')
+            .get();
 
-      expect(workerDoc.data()?['isOnline'], isTrue);
-      expect(workerDoc.data()?['currentLat'], 6.9271);
-      expect(workerDoc.data()?['currentLng'], 79.8612);
-      expect(locationDoc.data()?['status'], 'online');
-      expect(locationDoc.data()?['lat'], 6.9271);
-      expect(locationDoc.data()?['lng'], 79.8612);
-    });
+        expect(workerDoc.data()?['isOnline'], isTrue);
+        expect(workerDoc.data()?['currentLat'], 6.9271);
+        expect(workerDoc.data()?['currentLng'], 79.8612);
+        expect(locationDoc.data()?['status'], 'online');
+        expect(locationDoc.data()?['lat'], 6.9271);
+        expect(locationDoc.data()?['lng'], 79.8612);
+      },
+    );
   });
 }

@@ -4,11 +4,7 @@ import '../../../../core/errors/failures.dart';
 import '../entities/wallet_entity.dart';
 
 /// Payment methods for wallet top-up
-enum WalletPaymentMethod {
-  payhere,
-  bankTransfer,
-  card,
-}
+enum WalletPaymentMethod { payhere, bankTransfer, card }
 
 /// Abstract repository for wallet operations
 ///
@@ -75,10 +71,7 @@ abstract class WalletRepository {
   Stream<Either<Failure, int>> watchBalance(String userId);
 
   /// Verify sufficient balance (amount in cents)
-  Future<Either<Failure, bool>> hasSufficientBalance(
-    String userId,
-    int amount,
-  );
+  Future<Either<Failure, bool>> hasSufficientBalance(String userId, int amount);
 
   /// Get wallet statistics
   Future<Either<Failure, WalletStatistics>> getWalletStatistics(

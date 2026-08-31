@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Secure Firebase Configuration
-/// 
+///
 /// Phase 1: Security Fix - API keys moved to environment variables
-/// 
-/// IMPORTANT: 
+///
+/// IMPORTANT:
 /// - Never commit .env file to git
 /// - For CI/CD, use environment secrets
 /// - Regenerate API keys if they were ever exposed
@@ -108,16 +108,16 @@ class DefaultFirebaseOptions {
   // Legacy getters for backward compatibility (deprecated)
   @Deprecated('Use currentPlatform instead')
   static FirebaseOptions get web => currentPlatform;
-  
+
   @Deprecated('Use currentPlatform instead')
   static FirebaseOptions get android => currentPlatform;
-  
+
   @Deprecated('Use currentPlatform instead')
   static FirebaseOptions get ios => currentPlatform;
 }
 
 /// Development-only Firebase Options (for testing without .env)
-/// 
+///
 /// WARNING: Do not use in production!
 /// These are empty placeholders that will fail validation.
 class DevFirebaseOptions {
@@ -129,7 +129,7 @@ class DevFirebaseOptions {
     authDomain: 'helaservice-dev.firebaseapp.com',
     storageBucket: 'helaservice-dev.firebasestorage.app',
   );
-  
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'DEV_ANDROID_API_KEY',
     appId: 'DEV_ANDROID_APP_ID',
@@ -137,7 +137,7 @@ class DevFirebaseOptions {
     projectId: 'helaservice-dev',
     storageBucket: 'helaservice-dev.firebasestorage.app',
   );
-  
+
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'DEV_IOS_API_KEY',
     appId: 'DEV_IOS_APP_ID',

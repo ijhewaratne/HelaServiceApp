@@ -33,11 +33,11 @@ class PaginatedResult<T> {
 
   /// Empty result
   factory PaginatedResult.empty() => const PaginatedResult(
-        items: [],
-        lastDocument: null,
-        hasMore: false,
-        totalLoaded: 0,
-      );
+    items: [],
+    lastDocument: null,
+    hasMore: false,
+    totalLoaded: 0,
+  );
 
   /// Copy with new values
   PaginatedResult<T> copyWith({
@@ -66,7 +66,7 @@ class PaginatedResult<T> {
 }
 
 /// Firestore pagination helper class
-/// 
+///
 /// Example usage:
 /// ```dart
 /// final helper = FirestorePaginationHelper<JobModel>(
@@ -76,10 +76,10 @@ class PaginatedResult<T> {
 ///   limit: 20,
 ///   fromJson: (json, id) => JobModel.fromJson(json, id: id),
 /// );
-/// 
+///
 /// // First page
 /// final result = await helper.fetchFirstPage();
-/// 
+///
 /// // Next page
 /// if (result.hasMore) {
 ///   final nextPage = await helper.fetchNextPage();
@@ -98,9 +98,9 @@ class FirestorePaginationHelper<T> {
     required Query<Map<String, dynamic>> query,
     required int limit,
     required T Function(Map<String, dynamic> json, String id) fromJson,
-  })  : _baseQuery = query,
-        _limit = limit.clamp(1, PaginationConfig.maxPageSize),
-        _fromJson = fromJson;
+  }) : _baseQuery = query,
+       _limit = limit.clamp(1, PaginationConfig.maxPageSize),
+       _fromJson = fromJson;
 
   /// Whether more items are available
   bool get hasMore => _hasMore;
@@ -124,12 +124,14 @@ class FirestorePaginationHelper<T> {
   /// Fetch the next page of results
   Future<PaginatedResult<T>> fetchNextPage() {
     if (!_hasMore || _isLoading || _lastDocument == null) {
-      return Future.value(PaginatedResult(
-        items: const [],
-        lastDocument: _lastDocument,
-        hasMore: _hasMore,
-        totalLoaded: 0,
-      ));
+      return Future.value(
+        PaginatedResult(
+          items: const [],
+          lastDocument: _lastDocument,
+          hasMore: _hasMore,
+          totalLoaded: 0,
+        ),
+      );
     }
     return _fetchPage();
   }
@@ -195,7 +197,7 @@ class FirestorePaginationHelper<T> {
 }
 
 /// Real-time paginated stream helper
-/// 
+///
 /// Creates a stream that automatically handles pagination
 /// for real-time Firestore listeners
 class PaginatedStreamHelper<T> {
@@ -207,16 +209,15 @@ class PaginatedStreamHelper<T> {
     required Query<Map<String, dynamic>> query,
     required int pageSize,
     required T Function(Map<String, dynamic> json, String id) fromJson,
-  })  : _query = query,
-        _pageSize = pageSize.clamp(1, PaginationConfig.maxPageSize),
-        _fromJson = fromJson;
+  }) : _query = query,
+       _pageSize = pageSize.clamp(1, PaginationConfig.maxPageSize),
+       _fromJson = fromJson;
 
   /// Get a stream of paginated results
-  /// 
+  ///
   /// [startAfter] - Optional document to start after for pagination
   Stream<PaginatedResult<T>> getStream({DocumentSnapshot? startAfter}) {
-    Query<Map<String, dynamic>> currentQuery =
-        _query.limit(_pageSize);
+    Query<Map<String, dynamic>> currentQuery = _query.limit(_pageSize);
 
     if (startAfter != null) {
       currentQuery = currentQuery.startAfterDocument(startAfter);
@@ -241,7 +242,7 @@ class PaginatedStreamHelper<T> {
 }
 
 /// Pagination state mixin for BLoCs
-/// 
+///
 /// Add this mixin to your BLoC to easily manage pagination state
 mixin PaginationMixin<T> {
   final List<T> _items = [];
@@ -288,10 +289,9 @@ extension QueryPaginationExtension on Query<Map<String, dynamic>> {
     required int limit,
     DocumentSnapshot? startAfter,
   }) {
-    Query<Map<String, dynamic>> result = this.limit(limit.clamp(
-      1,
-      PaginationConfig.maxPageSize,
-    ));
+    Query<Map<String, dynamic>> result = this.limit(
+      limit.clamp(1, PaginationConfig.maxPageSize),
+    );
 
     if (startAfter != null) {
       result = result.startAfterDocument(startAfter);

@@ -9,8 +9,8 @@ class FeedbackBloc extends Bloc<FeedbackEvent, FeedbackState> {
   final FeedbackRepository _repository;
 
   FeedbackBloc({required FeedbackRepository repository})
-      : _repository = repository,
-        super(FeedbackInitial()) {
+    : _repository = repository,
+      super(FeedbackInitial()) {
     on<SubmitFeedback>(_onSubmitFeedback);
     on<LoadUserFeedback>(_onLoadUserFeedback);
     on<LoadFeedbackById>(_onLoadFeedbackById);
@@ -124,7 +124,14 @@ class SubmitFeedback extends FeedbackEvent {
   });
 
   @override
-  List<Object?> get props => [userId, userType, category, message, rating, attachments];
+  List<Object?> get props => [
+    userId,
+    userType,
+    category,
+    message,
+    rating,
+    attachments,
+  ];
 }
 
 /// Load all feedback for a user

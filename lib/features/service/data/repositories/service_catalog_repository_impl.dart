@@ -8,7 +8,7 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
   final FirebaseFirestore _db;
 
   ServiceCatalogRepositoryImpl({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('service_catalog');
@@ -20,9 +20,7 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
           .where('layer', isEqualTo: 'category')
           .where('isActive', isEqualTo: true)
           .get();
-      return Right(snap.docs
-          .map(ServiceCatalogItem.fromFirestore)
-          .toList());
+      return Right(snap.docs.map(ServiceCatalogItem.fromFirestore).toList());
     } catch (e) {
       return Left(ServerFailure('Failed to load categories: $e'));
     }
@@ -30,15 +28,14 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
 
   @override
   Future<Either<Failure, List<ServiceCatalogItem>>> getChildren(
-      String parentId) async {
+    String parentId,
+  ) async {
     try {
       final snap = await _col
           .where('parentId', isEqualTo: parentId)
           .where('isActive', isEqualTo: true)
           .get();
-      return Right(snap.docs
-          .map(ServiceCatalogItem.fromFirestore)
-          .toList());
+      return Right(snap.docs.map(ServiceCatalogItem.fromFirestore).toList());
     } catch (e) {
       return Left(ServerFailure('Failed to load children: $e'));
     }
@@ -62,9 +59,7 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
           .where('isActive', isEqualTo: true)
           .where('isPopular', isEqualTo: true)
           .get();
-      return Right(snap.docs
-          .map(ServiceCatalogItem.fromFirestore)
-          .toList());
+      return Right(snap.docs.map(ServiceCatalogItem.fromFirestore).toList());
     } catch (e) {
       return Left(ServerFailure('Failed to load popular items: $e'));
     }
@@ -72,7 +67,8 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
 
   @override
   Future<Either<Failure, ServiceCatalogItem>> upsertItem(
-      ServiceCatalogItem item) async {
+    ServiceCatalogItem item,
+  ) async {
     try {
       final ref = item.id.isEmpty ? _col.doc() : _col.doc(item.id);
       final updated = item.id.isEmpty ? item.copyWith() : item;
@@ -85,8 +81,10 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
   }
 
   @override
-  Future<Either<Failure, void>> setActive(String id,
-      {required bool active}) async {
+  Future<Either<Failure, void>> setActive(
+    String id, {
+    required bool active,
+  }) async {
     try {
       await _col.doc(id).update({'isActive': active});
       return const Right(null);
@@ -101,7 +99,8 @@ class ServiceCatalogRepositoryImpl implements ServiceCatalogRepository {
         .orderBy('layer')
         .orderBy('name')
         .snapshots()
-        .map((snap) =>
-            snap.docs.map(ServiceCatalogItem.fromFirestore).toList());
+        .map(
+          (snap) => snap.docs.map(ServiceCatalogItem.fromFirestore).toList(),
+        );
   }
 }

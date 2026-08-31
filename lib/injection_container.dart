@@ -127,7 +127,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LocationTrackingService(firestore: sl()));
 
   // Localization Service
-  sl.registerLazySingleton<LocalizationService>(() => LocalizationService(sl()));
+  sl.registerLazySingleton<LocalizationService>(
+    () => LocalizationService(sl()),
+  );
 
   // Theme Provider
   sl.registerLazySingleton<ThemeProvider>(() => ThemeProvider(sl()));
@@ -135,8 +137,10 @@ Future<void> init() async {
   // Security Services
   sl.registerFactory<EncryptionService>(
     () => EncryptionService(
-      const String.fromEnvironment('ENCRYPTION_KEY',
-          defaultValue: 'dev_key_not_for_production_use_only'),
+      const String.fromEnvironment(
+        'ENCRYPTION_KEY',
+        defaultValue: 'dev_key_not_for_production_use_only',
+      ),
     ),
   );
 
@@ -144,62 +148,79 @@ Future<void> init() async {
 
   // Core
   sl.registerLazySingleton<AuthRepository>(
-      () => AuthRepositoryImpl(sl(), sl()));
+    () => AuthRepositoryImpl(sl(), sl()),
+  );
   sl.registerLazySingleton<ConsentRepository>(
-      () => ConsentRepositoryImpl(sl()));
+    () => ConsentRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<SessionRepository>(
-      () => SessionRepositoryImpl(sl()));
+    () => SessionRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<WorkerRepository>(
-      () => WorkerRepositoryImpl(sl(), sl()));
+    () => WorkerRepositoryImpl(sl(), sl()),
+  );
   sl.registerLazySingleton<CustomerRepository>(
-      () => CustomerRepositoryImpl(sl()));
+    () => CustomerRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<BookingRepository>(
-      () => BookingRepositoryImpl(sl(), sl()));
+    () => BookingRepositoryImpl(sl(), sl()),
+  );
   sl.registerLazySingleton<PaymentRepository>(
-      () => PaymentRepositoryImpl(sl()));
+    () => PaymentRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
   sl.registerLazySingleton(() => AdminRepository(firestore: sl()));
   sl.registerLazySingleton<AdminPermissionsRepository>(
-      () => AdminPermissionsRepositoryImpl(sl()));
+    () => AdminPermissionsRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<ApprovalRepository>(
-      () => ApprovalRepositoryImpl(sl()));
+    () => ApprovalRepositoryImpl(sl()),
+  );
 
   // Business features
-  sl.registerLazySingleton<WalletRepository>(
-      () => WalletRepositoryImpl(sl()));
+  sl.registerLazySingleton<WalletRepository>(() => WalletRepositoryImpl(sl()));
   sl.registerLazySingleton<PromoRepository>(() => PromoRepositoryImpl(sl()));
   sl.registerLazySingleton<ReferralRepository>(
-      () => ReferralRepositoryImpl(sl()));
+    () => ReferralRepositoryImpl(sl()),
+  );
 
   // Scheduling Engine
   sl.registerLazySingleton<SchedulingRepository>(
-      () => SchedulingRepositoryImpl(firestore: sl()));
+    () => SchedulingRepositoryImpl(firestore: sl()),
+  );
 
   // Service Catalog
   sl.registerLazySingleton<ServiceCatalogRepository>(
-      () => ServiceCatalogRepositoryImpl(firestore: sl()));
+    () => ServiceCatalogRepositoryImpl(firestore: sl()),
+  );
 
   // Payouts
   sl.registerLazySingleton<PayoutRepository>(
-      () => PayoutRepositoryImpl(firestore: sl()));
+    () => PayoutRepositoryImpl(firestore: sl()),
+  );
 
   // Trust & Safety
   sl.registerLazySingleton<SafetyRepository>(
-      () => SafetyRepositoryImpl(firestore: sl()));
+    () => SafetyRepositoryImpl(firestore: sl()),
+  );
 
   // ── Use Cases ─────────────────────────────────────────────────────────────
 
   // Matching
   sl.registerLazySingleton(
-      () => FindNearestWorker(sl<WorkerRepository>(), firestore: sl()));
+    () => FindNearestWorker(sl<WorkerRepository>(), firestore: sl()),
+  );
 
   // Scheduling
   sl.registerLazySingleton(
-      () => CheckWorkerAvailability(sl<SchedulingRepository>()));
+    () => CheckWorkerAvailability(sl<SchedulingRepository>()),
+  );
   sl.registerLazySingleton(
-      () => FindAvailableWorkers(sl<SchedulingRepository>()));
+    () => FindAvailableWorkers(sl<SchedulingRepository>()),
+  );
   sl.registerLazySingleton(
-      () => GenerateRecurringBookings(sl<SchedulingRepository>()));
+    () => GenerateRecurringBookings(sl<SchedulingRepository>()),
+  );
 
   // Payment lifecycle
   sl.registerLazySingleton(() => HoldWalletFunds(firestore: sl()));
@@ -208,68 +229,74 @@ Future<void> init() async {
 
   // ── BLoCs ─────────────────────────────────────────────────────────────────
 
-  sl.registerFactory(() => AuthBloc(
-        authRepository: sl(),
-        analytics: sl(),
-        crashReporting: sl(),
-        sessionRepository: sl(),
-      ));
+  sl.registerFactory(
+    () => AuthBloc(
+      authRepository: sl(),
+      analytics: sl(),
+      crashReporting: sl(),
+      sessionRepository: sl(),
+    ),
+  );
 
-  sl.registerFactory(() => WorkerBloc(
-        workerRepository: sl(),
-        locationService: sl(),
-      ));
+  sl.registerFactory(
+    () => WorkerBloc(workerRepository: sl(), locationService: sl()),
+  );
 
   sl.registerFactory(() => VerificationBloc(firestore: sl()));
   sl.registerFactory(() => WorkerOnboardingBloc(repository: sl()));
 
-  sl.registerFactory(() => CustomerBloc(
-        customerRepository: sl(),
-      ));
+  sl.registerFactory(() => CustomerBloc(customerRepository: sl()));
 
-  sl.registerFactory(() => BookingBloc(
-        bookingRepository: sl(),
-        findNearestWorker: sl(),
-        analytics: sl(),
-        performance: sl(),
-      ));
+  sl.registerFactory(
+    () => BookingBloc(
+      bookingRepository: sl(),
+      findNearestWorker: sl(),
+      analytics: sl(),
+      performance: sl(),
+    ),
+  );
 
-  sl.registerFactory(() => PaymentBloc(
-        paymentRepository: sl(),
-        analytics: sl(),
-      ));
+  sl.registerFactory(
+    () => PaymentBloc(paymentRepository: sl(), analytics: sl()),
+  );
 
-  sl.registerFactory(() => SchedulingBloc(
-        repository: sl(),
-        checkAvailability: sl(),
-        findAvailableWorkers: sl(),
-        generateRecurringBookings: sl(),
-      ));
+  sl.registerFactory(
+    () => SchedulingBloc(
+      repository: sl(),
+      checkAvailability: sl(),
+      findAvailableWorkers: sl(),
+      generateRecurringBookings: sl(),
+    ),
+  );
 
   sl.registerFactory(() => SafetyBloc(repository: sl()));
   sl.registerFactory(() => AdminBloc(sl()));
 
-  sl.registerFactory(() => ChatBloc(
-        chatRepository: sl(),
-        bookingRepository: sl(),
-        firebaseAuth: sl(),
-      ));
+  sl.registerFactory(
+    () => ChatBloc(
+      chatRepository: sl(),
+      bookingRepository: sl(),
+      firebaseAuth: sl(),
+    ),
+  );
 
   // Support
   sl.registerLazySingleton<SupportRepository>(
-      () => SupportRepositoryImpl(firestore: sl()));
+    () => SupportRepositoryImpl(firestore: sl()),
+  );
 
   // Customer Profiles
   sl.registerLazySingleton<CustomerProfileRepository>(
-      () => CustomerProfileRepositoryImpl(sl()));
+    () => CustomerProfileRepositoryImpl(sl()),
+  );
 
   // Reviews
-  sl.registerLazySingleton<ReviewRepository>(
-      () => ReviewRepositoryImpl(sl()));
+  sl.registerLazySingleton<ReviewRepository>(() => ReviewRepositoryImpl(sl()));
 
   // Disputes
   sl.registerLazySingleton<DisputeRepository>(
-      () => DisputeRepositoryImpl(sl()));
+    () => DisputeRepositoryImpl(sl()),
+  );
 }
 
 /// Initialize services that need async setup

@@ -1,9 +1,9 @@
 /// Auth Domain Entities
-/// 
+///
 /// Phase 2: Architecture Refactoring
-/// 
+///
 /// This barrel file exports all auth-related entities.
-/// 
+///
 /// Migration Guide:
 /// - Replace `UserEntity` with `User` (consolidated entity)
 /// - Replace `AppUser` with `User` (consolidated entity)

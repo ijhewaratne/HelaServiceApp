@@ -71,17 +71,17 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
           .collection('workers')
           .doc(_workerId!)
           .update({
-        'businessName': _businessNameCtrl.text.trim().isEmpty
-            ? null
-            : _businessNameCtrl.text.trim(),
-        'bio': _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
-        'experienceYears': _experienceCtrl.text.trim().isEmpty
-            ? null
-            : int.tryParse(_experienceCtrl.text.trim()),
-        'district': _districtCtrl.text.trim(),
-        'serviceRadiusKm': _serviceRadius,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'businessName': _businessNameCtrl.text.trim().isEmpty
+                ? null
+                : _businessNameCtrl.text.trim(),
+            'bio': _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
+            'experienceYears': _experienceCtrl.text.trim().isEmpty
+                ? null
+                : int.tryParse(_experienceCtrl.text.trim()),
+            'district': _districtCtrl.text.trim(),
+            'serviceRadiusKm': _serviceRadius,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully')),
@@ -90,8 +90,9 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -109,8 +110,10 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
           if (!_loading)
             TextButton(
               onPressed: _saving ? null : _save,
-              child: const Text('Save',
-                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: const Text(
+                'Save',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
             ),
         ],
       ),
@@ -126,15 +129,19 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
                   TextFormField(
                     controller: _businessNameCtrl,
                     decoration: _inputDecoration(
-                        'Business Name (optional)',
-                        'e.g. Saman\'s Plumbing Services',
-                        Icons.business),
+                      'Business Name (optional)',
+                      'e.g. Saman\'s Plumbing Services',
+                      Icons.business,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _districtCtrl,
                     decoration: _inputDecoration(
-                        'District', 'e.g. Colombo, Kandy', Icons.location_on),
+                      'District',
+                      'e.g. Colombo, Kandy',
+                      Icons.location_on,
+                    ),
                     validator: (v) => (v == null || v.trim().isEmpty)
                         ? 'Please enter your district'
                         : null,
@@ -147,15 +154,20 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
                     maxLines: 4,
                     maxLength: 300,
                     decoration: _inputDecoration(
-                        'Bio', 'Describe your experience and specialties...',
-                        Icons.person),
+                      'Bio',
+                      'Describe your experience and specialties...',
+                      Icons.person,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _experienceCtrl,
                     keyboardType: TextInputType.number,
                     decoration: _inputDecoration(
-                        'Years of Experience', 'e.g. 5', Icons.work_history),
+                      'Years of Experience',
+                      'e.g. 5',
+                      Icons.work_history,
+                    ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return null;
                       final n = int.tryParse(v.trim());
@@ -179,24 +191,25 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
                     divisions: 24,
                     label: '${_serviceRadius.toStringAsFixed(0)} km',
                     activeColor: const Color(0xFF1B5E20),
-                    onChanged: (v) =>
-                        setState(() => _serviceRadius = v),
+                    onChanged: (v) => setState(() => _serviceRadius = v),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('2 km',
-                          style: TextStyle(color: Colors.grey[500])),
-                      Text('${_serviceRadius.toStringAsFixed(0)} km',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B5E20))),
-                      Text('50 km',
-                          style: TextStyle(color: Colors.grey[500])),
+                      Text('2 km', style: TextStyle(color: Colors.grey[500])),
+                      Text(
+                        '${_serviceRadius.toStringAsFixed(0)} km',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
+                      Text('50 km', style: TextStyle(color: Colors.grey[500])),
                     ],
                   ),
                   const SizedBox(height: 32),
-                  if (_saving) const Center(child: CircularProgressIndicator())
+                  if (_saving)
+                    const Center(child: CircularProgressIndicator())
                   else
                     ElevatedButton(
                       onPressed: _save,
@@ -205,10 +218,13 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Save Changes',
-                          style: TextStyle(fontSize: 16)),
+                      child: const Text(
+                        'Save Changes',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                 ],
               ),
@@ -216,14 +232,12 @@ class _WorkerProfileEditScreenState extends State<WorkerProfileEditScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(
-      String label, String hint, IconData icon) {
+  InputDecoration _inputDecoration(String label, String hint, IconData icon) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
       prefixIcon: Icon(icon, color: const Color(0xFF1B5E20)),
-      border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF1B5E20)),
@@ -237,10 +251,11 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader(this.text);
   @override
   Widget build(BuildContext context) {
-    return Text(text,
-        style: Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold));
+    return Text(
+      text,
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+    );
   }
 }

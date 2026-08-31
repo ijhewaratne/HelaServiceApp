@@ -53,20 +53,23 @@ void main() {
       expect(after.getOrElse(() => false), isTrue);
     });
 
-    test('an old version acceptance does not satisfy a newer version', () async {
-      await repository.recordAcceptance(
-        userId: 'user_1',
-        documentType: ConsentDocumentType.terms,
-        version: '1.0',
-      );
+    test(
+      'an old version acceptance does not satisfy a newer version',
+      () async {
+        await repository.recordAcceptance(
+          userId: 'user_1',
+          documentType: ConsentDocumentType.terms,
+          version: '1.0',
+        );
 
-      final result = await repository.hasAcceptedCurrentVersion(
-        userId: 'user_1',
-        documentType: ConsentDocumentType.terms,
-        currentVersion: '2.0',
-      );
-      expect(result.getOrElse(() => true), isFalse);
-    });
+        final result = await repository.hasAcceptedCurrentVersion(
+          userId: 'user_1',
+          documentType: ConsentDocumentType.terms,
+          currentVersion: '2.0',
+        );
+        expect(result.getOrElse(() => true), isFalse);
+      },
+    );
   });
 
   group('getAcceptances', () {
@@ -89,13 +92,10 @@ void main() {
 
       final result = await repository.getAcceptances('user_1');
 
-      result.fold(
-        (_) => fail('Expected acceptance records'),
-        (records) {
-          expect(records, hasLength(2));
-          expect(records.every((r) => r.userId == 'user_1'), isTrue);
-        },
-      );
+      result.fold((_) => fail('Expected acceptance records'), (records) {
+        expect(records, hasLength(2));
+        expect(records.every((r) => r.userId == 'user_1'), isTrue);
+      });
     });
   });
 }

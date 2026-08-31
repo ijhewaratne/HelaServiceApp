@@ -9,9 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'test_helpers.dart';
 
 /// Integration Test Helpers
-/// 
+///
 /// Phase 4: Testing Infrastructure
-/// 
+///
 /// Provides utilities for integration testing with Firebase mocks
 class IntegrationTestHelpers {
   /// Setup a complete test environment
@@ -25,14 +25,11 @@ class IntegrationTestHelpers {
       uid: uid,
       phoneNumber: phoneNumber,
     );
-    
+
     final mockFirestore = TestHelpers.getMockFirestore();
     await TestHelpers.setupTestData(mockFirestore);
-    
-    return TestEnvironment(
-      auth: mockAuth,
-      firestore: mockFirestore,
-    );
+
+    return TestEnvironment(auth: mockAuth, firestore: mockFirestore);
   }
 
   /// Cleanup test environment
@@ -46,10 +43,7 @@ class TestEnvironment {
   final MockFirebaseAuth auth;
   final FakeFirebaseFirestore firestore;
 
-  TestEnvironment({
-    required this.auth,
-    required this.firestore,
-  });
+  TestEnvironment({required this.auth, required this.firestore});
 }
 
 /// Widget tester extensions for integration tests
@@ -74,9 +68,13 @@ extension WidgetTesterX on WidgetTester {
 
   /// Enter text in text field by label
   Future<void> enterTextByLabel(String label, String text) async {
-    await enterText(find.byWidgetPredicate(
-      (widget) => widget is TextField && widget.decoration?.labelText == label,
-    ), text);
+    await enterText(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField && widget.decoration?.labelText == label,
+      ),
+      text,
+    );
     await pumpAndSettle();
   }
 
@@ -96,12 +94,12 @@ extension WidgetTesterX on WidgetTester {
     Duration timeout = const Duration(seconds: 5),
   }) async {
     final endTime = DateTime.now().add(timeout);
-    
+
     while (DateTime.now().isBefore(endTime)) {
       await pumpAndSettle();
       if (finder.evaluate().isNotEmpty) return;
     }
-    
+
     throw Exception('Timeout waiting for $finder');
   }
 }
@@ -113,12 +111,12 @@ class TestGoldenFileComparator extends LocalFileComparator {
   @override
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
     final result = await super.compare(imageBytes, golden);
-    
+
     if (!result) {
       // Generate diff image for debugging
       debugPrint('Golden file mismatch: $golden');
     }
-    
+
     return result;
   }
 }
@@ -142,7 +140,9 @@ class TestDataBuilders {
       'workerId': workerId,
       'serviceType': serviceType,
       'status': status,
-      'scheduledDate': (scheduledDate ?? DateTime.now().add(const Duration(days: 1))).toIso8601String(),
+      'scheduledDate':
+          (scheduledDate ?? DateTime.now().add(const Duration(days: 1)))
+              .toIso8601String(),
       'estimatedPrice': estimatedPrice,
       'address': address ?? TestFixtures.testAddress,
       'createdAt': DateTime.now().toIso8601String(),

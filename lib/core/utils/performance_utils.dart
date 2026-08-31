@@ -17,7 +17,7 @@ class PerformanceUtils {
   static const int fullScreenWidth = 800;
 
   /// Creates an optimized cached network image widget
-  /// 
+  ///
   /// [imageUrl] - The URL of the image
   /// [width] - Target width for memory cache optimization
   /// [height] - Optional height constraint
@@ -114,9 +114,7 @@ class PerformanceUtils {
       width: width,
       height: height,
       color: Colors.grey[200],
-      child: const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 
@@ -173,10 +171,7 @@ class PerformanceUtils {
     );
 
     if (onRefresh != null) {
-      listView = RefreshIndicator(
-        onRefresh: onRefresh,
-        child: listView,
-      );
+      listView = RefreshIndicator(onRefresh: onRefresh, child: listView);
     }
 
     return listView;
@@ -198,9 +193,7 @@ class PerformanceUtils {
           if (itemIndex >= items.length) return null;
           return itemBuilder(context, items[itemIndex], itemIndex);
         },
-        childCount: separator != null
-            ? items.length * 2 - 1
-            : items.length,
+        childCount: separator != null ? items.length * 2 - 1 : items.length,
         addAutomaticKeepAlives: true,
         addRepaintBoundaries: true,
         addSemanticIndexes: true,
@@ -219,12 +212,12 @@ class PerformanceUtils {
   /// Debounces scroll events to prevent excessive rebuilds
   static ScrollNotificationPredicate scrollNotificationPredicate =
       (notification) {
-    // Only trigger on scroll end to reduce rebuilds
-    if (notification is ScrollEndNotification) {
-      return true;
-    }
-    return false;
-  };
+        // Only trigger on scroll end to reduce rebuilds
+        if (notification is ScrollEndNotification) {
+          return true;
+        }
+        return false;
+      };
 }
 
 /// Extension for optimized scroll controller

@@ -37,8 +37,11 @@ class AdminCategoryManagementScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.category_outlined,
-                      size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.category_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text('No categories yet'),
                   const SizedBox(height: 12),
@@ -65,15 +68,15 @@ class AdminCategoryManagementScreen extends StatelessWidget {
               final data = docs[i].data() as Map<String, dynamic>;
               final id = docs[i].id;
               final name = data['displayName'] as String? ?? '';
-              final basePrice =
-                  (data['basePrice'] as num?)?.toDouble() ?? 0.0;
+              final basePrice = (data['basePrice'] as num?)?.toDouble() ?? 0.0;
               final isActive = data['isActive'] as bool? ?? true;
               final description = data['description'] as String?;
               final iconName = data['iconName'] as String?;
 
               return Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: isActive
@@ -81,29 +84,31 @@ class AdminCategoryManagementScreen extends StatelessWidget {
                         : Colors.grey[200],
                     child: Icon(
                       _iconFromName(iconName),
-                      color: isActive
-                          ? const Color(0xFF1B5E20)
-                          : Colors.grey,
+                      color: isActive ? const Color(0xFF1B5E20) : Colors.grey,
                       size: 20,
                     ),
                   ),
                   title: Row(
                     children: [
-                      Text(name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600)),
+                      Text(
+                        name,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       const SizedBox(width: 8),
                       if (!isActive)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Text('Inactive',
-                              style: TextStyle(
-                                  color: Colors.grey, fontSize: 11)),
+                          child: const Text(
+                            'Inactive',
+                            style: TextStyle(color: Colors.grey, fontSize: 11),
+                          ),
                         ),
                     ],
                   ),
@@ -124,18 +129,16 @@ class AdminCategoryManagementScreen extends StatelessWidget {
                             // a direct action; turning one off needs a second
                             // admin's sign-off (see docs/SPEC_DECISIONS.md).
                             ? FirebaseFirestore.instance
-                                .collection('service_catalog')
-                                .doc(id)
-                                .update({'isActive': true})
+                                  .collection('service_catalog')
+                                  .doc(id)
+                                  .update({'isActive': true})
                             : _proposeDeactivation(context, id, name),
                         activeColor: const Color(0xFF1B5E20),
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       IconButton(
                         icon: const Icon(Icons.edit, size: 18),
-                        onPressed: () => _showCategoryDialog(
-                            context, docs[i]),
+                        onPressed: () => _showCategoryDialog(context, docs[i]),
                       ),
                     ],
                   ),
@@ -150,15 +153,24 @@ class AdminCategoryManagementScreen extends StatelessWidget {
 
   IconData _iconFromName(String? name) {
     switch (name) {
-      case 'cleaning':    return Icons.cleaning_services;
-      case 'plumbing':    return Icons.plumbing;
-      case 'electrical':  return Icons.electrical_services;
-      case 'ac_repair':   return Icons.ac_unit;
-      case 'gardening':   return Icons.grass;
-      case 'babysitting': return Icons.child_care;
-      case 'cooking':     return Icons.restaurant;
-      case 'laundry':     return Icons.local_laundry_service;
-      default:            return Icons.home_repair_service;
+      case 'cleaning':
+        return Icons.cleaning_services;
+      case 'plumbing':
+        return Icons.plumbing;
+      case 'electrical':
+        return Icons.electrical_services;
+      case 'ac_repair':
+        return Icons.ac_unit;
+      case 'gardening':
+        return Icons.grass;
+      case 'babysitting':
+        return Icons.child_care;
+      case 'cooking':
+        return Icons.restaurant;
+      case 'laundry':
+        return Icons.local_laundry_service;
+      default:
+        return Icons.home_repair_service;
     }
   }
 
@@ -170,7 +182,10 @@ class AdminCategoryManagementScreen extends StatelessWidget {
   }
 
   Future<void> _proposeDeactivation(
-      BuildContext context, String categoryId, String name) async {
+    BuildContext context,
+    String categoryId,
+    String name,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -181,8 +196,9 @@ class AdminCategoryManagementScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Propose'),
@@ -202,10 +218,15 @@ class AdminCategoryManagementScreen extends StatelessWidget {
 
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to propose: ${failure.message}'))),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        SnackBar(content: Text('Failed to propose: ${failure.message}')),
+      ),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
           content: Text(
-              'Proposed — awaiting a second admin\'s approval in Pending Approvals'))),
+            'Proposed — awaiting a second admin\'s approval in Pending Approvals',
+          ),
+        ),
+      ),
     );
   }
 }
@@ -231,13 +252,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
     super.initState();
     final data = widget.doc?.data() as Map<String, dynamic>?;
     _nameCtrl = TextEditingController(
-        text: data?['displayName'] as String? ?? '');
+      text: data?['displayName'] as String? ?? '',
+    );
     _descCtrl = TextEditingController(
-        text: data?['description'] as String? ?? '');
+      text: data?['description'] as String? ?? '',
+    );
     _priceCtrl = TextEditingController(
-        text: (data?['basePrice'] as num?)?.toStringAsFixed(0) ?? '');
-    _iconCtrl = TextEditingController(
-        text: data?['iconName'] as String? ?? '');
+      text: (data?['basePrice'] as num?)?.toStringAsFixed(0) ?? '',
+    );
+    _iconCtrl = TextEditingController(text: data?['iconName'] as String? ?? '');
     _isActive = data?['isActive'] as bool? ?? true;
   }
 
@@ -259,8 +282,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         'description': _descCtrl.text.trim().isEmpty
             ? null
             : _descCtrl.text.trim(),
-        'basePrice':
-            double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
+        'basePrice': double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
         'iconName': _iconCtrl.text.trim().isEmpty
             ? null
             : _iconCtrl.text.trim(),
@@ -281,8 +303,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -299,28 +322,26 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           children: [
             TextField(
               controller: _nameCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Category Name *'),
+              decoration: const InputDecoration(labelText: 'Category Name *'),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _descCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Description'),
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _priceCtrl,
-              decoration: const InputDecoration(
-                  labelText: 'Base Price (LKR)'),
+              decoration: const InputDecoration(labelText: 'Base Price (LKR)'),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _iconCtrl,
               decoration: const InputDecoration(
-                  labelText: 'Icon Name',
-                  hintText: 'e.g. cleaning, plumbing'),
+                labelText: 'Icon Name',
+                hintText: 'e.g. cleaning, plumbing',
+              ),
             ),
             const SizedBox(height: 8),
             SwitchListTile(
@@ -335,8 +356,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
@@ -348,7 +370,10 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : const Text('Save'),
         ),
       ],

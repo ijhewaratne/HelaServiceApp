@@ -12,7 +12,7 @@ class WorkerOnboardingLoading extends WorkerOnboardingState {}
 class WorkerOnboardingError extends WorkerOnboardingState {
   final String message;
   WorkerOnboardingError(this.message);
-  
+
   @override
   List<Object?> get props => [message];
 }
@@ -21,7 +21,7 @@ class WorkerOnboardingError extends WorkerOnboardingState {
 class PersonalInfoSubmitted extends WorkerOnboardingState {
   final WorkerApplication application;
   PersonalInfoSubmitted(this.application);
-  
+
   @override
   List<Object?> get props => [application];
 }
@@ -30,7 +30,7 @@ class PersonalInfoSubmitted extends WorkerOnboardingState {
 class ServicesSelected extends WorkerOnboardingState {
   final WorkerApplication application;
   ServicesSelected(this.application);
-  
+
   @override
   List<Object?> get props => [application];
 }

@@ -74,10 +74,7 @@ import '../../features/admin/presentation/screens/admin_revenue_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Widget _withAdminBloc(Widget child) {
-  return BlocProvider(
-    create: (_) => sl<AdminBloc>(),
-    child: child,
-  );
+  return BlocProvider(create: (_) => sl<AdminBloc>(), child: child);
 }
 
 final appRouter = GoRouter(
@@ -89,8 +86,10 @@ final appRouter = GoRouter(
     final currentPath = state.uri.path;
 
     // Always allow splash and auth screens
-    if (currentPath == '/' || currentPath == '/auth' ||
-        currentPath == '/auth/role-select') return null;
+    if (currentPath == '/' ||
+        currentPath == '/auth' ||
+        currentPath == '/auth/role-select')
+      return null;
 
     if (user == null) return '/auth';
 
@@ -119,14 +118,8 @@ final appRouter = GoRouter(
 
   routes: [
     // ── Splash & Auth ────────────────────────────────────────────────────────
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashPage(),
-    ),
-    GoRoute(
-      path: '/auth',
-      builder: (context, state) => const PhoneAuthPage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const SplashPage()),
+    GoRoute(path: '/auth', builder: (context, state) => const PhoneAuthPage()),
     GoRoute(
       path: '/auth/role-select',
       builder: (context, state) => const RoleSelectScreen(),
@@ -139,23 +132,26 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/worker/onboard/services',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Service Selection')),
-      ),
+      builder: (context, state) =>
+          const Scaffold(body: Center(child: Text('Service Selection'))),
     ),
     GoRoute(
       path: '/worker/onboard/documents',
       builder: (context, state) {
-        final workerId = state.extra as String? ??
-            FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId =
+            state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
         return DocumentUploadPage(workerId: workerId);
       },
     ),
     GoRoute(
       path: '/worker/onboard/pending',
       builder: (context, state) {
-        final workerId = state.extra as String? ??
-            FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId =
+            state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
         return VerificationPendingPage(workerId: workerId);
       },
     ),
@@ -174,8 +170,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/worker/job-offers',
       builder: (context, state) {
-        final workerId = state.extra as String? ??
-            FirebaseAuth.instance.currentUser?.uid ?? '';
+        final workerId =
+            state.extra as String? ??
+            FirebaseAuth.instance.currentUser?.uid ??
+            '';
         return JobOfferPage(workerId: workerId);
       },
     ),
@@ -262,7 +260,9 @@ final appRouter = GoRouter(
         final bookingId = state.pathParameters['bookingId']!;
         final booking = state.extra as booking_entity.Booking?;
         return BookingDetailScreen(
-            bookingId: bookingId, initialBooking: booking);
+          bookingId: bookingId,
+          initialBooking: booking,
+        );
       },
     ),
     GoRoute(
@@ -270,8 +270,7 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final requestId = state.pathParameters['requestId']!;
         final booking = state.extra as booking_entity.Booking?;
-        return ReviewProviderScreen(
-            requestId: requestId, booking: booking);
+        return ReviewProviderScreen(requestId: requestId, booking: booking);
       },
     ),
     GoRoute(
@@ -296,27 +295,19 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/admin/workers',
-      builder: (context, state) => _withAdminBloc(
-        const AdminWorkersScreen(),
-      ),
+      builder: (context, state) => _withAdminBloc(const AdminWorkersScreen()),
     ),
     GoRoute(
       path: '/admin/verify/:workerId',
-      builder: (context, state) => _withAdminBloc(
-        const AdminWorkersScreen(),
-      ),
+      builder: (context, state) => _withAdminBloc(const AdminWorkersScreen()),
     ),
     GoRoute(
       path: '/admin/bookings',
-      builder: (context, state) => _withAdminBloc(
-        const AdminBookingsScreen(),
-      ),
+      builder: (context, state) => _withAdminBloc(const AdminBookingsScreen()),
     ),
     GoRoute(
       path: '/admin/incidents',
-      builder: (context, state) => _withAdminBloc(
-        const AdminIncidentsScreen(),
-      ),
+      builder: (context, state) => _withAdminBloc(const AdminIncidentsScreen()),
     ),
     GoRoute(
       path: '/admin/dispatch',
@@ -402,8 +393,10 @@ final appRouter = GoRouter(
         children: [
           const Icon(Icons.error_outline, size: 60, color: Colors.red),
           const SizedBox(height: 16),
-          const Text('Page Not Found',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Text(
+            'Page Not Found',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/'),

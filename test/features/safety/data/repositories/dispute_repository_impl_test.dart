@@ -32,38 +32,47 @@ void main() {
   }
 
   group('createDispute', () {
-    test('stores a new dispute document and marks the booking disputed',
-        () async {
-      await firestore.collection('bookings').doc('booking_1').set({
-        'status': 'completed',
-      });
+    test(
+      'stores a new dispute document and marks the booking disputed',
+      () async {
+        await firestore.collection('bookings').doc('booking_1').set({
+          'status': 'completed',
+        });
 
-      final result = await repository.createDispute(buildDispute());
+        final result = await repository.createDispute(buildDispute());
 
-      expect(result.isRight(), isTrue);
-      final created = result.fold((_) => throw Exception(), (d) => d);
-      expect(created.id, isNotEmpty);
+        expect(result.isRight(), isTrue);
+        final created = result.fold((_) => throw Exception(), (d) => d);
+        expect(created.id, isNotEmpty);
 
-      final stored =
-          await firestore.collection('disputes').doc(created.id).get();
-      expect(stored.exists, isTrue);
-      final data = stored.data()!;
-      expect(data['requestId'], 'booking_1');
-      expect(data['reportedByUserId'], 'customer_1');
-      expect(data['reportedUserId'], 'worker_1');
-      expect(data['issueType'], 'qualityOfWork');
-      expect(data['status'], 'open');
-      expect(data['description'], 'The work was not completed to standard.');
+        final stored = await firestore
+            .collection('disputes')
+            .doc(created.id)
+            .get();
+        expect(stored.exists, isTrue);
+        final data = stored.data()!;
+        expect(data['requestId'], 'booking_1');
+        expect(data['reportedByUserId'], 'customer_1');
+        expect(data['reportedUserId'], 'worker_1');
+        expect(data['issueType'], 'qualityOfWork');
+        expect(data['status'], 'open');
+        expect(data['description'], 'The work was not completed to standard.');
 
-      final bookingDoc =
-          await firestore.collection('bookings').doc('booking_1').get();
-      expect(bookingDoc.data()?['status'], 'disputed');
-    });
+        final bookingDoc = await firestore
+            .collection('bookings')
+            .doc('booking_1')
+            .get();
+        expect(bookingDoc.data()?['status'], 'disputed');
+      },
+    );
   });
 
   group('getDisputesByStatus', () {
     test('only returns disputes matching the requested status', () async {
-      await firestore.collection('disputes').doc('d_open').set(
+      await firestore
+          .collection('disputes')
+          .doc('d_open')
+          .set(
             buildDispute(
               id: 'd_open',
               requestId: 'booking_open',
@@ -71,7 +80,10 @@ void main() {
               createdAt: DateTime(2026, 8, 27),
             ).toJson(),
           );
-      await firestore.collection('disputes').doc('d_review').set(
+      await firestore
+          .collection('disputes')
+          .doc('d_review')
+          .set(
             buildDispute(
               id: 'd_review',
               requestId: 'booking_review',
@@ -79,7 +91,10 @@ void main() {
               createdAt: DateTime(2026, 8, 28),
             ).toJson(),
           );
-      await firestore.collection('disputes').doc('d_resolved').set(
+      await firestore
+          .collection('disputes')
+          .doc('d_resolved')
+          .set(
             buildDispute(
               id: 'd_resolved',
               requestId: 'booking_resolved',
@@ -88,10 +103,12 @@ void main() {
             ).toJson(),
           );
 
-      final openResult =
-          await repository.getDisputesByStatus(DisputeStatus.open);
-      final reviewResult =
-          await repository.getDisputesByStatus(DisputeStatus.underReview);
+      final openResult = await repository.getDisputesByStatus(
+        DisputeStatus.open,
+      );
+      final reviewResult = await repository.getDisputesByStatus(
+        DisputeStatus.underReview,
+      );
 
       expect(openResult.isRight(), isTrue);
       openResult.fold((_) => fail('expected disputes'), (disputes) {
@@ -107,14 +124,13 @@ void main() {
       });
     });
 
-    test('returns an empty list when no dispute matches the status',
-        () async {
-      await firestore.collection('disputes').doc('d_open').set(
-            buildDispute(id: 'd_open', status: DisputeStatus.open).toJson(),
-          );
+    test('returns an empty list when no dispute matches the status', () async {
+      await firestore
+          .collection('disputes')
+          .doc('d_open')
+          .set(buildDispute(id: 'd_open', status: DisputeStatus.open).toJson());
 
-      final result =
-          await repository.getDisputesByStatus(DisputeStatus.closed);
+      final result = await repository.getDisputesByStatus(DisputeStatus.closed);
 
       expect(result.isRight(), isTrue);
       result.fold((_) => fail('expected empty list'), (disputes) {
@@ -124,35 +140,40 @@ void main() {
   });
 
   group('updateDisputeStatus', () {
-    test('persists the new status, admin note and resolvedAt when resolving',
-        () async {
-      await firestore.collection('disputes').doc('dispute_1').set(
-            buildDispute(id: 'dispute_1').toJson(),
-          );
+    test(
+      'persists the new status, admin note and resolvedAt when resolving',
+      () async {
+        await firestore
+            .collection('disputes')
+            .doc('dispute_1')
+            .set(buildDispute(id: 'dispute_1').toJson());
 
-      final result = await repository.updateDisputeStatus(
-        disputeId: 'dispute_1',
-        status: DisputeStatus.resolved,
-        adminId: 'admin_9',
-        adminNote: 'Refund issued to customer.',
-      );
+        final result = await repository.updateDisputeStatus(
+          disputeId: 'dispute_1',
+          status: DisputeStatus.resolved,
+          adminId: 'admin_9',
+          adminNote: 'Refund issued to customer.',
+        );
 
-      expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('disputes').doc('dispute_1').get();
-      final data = stored.data()!;
-      expect(data['status'], 'resolved');
-      expect(data['resolvedByAdminId'], 'admin_9');
-      expect(data['adminNote'], 'Refund issued to customer.');
-      expect(data['resolvedAt'], isNotNull);
-      expect(data['updatedAt'], isNotNull);
-    });
+        expect(result.isRight(), isTrue);
+        final stored = await firestore
+            .collection('disputes')
+            .doc('dispute_1')
+            .get();
+        final data = stored.data()!;
+        expect(data['status'], 'resolved');
+        expect(data['resolvedByAdminId'], 'admin_9');
+        expect(data['adminNote'], 'Refund issued to customer.');
+        expect(data['resolvedAt'], isNotNull);
+        expect(data['updatedAt'], isNotNull);
+      },
+    );
 
-    test('does not set resolvedAt when transitioning to underReview',
-        () async {
-      await firestore.collection('disputes').doc('dispute_1').set(
-            buildDispute(id: 'dispute_1').toJson(),
-          );
+    test('does not set resolvedAt when transitioning to underReview', () async {
+      await firestore
+          .collection('disputes')
+          .doc('dispute_1')
+          .set(buildDispute(id: 'dispute_1').toJson());
 
       final result = await repository.updateDisputeStatus(
         disputeId: 'dispute_1',
@@ -161,8 +182,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      final stored =
-          await firestore.collection('disputes').doc('dispute_1').get();
+      final stored = await firestore
+          .collection('disputes')
+          .doc('dispute_1')
+          .get();
       final data = stored.data()!;
       expect(data['status'], 'underReview');
       expect(data['resolvedByAdminId'], 'admin_9');
@@ -170,9 +193,10 @@ void main() {
     });
 
     test('writes an audit log entry recording the status change', () async {
-      await firestore.collection('disputes').doc('dispute_1').set(
-            buildDispute(id: 'dispute_1').toJson(),
-          );
+      await firestore
+          .collection('disputes')
+          .doc('dispute_1')
+          .set(buildDispute(id: 'dispute_1').toJson());
 
       await repository.updateDisputeStatus(
         disputeId: 'dispute_1',
@@ -193,9 +217,10 @@ void main() {
 
   group('getDisputeForRequest', () {
     test('returns the dispute for a booking when one exists', () async {
-      await firestore.collection('disputes').doc('dispute_1').set(
-            buildDispute(id: 'dispute_1', requestId: 'booking_42').toJson(),
-          );
+      await firestore
+          .collection('disputes')
+          .doc('dispute_1')
+          .set(buildDispute(id: 'dispute_1', requestId: 'booking_42').toJson());
 
       final result = await repository.getDisputeForRequest('booking_42');
 
@@ -218,13 +243,20 @@ void main() {
 
   group('getAllDisputes', () {
     test('returns disputes ordered by createdAt descending', () async {
-      await firestore.collection('disputes').doc('older').set(
-            buildDispute(id: 'older', createdAt: DateTime(2026, 8, 1))
-                .toJson(),
+      await firestore
+          .collection('disputes')
+          .doc('older')
+          .set(
+            buildDispute(id: 'older', createdAt: DateTime(2026, 8, 1)).toJson(),
           );
-      await firestore.collection('disputes').doc('newer').set(
-            buildDispute(id: 'newer', createdAt: DateTime(2026, 8, 20))
-                .toJson(),
+      await firestore
+          .collection('disputes')
+          .doc('newer')
+          .set(
+            buildDispute(
+              id: 'newer',
+              createdAt: DateTime(2026, 8, 20),
+            ).toJson(),
           );
 
       final result = await repository.getAllDisputes();

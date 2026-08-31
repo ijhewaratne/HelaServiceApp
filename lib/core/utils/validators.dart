@@ -1,13 +1,13 @@
 import 'package:geolocator/geolocator.dart';
 import '../constants/app_constants.dart';
 
-/// Sri Lanka-specific input validation utilities. 
+/// Sri Lanka-specific input validation utilities.
 /// Used throughout onboarding and booking flows for legal compliance.
 class SLValidators {
   // ---------------------------------------------------------------------------
   // NIC Validation
   // ---------------------------------------------------------------------------
-  
+
   /// Validates both old (9 digits + V/X) and new (12 digit) Sri Lankan NIC formats.
   static bool isValidNIC(String nic) {
     final oldFormat = RegExp(r'^[0-9]{9}[VXvx]$');

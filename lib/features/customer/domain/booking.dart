@@ -58,11 +58,15 @@ class Booking {
       specialNotes: json['specialNotes'] as String? ?? '',
       isRecurring: json['isRecurring'] as bool? ?? false,
       recurringPattern: json['recurringPattern'] as String?,
-      recurringEndDate: json['recurringEndDate'] != null ? DateTime.parse(json['recurringEndDate'] as String) : null,
+      recurringEndDate: json['recurringEndDate'] != null
+          ? DateTime.parse(json['recurringEndDate'] as String)
+          : null,
       status: json['status'] as String? ?? 'draft',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       paymentStatus: json['paymentStatus'] as String? ?? 'unpaid',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -76,11 +80,7 @@ class Booking {
       'bookingDate': bookingDate,
       'startTime': startTime,
       'durationHours': durationHours,
-      'address': {
-        'text': addressText,
-        'lat': addressLat,
-        'lng': addressLng,
-      },
+      'address': {'text': addressText, 'lat': addressLat, 'lng': addressLng},
       'specialNotes': specialNotes,
       'isRecurring': isRecurring,
       'recurringPattern': recurringPattern,

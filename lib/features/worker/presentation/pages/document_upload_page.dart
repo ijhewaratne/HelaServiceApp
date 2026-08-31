@@ -8,7 +8,8 @@ import 'verification_pending_page.dart';
 class DocumentUploadPage extends StatefulWidget {
   final String workerId;
 
-  const DocumentUploadPage({Key? key, required this.workerId}) : super(key: key);
+  const DocumentUploadPage({Key? key, required this.workerId})
+    : super(key: key);
 
   @override
   _DocumentUploadPageState createState() => _DocumentUploadPageState();
@@ -33,13 +34,14 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => VerificationPendingPage(workerId: widget.workerId),
+                builder: (_) =>
+                    VerificationPendingPage(workerId: widget.workerId),
               ),
             );
           } else if (state is WorkerOnboardingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         builder: (context, state) {
@@ -50,7 +52,9 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text('Uploading ${state.isFront ? "front" : "back"} of NIC...'),
+                  Text(
+                    'Uploading ${state.isFront ? "front" : "back"} of NIC...',
+                  ),
                 ],
               ),
             );
@@ -63,7 +67,7 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
               children: [
                 _buildInstructionCard(),
                 SizedBox(height: 24),
-                
+
                 // NIC Front
                 _buildUploadCard(
                   title: 'NIC Front Side',
@@ -73,7 +77,7 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
                   instructions: 'Photo with NIC number visible',
                 ),
                 SizedBox(height: 16),
-                
+
                 // NIC Back
                 _buildUploadCard(
                   title: 'NIC Back Side',
@@ -83,7 +87,7 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
                   instructions: 'Photo with address and signature',
                 ),
                 SizedBox(height: 16),
-                
+
                 // Profile Photo
                 _buildUploadCard(
                   title: 'Your Photo',
@@ -93,9 +97,9 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
                   instructions: 'Clear face photo for customer trust',
                   isCircular: true,
                 ),
-                
+
                 SizedBox(height: 32),
-                
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -185,7 +189,10 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -245,7 +252,9 @@ class _DocumentUploadPageState extends State<DocumentUploadPage> {
       } else if (isNic && !isFront && nicBack != null) {
         context.read<WorkerOnboardingBloc>().add(UploadNICBack(nicBack!));
       } else if (!isNic && profilePhoto != null) {
-        context.read<WorkerOnboardingBloc>().add(UploadProfilePhoto(profilePhoto!));
+        context.read<WorkerOnboardingBloc>().add(
+          UploadProfilePhoto(profilePhoto!),
+        );
       }
     }
   }

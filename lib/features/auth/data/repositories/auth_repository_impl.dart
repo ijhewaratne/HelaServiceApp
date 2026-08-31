@@ -8,7 +8,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 /// Implementation of AuthRepository using Firebase
-/// 
+///
 /// Phase 2: Architecture Refactoring - Updated to use consolidated User entity
 class AuthRepositoryImpl implements AuthRepository {
   final firebase.FirebaseAuth _auth;
@@ -17,7 +17,9 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._auth, this._firestore);
 
   @override
-  Stream<User?> get authStateChanges => _auth.authStateChanges().asyncMap((fbUser) async {
+  Stream<User?> get authStateChanges => _auth.authStateChanges().asyncMap((
+    fbUser,
+  ) async {
     if (fbUser == null) return null;
     try {
       final doc = await _firestore.collection('users').doc(fbUser.uid).get();
@@ -31,7 +33,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> verifyPhone({
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
-    required Function(firebase.PhoneAuthCredential credential) onVerificationCompleted,
+    required Function(firebase.PhoneAuthCredential credential)
+    onVerificationCompleted,
     required Function(String error) onVerificationFailed,
   }) async {
     // Use a Completer so the Future only resolves after codeSent/error fires.
@@ -46,7 +49,8 @@ class AuthRepositoryImpl implements AuthRepository {
         verificationFailed: (e) {
           final msg = e.message ?? 'Verification failed';
           onVerificationFailed(msg);
-          if (!completer.isCompleted) completer.complete(Left(AuthFailure(msg)));
+          if (!completer.isCompleted)
+            completer.complete(Left(AuthFailure(msg)));
         },
         codeSent: (verificationId, _) {
           onCodeSent(verificationId);
@@ -95,7 +99,8 @@ class AuthRepositoryImpl implements AuthRepository {
     final resolver = _pendingMfaResolver;
     if (resolver == null) {
       return const Left(
-          AuthFailure('No pending two-factor challenge to complete'));
+        AuthFailure('No pending two-factor challenge to complete'),
+      );
     }
 
     try {
@@ -103,8 +108,8 @@ class AuthRepositoryImpl implements AuthRepository {
         (h) => h is firebase.TotpMultiFactorInfo,
         orElse: () => resolver.hints.first,
       );
-      final assertion = await firebase.TotpMultiFactorGenerator
-          .getAssertionForSignIn(hint.uid, totpCode);
+      final assertion = await firebase
+          .TotpMultiFactorGenerator.getAssertionForSignIn(hint.uid, totpCode);
       final userCredential = await resolver.resolveSignIn(assertion);
       _pendingMfaResolver = null;
       return await _finishSignIn(userCredential);
@@ -122,8 +127,10 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     // Check if user exists in Firestore
-    var userDoc =
-        await _firestore.collection('users').doc(firebaseUser.uid).get();
+    var userDoc = await _firestore
+        .collection('users')
+        .doc(firebaseUser.uid)
+        .get();
 
     if (!userDoc.exists) {
       // New user - create profile
@@ -137,7 +144,10 @@ class AuthRepositoryImpl implements AuthRepository {
         'status': UserStatus.pendingVerification.name,
       });
       // Re-fetch so the snapshot reflects the just-written document
-      userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+      userDoc = await _firestore
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .get();
     }
 
     return Right(_mapToUser(firebaseUser, userDoc));
@@ -164,18 +174,21 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> updateUserType(String userId, UserType userType) async {
+  Future<Either<Failure, User>> updateUserType(
+    String userId,
+    UserType userType,
+  ) async {
     try {
       await _firestore.collection('users').doc(userId).update({
         'userType': userType.name,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      
+
       final firebaseUser = _auth.currentUser;
       if (firebaseUser == null) {
         return Left(AuthFailure('No authenticated user'));
       }
-      
+
       final userDoc = await _firestore.collection('users').doc(userId).get();
       return Right(_mapToUser(firebaseUser, userDoc));
     } catch (e) {
@@ -191,12 +204,12 @@ class AuthRepositoryImpl implements AuthRepository {
         'status': UserStatus.active.name,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      
+
       final firebaseUser = _auth.currentUser;
       if (firebaseUser == null) {
         return Left(AuthFailure('No authenticated user'));
       }
-      
+
       final userDoc = await _firestore.collection('users').doc(userId).get();
       return Right(_mapToUser(firebaseUser, userDoc));
     } catch (e) {
@@ -207,11 +220,8 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Helper method to map Firebase user + Firestore data to User entity
   User _mapToUser(firebase.User firebaseUser, DocumentSnapshot firestoreDoc) {
     final data = firestoreDoc.data() as Map<String, dynamic>?;
-    
-    return User.fromFirebase(
-      firebaseUser,
-      firestoreDoc,
-    );
+
+    return User.fromFirebase(firebaseUser, firestoreDoc);
   }
 
   UserType _parseUserType(String? type) {

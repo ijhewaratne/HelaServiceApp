@@ -32,31 +32,32 @@ void main() {
 
       result.fold(
         (_) => fail('Expected scopes'),
-        (scopes) => expect(
-          scopes,
-          {AdminScope.workerVerification, AdminScope.categoryManagement},
-        ),
+        (scopes) => expect(scopes, {
+          AdminScope.workerVerification,
+          AdminScope.categoryManagement,
+        }),
       );
     });
 
-    test('ignores unknown scope names stored by a future app version',
-        () async {
-      await firestore.collection('admin_permissions').doc('admin_1').set({
-        'scopes': ['workerVerification', 'someFutureScope'],
-      });
+    test(
+      'ignores unknown scope names stored by a future app version',
+      () async {
+        await firestore.collection('admin_permissions').doc('admin_1').set({
+          'scopes': ['workerVerification', 'someFutureScope'],
+        });
 
-      final result = await repository.getScopes('admin_1');
+        final result = await repository.getScopes('admin_1');
 
-      result.fold(
-        (_) => fail('Expected scopes'),
-        (scopes) => expect(scopes, {AdminScope.workerVerification}),
-      );
-    });
+        result.fold(
+          (_) => fail('Expected scopes'),
+          (scopes) => expect(scopes, {AdminScope.workerVerification}),
+        );
+      },
+    );
   });
 
   group('setScopes', () {
-    test('overwrites the full scope set and records who granted it',
-        () async {
+    test('overwrites the full scope set and records who granted it', () async {
       final result = await repository.setScopes(
         adminUid: 'admin_1',
         scopes: {AdminScope.disputeResolution, AdminScope.auditView},
@@ -64,12 +65,14 @@ void main() {
       );
       expect(result.isRight(), isTrue);
 
-      final doc =
-          await firestore.collection('admin_permissions').doc('admin_1').get();
-      expect(
-        (doc.data()?['scopes'] as List).toSet(),
-        {'disputeResolution', 'auditView'},
-      );
+      final doc = await firestore
+          .collection('admin_permissions')
+          .doc('admin_1')
+          .get();
+      expect((doc.data()?['scopes'] as List).toSet(), {
+        'disputeResolution',
+        'auditView',
+      });
       expect(doc.data()?['grantedBy'], 'super_1');
     });
 

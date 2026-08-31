@@ -29,8 +29,7 @@ class AuthFailure extends Failure {
 /// the caller should prompt for the authenticator code and complete sign-in
 /// via AuthRepository.completeMfaChallenge.
 class MfaRequiredFailure extends Failure {
-  const MfaRequiredFailure()
-      : super('Two-factor authentication code required');
+  const MfaRequiredFailure() : super('Two-factor authentication code required');
 }
 
 /// Not found failures
@@ -48,13 +47,16 @@ class GenericFailure extends Failure {
   const GenericFailure(super.message);
 
   /// Factory constructor for duplicate NIC errors
-  factory GenericFailure.duplicateNIC() => const GenericFailure('NIC already exists');
+  factory GenericFailure.duplicateNIC() =>
+      const GenericFailure('NIC already exists');
 
   /// Factory constructor for file too large errors
-  factory GenericFailure.fileTooLarge() => const GenericFailure('File size exceeds limit');
+  factory GenericFailure.fileTooLarge() =>
+      const GenericFailure('File size exceeds limit');
 
   /// Factory constructor for network errors
-  factory GenericFailure.network() => const GenericFailure('Network connection error');
+  factory GenericFailure.network() =>
+      const GenericFailure('Network connection error');
 }
 
 /// Payment-specific failures

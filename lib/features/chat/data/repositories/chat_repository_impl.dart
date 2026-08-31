@@ -51,9 +51,14 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getChatRoom(String chatRoomId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getChatRoom(
+    String chatRoomId,
+  ) async {
     try {
-      final doc = await _firestore.collection('chatRooms').doc(chatRoomId).get();
+      final doc = await _firestore
+          .collection('chatRooms')
+          .doc(chatRoomId)
+          .get();
       if (!doc.exists) {
         return const Left(GenericFailure('Chat room not found'));
       }
@@ -116,14 +121,11 @@ class ChatRepositoryImpl implements ChatRepository {
       // Use transaction to ensure atomicity
       await _firestore.runTransaction((transaction) async {
         transaction.set(messageRef, messageData);
-        transaction.update(
-          _firestore.collection('chatRooms').doc(chatRoomId),
-          {
-            'lastMessage': message,
-            'lastMessageAt': FieldValue.serverTimestamp(),
-            'updatedAt': FieldValue.serverTimestamp(),
-          },
-        );
+        transaction.update(_firestore.collection('chatRooms').doc(chatRoomId), {
+          'lastMessage': message,
+          'lastMessageAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       });
 
       return Right(messageData);
@@ -161,9 +163,11 @@ class ChatRepositoryImpl implements ChatRepository {
       }
 
       final querySnapshot = await query.get();
-      return Right(querySnapshot.docs.reversed
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList());
+      return Right(
+        querySnapshot.docs.reversed
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList(),
+      );
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -183,14 +187,15 @@ class ChatRepositoryImpl implements ChatRepository {
         .limit(100)
         .snapshots()
         .map((snapshot) {
-      return Right<Failure, List<Map<String, dynamic>>>(snapshot.docs.reversed
-          .map((doc) => doc.data())
-          .toList());
-    }).handleError((e) {
-      return Left<Failure, List<Map<String, dynamic>>>(
-        GenericFailure('Stream error: $e'),
-      );
-    });
+          return Right<Failure, List<Map<String, dynamic>>>(
+            snapshot.docs.reversed.map((doc) => doc.data()).toList(),
+          );
+        })
+        .handleError((e) {
+          return Left<Failure, List<Map<String, dynamic>>>(
+            GenericFailure('Stream error: $e'),
+          );
+        });
   }
 
   @override
@@ -213,7 +218,9 @@ class ChatRepositoryImpl implements ChatRepository {
       final batch = _firestore.batch();
       for (final doc in querySnapshot.docs) {
         final senderId = doc.data()['senderId'] as String? ?? '';
-        final readBy = List<String>.from(doc.data()['readBy'] as List<dynamic>? ?? []);
+        final readBy = List<String>.from(
+          doc.data()['readBy'] as List<dynamic>? ?? [],
+        );
         if (senderId != userId && !readBy.contains(userId)) {
           batch.update(doc.reference, {
             'readBy': FieldValue.arrayUnion([userId]),
@@ -243,7 +250,7 @@ class ChatRepositoryImpl implements ChatRepository {
           .collection('messages')
           .count()
           .get();
-      
+
       // Get read messages count
       final readAggregate = await _firestore
           .collection('chatRooms')
@@ -255,7 +262,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
       final total = totalAggregate.count ?? 0;
       final read = readAggregate.count ?? 0;
-      
+
       // Unread = total - read
       return Right(total - read);
     } on FirebaseException catch (e) {
@@ -283,10 +290,7 @@ class ChatRepositoryImpl implements ChatRepository {
           .orderBy('updatedAt', descending: true)
           .get();
 
-      final allRooms = [
-        ...customerQuery.docs,
-        ...workerQuery.docs,
-      ];
+      final allRooms = [...customerQuery.docs, ...workerQuery.docs];
 
       // Sort by updatedAt
       allRooms.sort((a, b) {

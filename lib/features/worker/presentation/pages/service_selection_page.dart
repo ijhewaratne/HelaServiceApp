@@ -7,7 +7,8 @@ import 'document_upload_page.dart';
 class ServiceSelectionPage extends StatefulWidget {
   final WorkerApplication application;
 
-  const ServiceSelectionPage({Key? key, required this.application}) : super(key: key);
+  const ServiceSelectionPage({Key? key, required this.application})
+    : super(key: key);
 
   @override
   _ServiceSelectionPageState createState() => _ServiceSelectionPageState();
@@ -38,7 +39,7 @@ class _ServiceSelectionPageState extends State<ServiceSelectionPage> {
               style: TextStyle(color: Colors.grey[600]),
             ),
             SizedBox(height: 24),
-            
+
             Expanded(
               child: ListView(
                 children: ServiceType.values.map((service) {
@@ -76,7 +77,7 @@ class _ServiceSelectionPageState extends State<ServiceSelectionPage> {
                 }).toList(),
               ),
             ),
-            
+
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -125,7 +126,9 @@ class _ServiceSelectionPageState extends State<ServiceSelectionPage> {
   }
 
   void _continue() {
-    context.read<WorkerOnboardingBloc>().add(SelectServices(selectedServices.toList()));
+    context.read<WorkerOnboardingBloc>().add(
+      SelectServices(selectedServices.toList()),
+    );
     Navigator.push(
       context,
       MaterialPageRoute(
