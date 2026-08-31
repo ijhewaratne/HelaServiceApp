@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:home_service_app/core/services/analytics_service.dart';
 import 'package:home_service_app/features/payment/domain/repositories/payment_repository.dart';
 import 'package:home_service_app/features/payment/presentation/bloc/payment_bloc.dart';
@@ -9,6 +10,13 @@ import 'package:mockito/annotations.dart';
 
 import 'payment_page_test.mocks.dart';
 
+// Gate 0: in-app payments (PayHere) are disabled for this MVP release —
+// PaymentPage now short-circuits to a "not available" message before ever
+// touching PaymentBloc (see payment_page.dart's _paymentsEnabled flag). The
+// previous version of this test file asserted the old payment-flow UI
+// (amount, payment methods, "Pay Now" button), which no longer renders by
+// design; these tests were rewritten to match what the screen actually does
+// now rather than left failing against removed functionality.
 @GenerateMocks([PaymentRepository, AnalyticsService])
 void main() {
   late MockPaymentRepository mockRepository;
@@ -26,64 +34,45 @@ void main() {
           paymentRepository: mockRepository,
           analytics: mockAnalytics,
         ),
-        child: PaymentPage(
-          bookingId: 'booking_123',
-          amount: amount,
-        ),
+        child: PaymentPage(bookingId: 'booking_123', amount: amount),
       ),
     );
   }
 
-  group('PaymentPage', () {
-    testWidgets('renders correctly with payment details', (tester) async {
+  group('PaymentPage (Gate 0: payments disabled for MVP)', () {
+    testWidgets(
+      'shows a clear "not available" message instead of the payment flow',
+      (tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Payments are not available in this release.'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('does not render a Pay Now button', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Payment'), findsOneWidget);
-      expect(find.text('LKR 1,500.00'), findsOneWidget);
+      expect(find.text('Pay Now'), findsNothing);
+      expect(find.text('Select Payment Method'), findsNothing);
     });
 
-    testWidgets('shows booking summary', (tester) async {
+    testWidgets('close button in the app bar still works', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Booking Summary'), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
     });
 
-    testWidgets('shows payment methods', (tester) async {
+    testWidgets('never calls the payment repository', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Select Payment Method'), findsOneWidget);
-    });
-
-    testWidgets('has pay now button', (tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text('Pay Now'), findsOneWidget);
-    });
-
-    testWidgets('displays correct amount formatting', (tester) async {
-      await tester.pumpWidget(createWidget(amount: 250050));
-      await tester.pumpAndSettle();
-
-      expect(find.text('LKR 2,500.50'), findsOneWidget);
-    });
-
-    testWidgets('shows back button in app bar', (tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-    });
-
-    testWidgets('shows secure payment badge', (tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.lock), findsOneWidget);
+      verifyZeroInteractions(mockRepository);
     });
   });
 }

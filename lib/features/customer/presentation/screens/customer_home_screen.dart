@@ -35,7 +35,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => _EmergencySheet(uid: _uid),
     );
   }
@@ -50,21 +51,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             expandedHeight: 180,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: _HomeHeader(
-                uid: _uid,
-                onEmergency: _showEmergency,
-              ),
+              background: _HomeHeader(uid: _uid, onEmergency: _showEmergency),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.book_online_outlined,
-                    color: Colors.white),
+                icon: const Icon(
+                  Icons.book_online_outlined,
+                  color: Colors.white,
+                ),
                 onPressed: () => context.push('/customer/bookings'),
                 tooltip: 'My Bookings',
               ),
               IconButton(
-                icon: const Icon(Icons.account_circle_outlined,
-                    color: Colors.white),
+                icon: const Icon(
+                  Icons.account_circle_outlined,
+                  color: Colors.white,
+                ),
                 onPressed: () => context.push('/customer/profile'),
                 tooltip: 'Profile',
               ),
@@ -83,12 +85,16 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Active Bookings',
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      'Active Bookings',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     TextButton(
                       onPressed: () => context.push('/customer/bookings'),
-                      child: const Text('See all',
-                          style: TextStyle(color: AppTheme.primaryColor)),
+                      child: const Text(
+                        'See all',
+                        style: TextStyle(color: AppTheme.primaryColor),
+                      ),
                     ),
                   ],
                 ),
@@ -140,13 +146,18 @@ class _HomeHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(_greeting(),
-              style: const TextStyle(color: Colors.white70, fontSize: 14)),
-          const Text('Need a hand today?',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            _greeting(),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const Text(
+            'Need a hand today?',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 14),
           // Wallet balance row
           if (uid != null)
@@ -164,8 +175,10 @@ class _HomeHeader extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => context.push('/wallet/topup'),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
@@ -173,8 +186,11 @@ class _HomeHeader extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.account_balance_wallet_outlined,
-                            color: Colors.white, size: 18),
+                        const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,21 +198,27 @@ class _HomeHeader extends StatelessWidget {
                             Text(
                               'LKR ${available.toStringAsFixed(0)} available',
                               style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13),
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
                             ),
                             if (held > 0)
                               Text(
                                 'LKR ${held.toStringAsFixed(0)} held in escrow',
                                 style: const TextStyle(
-                                    color: Colors.white60, fontSize: 10),
+                                  color: Colors.white60,
+                                  fontSize: 10,
+                                ),
                               ),
                           ],
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.add_circle_outline,
-                            color: Colors.white70, size: 16),
+                        const Icon(
+                          Icons.add_circle_outline,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
                       ],
                     ),
                   ),
@@ -219,8 +241,7 @@ class _BookServiceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -230,26 +251,33 @@ class _BookServiceCard extends StatelessWidget {
               color: AppTheme.primaryColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.home_repair_service,
-                color: Colors.white, size: 24),
+            child: const Icon(
+              Icons.home_repair_service,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Book a Service',
-                    style: Theme.of(context).textTheme.titleMedium),
-                Text('Cleaning, babysitting, elderly care & more',
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  'Book a Service',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  'Cleaning, babysitting, elderly care & more',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
           ),
           ElevatedButton(
             onPressed: () => context.push('/customer/book'),
             style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
             child: const Text('Book'),
           ),
         ],
@@ -273,14 +301,17 @@ class _ActiveBookingsList extends StatelessWidget {
       stream: sl<FirebaseFirestore>()
           .collection('bookings')
           .where('customerId', isEqualTo: uid)
-          .where('status', whereIn: [
-            'pending',
-            'confirmed',
-            'workerAssigned',
-            'workerEnRoute',
-            'workerArrived',
-            'inProgress',
-          ])
+          .where(
+            'status',
+            whereIn: [
+              'pending',
+              'confirmed',
+              'workerAssigned',
+              'workerEnRoute',
+              'workerArrived',
+              'inProgress',
+            ],
+          )
           .orderBy('scheduledDate', descending: false)
           .limit(10)
           .snapshots(),
@@ -300,15 +331,21 @@ class _ActiveBookingsList extends StatelessWidget {
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
-                  Icon(Icons.event_busy,
-                      size: 56,
-                      color: Theme.of(context).colorScheme.outline),
+                  Icon(
+                    Icons.event_busy,
+                    size: 56,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   const SizedBox(height: 12),
-                  Text('No active bookings',
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    'No active bookings',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   const SizedBox(height: 4),
-                  Text('Book a service to get started.',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    'Book a service to get started.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -349,8 +386,11 @@ class _BookingCard extends StatelessWidget {
               color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.home_repair_service,
-                color: AppTheme.primaryColor, size: 20),
+            child: const Icon(
+              Icons.home_repair_service,
+              color: AppTheme.primaryColor,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -372,8 +412,7 @@ class _BookingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -381,19 +420,20 @@ class _BookingCard extends StatelessWidget {
                 child: Text(
                   _statusLabel(booking.status),
                   style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: statusColor),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
               TextButton(
-                onPressed: () =>
-                    context.push('/customer/track/${booking.id}'),
+                onPressed: () => context.push('/customer/track/${booking.id}'),
                 style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 child: const Text('Track', style: TextStyle(fontSize: 12)),
               ),
             ],
@@ -420,12 +460,18 @@ class _BookingCard extends StatelessWidget {
 
   static String _statusLabel(BookingStatus s) {
     switch (s) {
-      case BookingStatus.confirmed:      return 'Confirmed';
-      case BookingStatus.workerAssigned: return 'Assigned';
-      case BookingStatus.workerEnRoute:  return 'En Route';
-      case BookingStatus.workerArrived:  return 'Arrived';
-      case BookingStatus.inProgress:     return 'In Progress';
-      default:                           return 'Pending';
+      case BookingStatus.confirmed:
+        return 'Confirmed';
+      case BookingStatus.workerAssigned:
+        return 'Assigned';
+      case BookingStatus.workerEnRoute:
+        return 'En Route';
+      case BookingStatus.workerArrived:
+        return 'Arrived';
+      case BookingStatus.inProgress:
+        return 'In Progress';
+      default:
+        return 'Pending';
     }
   }
 }
@@ -437,7 +483,7 @@ class _EmergencySheet extends StatelessWidget {
   const _EmergencySheet({required this.uid});
 
   static const _supportNumber = '+94765000000'; // HelaService hotline
-  static const _policeNumber  = '119';
+  static const _policeNumber = '119';
   static const _ambulanceNumber = '1990';
 
   Future<void> _call(BuildContext context, String number) async {
@@ -446,8 +492,9 @@ class _EmergencySheet extends StatelessWidget {
       await launchUrl(uri);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cannot call $number')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Cannot call $number')));
       }
     }
   }
@@ -466,9 +513,16 @@ class _EmergencySheet extends StatelessWidget {
     });
     if (context.mounted) {
       Navigator.pop(context);
+      // Gate 0 fix (emergency-response promises): this used to say "Alert
+      // sent to HelaService support team," implying guaranteed, immediate
+      // human attention. This is a Firestore write with no confirmed
+      // real-time monitoring/on-call coverage behind it — the wording now
+      // reflects that it was recorded, not that help is already coming.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Alert sent to HelaService support team.'),
+          content: Text(
+            'Report recorded. For anything urgent, use Police or Ambulance instead.',
+          ),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -492,17 +546,28 @@ class _EmergencySheet extends StatelessWidget {
                     color: AppTheme.errorColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.emergency,
-                      color: AppTheme.errorColor, size: 22),
+                  child: const Icon(
+                    Icons.emergency,
+                    color: AppTheme.errorColor,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
-                Text('Emergency',
-                    style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Emergency',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
               ],
             ),
             const SizedBox(height: 6),
+            // Gate 0 fix (emergency-response promises): "Help is available
+            // 24/7" was a false claim of continuous monitoring — support
+            // coverage hours are not actually confirmed (see the reference
+            // spec's open decision OD-009). This app is not a monitored
+            // emergency service; only Police/Ambulance below are.
             Text(
-              'Only use for genuine emergencies. Help is available 24/7.',
+              'For genuine emergencies, use Police or Ambulance below. '
+              'This app does not monitor reports in real time.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 20),
@@ -511,7 +576,7 @@ class _EmergencySheet extends StatelessWidget {
             _EmergencyAction(
               icon: Icons.support_agent,
               title: 'Alert HelaService Support',
-              subtitle: 'Notifies our safety team immediately',
+              subtitle: 'Records a report for our team to review',
               color: AppTheme.errorColor,
               onTap: () => _reportToHelaService(context),
             ),
@@ -586,8 +651,7 @@ class _EmergencyAction extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -597,13 +661,14 @@ class _EmergencyAction extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: color,
-                            fontWeight: FontWeight.w600,
-                          )),
-                  Text(subtitle,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),

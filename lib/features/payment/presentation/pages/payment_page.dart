@@ -19,8 +19,49 @@ class PaymentPage extends StatelessWidget {
     this.description,
   }) : super(key: key);
 
+  // Gate 0: in-app payments (PayHere) are disabled for this MVP release —
+  // see functions/src/payhereWebhook.ts's PAYMENTS_ENABLED flag, which is
+  // the authoritative, server-side enforcement of this. This screen-level
+  // short-circuit exists so a user sees a clear, honest message instead of
+  // a raw Cloud Function error after tapping "Pay".
+  static const bool _paymentsEnabled = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!_paymentsEnabled) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Payment'),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.payments_outlined, size: 48, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  'Payments are not available in this release.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Please arrange payment directly with your service provider for now.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment'),
@@ -72,8 +113,7 @@ class PaymentPage extends StatelessWidget {
     );
   }
 
-  Future<void> _launchCheckout(
-      BuildContext context, String checkoutUrl) async {
+  Future<void> _launchCheckout(BuildContext context, String checkoutUrl) async {
     final uri = Uri.tryParse(checkoutUrl);
     if (uri != null && await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -135,10 +175,7 @@ class PaymentPage extends StatelessWidget {
         title: const Text('Payment Failed'),
         content: Text(message),
         actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: const Text('OK'),
-          ),
+          TextButton(onPressed: () => context.pop(), child: const Text('OK')),
         ],
       ),
     );
@@ -217,10 +254,7 @@ class _PaymentSummaryView extends StatelessWidget {
           Text(
             'Secured by PayHere',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -248,7 +282,10 @@ class _PaymentMethodsInfo extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: const [
-                _PaymentMethodChip(icon: Icons.credit_card, label: 'Visa/Master'),
+                _PaymentMethodChip(
+                  icon: Icons.credit_card,
+                  label: 'Visa/Master',
+                ),
                 _PaymentMethodChip(icon: Icons.account_balance, label: 'Bank'),
                 _PaymentMethodChip(icon: Icons.phone_android, label: 'eZCash'),
                 _PaymentMethodChip(icon: Icons.phone_iphone, label: 'mCash'),
@@ -265,10 +302,7 @@ class _PaymentMethodChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _PaymentMethodChip({
-    required this.icon,
-    required this.label,
-  });
+  const _PaymentMethodChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -313,27 +347,36 @@ class _AwaitingWebhookView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Icon(Icons.open_in_browser, size: 72, color: Colors.indigo),
-        const SizedBox(height: 24),
-        Text('Complete your payment',
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.open_in_browser, size: 72, color: Colors.indigo),
+          const SizedBox(height: 24),
+          Text(
+            'Complete your payment',
             style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        const Text(
-          'The PayHere checkout has been opened in your browser. '
-          'Complete the payment there and return to this screen.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        Text('Order ID: $orderId',
-            style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 32),
-        const CircularProgressIndicator(),
-        const SizedBox(height: 16),
-        const Text('Waiting for payment confirmation…',
-            style: TextStyle(color: Colors.grey)),
-      ]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'The PayHere checkout has been opened in your browser. '
+            'Complete the payment there and return to this screen.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Order ID: $orderId',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 32),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          const Text(
+            'Waiting for payment confirmation…',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -368,10 +411,7 @@ class _FailedView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _FailedView({
-    required this.message,
-    required this.onRetry,
-  });
+  const _FailedView({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -388,15 +428,9 @@ class _FailedView extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('TRY AGAIN'),
-            ),
+            ElevatedButton(onPressed: onRetry, child: const Text('TRY AGAIN')),
           ],
         ),
       ),

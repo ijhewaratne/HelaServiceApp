@@ -19,8 +19,16 @@ class ProviderProfileScreen extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<DocumentSnapshot>(
+        // Gate 0 fix (location privacy / core-flow stabilization): `workers`
+        // is owner+admin-only in firestore.rules (correctly, since it holds
+        // NIC/home-address/home-coordinate fields) — there was no rule
+        // granting a customer read access to it at all, so this screen was
+        // being denied under the rules as actually deployed. It now reads
+        // the Cloud-Function-maintained public mirror instead (see
+        // functions/src/workerPublicProfile.ts), which excludes every
+        // sensitive field.
         future: FirebaseFirestore.instance
-            .collection('workers')
+            .collection('worker_public_profiles')
             .doc(providerId)
             .get(),
         builder: (context, snap) {
@@ -30,8 +38,9 @@ class ProviderProfileScreen extends StatelessWidget {
           if (!snap.hasData || !snap.data!.exists) {
             return const Center(child: Text('Provider not found'));
           }
-          final worker =
-              Worker.fromJson(snap.data!.data() as Map<String, dynamic>);
+          final worker = Worker.fromJson(
+            snap.data!.data() as Map<String, dynamic>,
+          );
           return _ProviderProfileBody(worker: worker);
         },
       ),
@@ -80,41 +89,55 @@ class _ProfileHeader extends StatelessWidget {
                 ? NetworkImage(worker.profilePhotoUrl!)
                 : null,
             child: worker.profilePhotoUrl == null
-                ? Text(worker.fullName[0].toUpperCase(),
+                ? Text(
+                    worker.fullName[0].toUpperCase(),
                     style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1B5E20)))
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1B5E20),
+                    ),
+                  )
                 : null,
           ),
           const SizedBox(height: 12),
           Text(
             worker.businessName ?? worker.fullName,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           if (worker.businessName != null)
-            Text(worker.fullName,
-                style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            Text(
+              worker.fullName,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.star, color: Colors.amber, size: 18),
               const SizedBox(width: 4),
-              Text(worker.rating.toStringAsFixed(1),
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w600)),
+              Text(
+                worker.rating.toStringAsFixed(1),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(width: 8),
-              Text('(${worker.totalJobs} jobs)',
-                  style: const TextStyle(color: Colors.white70)),
+              Text(
+                '(${worker.totalJobs} jobs)',
+                style: const TextStyle(color: Colors.white70),
+              ),
               const SizedBox(width: 16),
               if (worker.status == WorkerStatus.approved)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green[300],
                     borderRadius: BorderRadius.circular(12),
@@ -123,8 +146,10 @@ class _ProfileHeader extends StatelessWidget {
                     children: [
                       Icon(Icons.verified, size: 14, color: Colors.white),
                       SizedBox(width: 4),
-                      Text('Verified',
-                          style: TextStyle(color: Colors.white, fontSize: 12)),
+                      Text(
+                        'Verified',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
@@ -148,46 +173,61 @@ class _ProfileInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (worker.bio != null && worker.bio!.isNotEmpty) ...[
-            Text('About',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'About',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text(worker.bio!,
-                style: TextStyle(color: Colors.grey[700], height: 1.5)),
+            Text(
+              worker.bio!,
+              style: TextStyle(color: Colors.grey[700], height: 1.5),
+            ),
             const SizedBox(height: 20),
           ],
-          Text('Services',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Services',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: worker.services
-                .map((s) => Chip(
-                      label: Text(s.displayName),
-                      backgroundColor: const Color(0xFFE8F5E9),
-                      labelStyle: const TextStyle(color: Color(0xFF1B5E20)),
-                    ))
+                .map(
+                  (s) => Chip(
+                    label: Text(s.displayName),
+                    backgroundColor: const Color(0xFFE8F5E9),
+                    labelStyle: const TextStyle(color: Color(0xFF1B5E20)),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 16),
           _InfoRow(
-              Icons.location_on, 'Service Area', worker.district.isNotEmpty
-                  ? worker.district
-                  : worker.address),
-          _InfoRow(Icons.radio_button_checked, 'Service Radius',
-              '${worker.serviceRadiusKm.toStringAsFixed(0)} km'),
+            Icons.location_on,
+            'Service Area',
+            worker.district.isNotEmpty ? worker.district : worker.address,
+          ),
+          _InfoRow(
+            Icons.radio_button_checked,
+            'Service Radius',
+            '${worker.serviceRadiusKm.toStringAsFixed(0)} km',
+          ),
           if (worker.experienceYears != null)
-            _InfoRow(Icons.work_history, 'Experience',
-                '${worker.experienceYears} years'),
-          _InfoRow(Icons.check_circle,
-              'Availability',
-              worker.isOnline ? 'Available Now' : 'Currently Unavailable'),
+            _InfoRow(
+              Icons.work_history,
+              'Experience',
+              '${worker.experienceYears} years',
+            ),
+          _InfoRow(
+            Icons.check_circle,
+            'Availability',
+            worker.isOnline ? 'Available Now' : 'Currently Unavailable',
+          ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -200,7 +240,8 @@ class _ProfileInfo extends StatelessWidget {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -224,9 +265,10 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: const Color(0xFF1B5E20)),
           const SizedBox(width: 12),
-          Text('$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          Expanded(child: Text(value, style: TextStyle(color: Colors.grey[700]))),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Expanded(
+            child: Text(value, style: TextStyle(color: Colors.grey[700])),
+          ),
         ],
       ),
     );
@@ -244,11 +286,12 @@ class _ReviewsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Reviews',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Reviews',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
@@ -263,16 +306,16 @@ class _ReviewsSection extends StatelessWidget {
                 return const CircularProgressIndicator();
               }
               if (!snap.hasData || snap.data!.docs.isEmpty) {
-                return Text('No reviews yet.',
-                    style: TextStyle(color: Colors.grey[500]));
+                return Text(
+                  'No reviews yet.',
+                  style: TextStyle(color: Colors.grey[500]),
+                );
               }
               final reviews = snap.data!.docs
                   .map((d) => Review.fromFirestore(d))
                   .toList();
               return Column(
-                children: reviews
-                    .map((r) => _ReviewCard(review: r))
-                    .toList(),
+                children: reviews.map((r) => _ReviewCard(review: r)).toList(),
               );
             },
           ),
@@ -299,12 +342,13 @@ class _ReviewCard extends StatelessWidget {
             Row(
               children: [
                 ...List.generate(
-                    5,
-                    (i) => Icon(Icons.star,
-                        size: 16,
-                        color: i < review.rating
-                            ? Colors.amber
-                            : Colors.grey[300])),
+                  5,
+                  (i) => Icon(
+                    Icons.star,
+                    size: 16,
+                    color: i < review.rating ? Colors.amber : Colors.grey[300],
+                  ),
+                ),
                 const Spacer(),
                 Text(
                   '${review.createdAt.day}/${review.createdAt.month}/${review.createdAt.year}',
@@ -314,8 +358,10 @@ class _ReviewCard extends StatelessWidget {
             ),
             if (review.reviewText != null && review.reviewText!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(review.reviewText!,
-                  style: TextStyle(color: Colors.grey[700], height: 1.4)),
+              Text(
+                review.reviewText!,
+                style: TextStyle(color: Colors.grey[700], height: 1.4),
+              ),
             ],
           ],
         ),

@@ -56,7 +56,23 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
     return _selectedPreset ?? 0;
   }
 
+  // Gate 0: in-app payments (PayHere) are disabled for this MVP release —
+  // see functions/src/payhereWebhook.ts's PAYMENTS_ENABLED flag, which is
+  // the authoritative, server-side enforcement (generatePayHereUrl now
+  // throws regardless of this client-side check). This short-circuit exists
+  // so a user sees a clear, honest message instead of a raw error.
+  static const bool _paymentsEnabled = false;
+
   Future<void> _initiateTopUp() async {
+    if (!_paymentsEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Wallet top-up is not available in this release.'),
+        ),
+      );
+      return;
+    }
+
     final amount = _selectedAmount;
     if (amount < 100) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,16 +83,17 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in first.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please sign in first.')));
       return;
     }
 
     setState(() => _loading = true);
     try {
-      final callable = FirebaseFunctions.instance
-          .httpsCallable('generatePayHereUrl');
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'generatePayHereUrl',
+      );
       final result = await callable.call<Map<String, dynamic>>({
         'type': 'topup',
         'amount': amount,
@@ -145,8 +162,10 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Current Balance',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const Text(
+                    'Current Balance',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     _currentBalance == null
@@ -162,16 +181,17 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
               ),
             ),
             const SizedBox(height: 28),
-            Text('Select amount',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Select amount',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 14),
 
             // Preset grid
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
@@ -205,8 +225,7 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
                       'LKR $amt',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color:
-                            sel ? Colors.white : null,
+                        color: sel ? Colors.white : null,
                       ),
                     ),
                   ),
@@ -223,7 +242,10 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
               }),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
@@ -262,15 +284,23 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Accepted payment methods',
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    'Accepted payment methods',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
                     runSpacing: 6,
                     children: const [
-                      _MethodChip(label: 'Visa / MasterCard', icon: Icons.credit_card),
-                      _MethodChip(label: 'Bank Transfer', icon: Icons.account_balance),
+                      _MethodChip(
+                        label: 'Visa / MasterCard',
+                        icon: Icons.credit_card,
+                      ),
+                      _MethodChip(
+                        label: 'Bank Transfer',
+                        icon: Icons.account_balance,
+                      ),
                       _MethodChip(label: 'eZCash', icon: Icons.phone_android),
                       _MethodChip(label: 'mCash', icon: Icons.phone_iphone),
                     ],
@@ -293,7 +323,10 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : Text(
                         _selectedAmount >= 100
                             ? 'Pay LKR $_selectedAmount via PayHere'

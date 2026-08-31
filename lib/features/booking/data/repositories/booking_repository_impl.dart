@@ -14,9 +14,7 @@ class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl(this._firestore, this._firebaseAuth);
 
   @override
-  Future<Either<Failure, Booking>> createBooking(
-    Booking booking,
-  ) async {
+  Future<Either<Failure, Booking>> createBooking(Booking booking) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) {
@@ -24,9 +22,16 @@ class BookingRepositoryImpl implements BookingRepository {
       }
 
       final docRef = _firestore.collection('bookings').doc();
+      // Gate 0: a new booking always starts 'pending' with no worker
+      // assigned — matching is what determines the worker, not the client.
+      // firestore.rules now enforces this server-side on create; setting it
+      // explicitly here too means callers can't accidentally submit a
+      // booking with e.g. the entity's BookingStatus.draft default and have
+      // it silently rejected.
       final bookingData = booking.copyWith(
         id: docRef.id,
         customerId: currentUser.uid,
+        status: BookingStatus.pending,
       );
 
       await docRef.set(bookingData.toJson());
@@ -75,10 +80,7 @@ class BookingRepositoryImpl implements BookingRepository {
     Map<String, dynamic> data,
   ) async {
     try {
-      final updateData = {
-        ...data,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
+      final updateData = {...data, 'updatedAt': FieldValue.serverTimestamp()};
 
       await _firestore.collection('bookings').doc(bookingId).update(updateData);
 
@@ -123,7 +125,9 @@ class BookingRepositoryImpl implements BookingRepository {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return Right(querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
+      return Right(
+        querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList(),
+      );
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -142,7 +146,9 @@ class BookingRepositoryImpl implements BookingRepository {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return Right(querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
+      return Right(
+        querySnapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList(),
+      );
     } on FirebaseException catch (e) {
       return Left(GenericFailure('Firebase error: ${e.message}'));
     } catch (e) {
@@ -269,13 +275,14 @@ class BookingRepositoryImpl implements BookingRepository {
         .doc(bookingId)
         .snapshots()
         .map<Either<Failure, Booking>>((snapshot) {
-      if (!snapshot.exists) {
-        return Left(GenericFailure('Booking not found'));
-      }
-      return Right(Booking.fromFirestore(snapshot));
-    }).handleError((Object e) {
-      // Convert error to Left value
-      return Left<Failure, Booking>(GenericFailure('Stream error: $e'));
-    });
+          if (!snapshot.exists) {
+            return Left(GenericFailure('Booking not found'));
+          }
+          return Right(Booking.fromFirestore(snapshot));
+        })
+        .handleError((Object e) {
+          // Convert error to Left value
+          return Left<Failure, Booking>(GenericFailure('Stream error: $e'));
+        });
   }
 }
